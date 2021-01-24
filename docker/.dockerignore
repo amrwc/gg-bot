@@ -1,0 +1,6 @@
+.git*
+.gradle
+docker
+log
+*.md
+**/*.class

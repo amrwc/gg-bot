@@ -1,0 +1,165 @@
+name: Docker
+
+on:
+  push:
+    paths:
+      - '.github/workflows/docker.yml'
+      - 'bin/apply_migrations.sh'
+      - 'bin/setup.sh'
+      - 'bin/start.sh'
+      - 'bin/teardown.sh'
+      - 'docker/*'
+      - '**.java'
+      - '**application.yml'
+      - '*.gradle'
+
+env:
+  USE_CACHE: 'true'
+  MAIN_IMAGE: 'renameme'
+  GRADLE_CONTAINER_ALIAS: 'gradle_container'
+  REGISTRY: 'docker.pkg.github.com'
+  TMP_CACHE: 'cache-tmp'
+
+  SET_VARIABLES: |
+    if [ 'true' = "$USE_CACHE" ]; then
+      gradle_image="${MAIN_IMAGE}-${GRADLE_CONTAINER_ALIAS}"
+      echo "GRADLE_IMAGE=${gradle_image}" >> $GITHUB_ENV
+      echo "GRADLE_CONTAINER_CACHE=${REGISTRY}/${GITHUB_REPOSITORY}/${gradle_image}" >> $GITHUB_ENV
+      echo "MAIN_CONTAINER_CACHE=${REGISTRY}/${GITHUB_REPOSITORY}/${MAIN_IMAGE}" >> $GITHUB_ENV
+    fi
+
+  PULL_CACHE: |
+    docker pull "$GRADLE_CONTAINER_CACHE" || echo "::warning::Failed to pull ${GRADLE_CONTAINER_CACHE}"
+    docker pull "$MAIN_CONTAINER_CACHE" || echo "::warning::Failed to pull ${MAIN_CONTAINER_CACHE}"
+
+  TAG_PUSH: |
+    if docker tag "$GRADLE_IMAGE" "$GRADLE_CONTAINER_CACHE"; then
+      docker push "$GRADLE_CONTAINER_CACHE" || echo "::warning::Failed to push ${GRADLE_CONTAINER_CACHE}"
+    else
+      echo "::warning::Failed to tag ${GRADLE_IMAGE}"
+    fi
+    if docker tag "$MAIN_IMAGE" "$MAIN_CONTAINER_CACHE"; then
+      docker push "$MAIN_CONTAINER_CACHE" || echo "::warning::Failed to push ${MAIN_CONTAINER_CACHE}"
+    else
+      echo "::warning::Failed to tag ${MAIN_IMAGE}"
+    fi
+
+  TEST_API: |
+    # Testing the API
+    sleep 15 # Wait for Tomcat to come up
+    url='http://localhost:8080/api/welcome/1'
+    response_code="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
+    if [ 200 -ne "$response_code" ]; then
+      echo "::error::Expected 200 response code but received ${response_code} from ${url}"
+      exit 1
+    fi
+
+jobs:
+  docker:
+    name: 'Docker: build and test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v2
+
+      - name: Cache ./tmp/*
+        uses: actions/cache@v2
+        with:
+          path: ./tmp
+          key: ${{ runner.os }}-build-${{ env.TMP_CACHE }}-${{ hashFiles('./tmp/*') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.TMP_CACHE }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Add variables
+        run: ${{ env.SET_VARIABLES }}
+
+      - name: Log into the Docker registry
+        if: ${{ 'true' == env.USE_CACHE }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "$REGISTRY" --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Pull cached images
+        if: ${{ 'true' == env.USE_CACHE }}
+        run: ${{ env.PULL_CACHE }}
+
+      - name: Build
+        run: |
+          if [ 'true' = "$USE_CACHE" ]; then
+            docker build \
+              --cache-from "$GRADLE_CONTAINER_CACHE" \
+              --target "$GRADLE_CONTAINER_ALIAS" \
+              --tag "$GRADLE_IMAGE" \
+              --file ./docker/Dockerfile \
+              .
+            _cache_from="--cache-from ${GRADLE_CONTAINER_CACHE} --cache-from ${MAIN_CONTAINER_CACHE}"
+          else
+            _cache_from=''
+          fi
+          # shellcheck disable=SC2086
+          ./bin/setup.sh $_cache_from
+
+      - name: Tag and push the images
+        if: ${{ 'true' == env.USE_CACHE }}
+        run: ${{ env.TAG_PUSH }}
+
+      - name: Start the container
+        run: ./bin/start.sh --apply-migrations --detach --dont-stop-db
+
+      - name: Test the API
+        run: ${{ env.TEST_API }}
+
+      - name: Teardown
+        run: ./bin/teardown.sh
+
+  docker-compose:
+    name: 'Docker Compose: build and test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v2
+
+      - name: Cache ./tmp/*
+        uses: actions/cache@v2
+        with:
+          path: ./tmp
+          key: ${{ runner.os }}-build-${{ env.TMP_CACHE }}-${{ hashFiles('./tmp/*') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.TMP_CACHE }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Add variables
+        run: ${{ env.SET_VARIABLES }}
+
+      - name: Log into the Docker registry
+        if: ${{ 'true' == env.USE_CACHE }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "$REGISTRY" --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Pull cached images
+        if: ${{ 'true' == env.USE_CACHE }}
+        run: ${{ env.PULL_CACHE }}
+
+      - name: Build
+        run: |
+          if [ 'true' = "$USE_CACHE" ]; then
+            echo "GRADLE_IMAGE=${GRADLE_CONTAINER_CACHE}" > ./docker/.env.ci
+            echo "MAIN_IMAGE=${MAIN_CONTAINER_CACHE}" >> ./docker/.env.ci
+            _env_file='--env-file ./docker/.env.ci'
+          else
+            _env_file=''
+          fi
+          # shellcheck disable=SC2086
+          docker-compose --file ./docker/docker-compose.yml $_env_file build
+
+      - name: Up
+        run: docker-compose --file ./docker/docker-compose.yml up --detach
+
+      - name: Apply database migrations
+        run: ./bin/apply_migrations.sh
+
+      - name: Test the API
+        run: ${{ env.TEST_API }}
+
+      - name: Down
+        run: docker-compose --file ./docker/docker-compose.yml down
