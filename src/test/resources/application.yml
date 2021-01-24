@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: 'jdbc:postgresql://127.0.0.1:5432/renameme'
+    username: 'postgres'
+    password: 'password'
+  liquibase:
+    change-log: classpath:db/changelog-main.xml
+  jpa:
+    hibernate:
+      # Don't create/modify databases by inferring its properties from the models.
+      ddl-auto: 'none'
+    # See: https://stackoverflow.com/a/48222934/10620237
+    open-in-view: false
