@@ -1,34 +1,34 @@
 version: '3.8'
 
 networks:
-  renameme-network:
+  ggbot-network:
     driver: bridge
 
 services:
-  renameme-database:
-    container_name: renameme-database
+  ggbot-database:
+    container_name: ggbot-database
     image: postgres
     networks:
-      - renameme-network
+      - ggbot-network
     ports:
       - 5432:5432
     env_file: ./postgres-envars.list
 
-  renameme:
-    container_name: renameme
-    image: renameme
+  ggbot:
+    container_name: ggbot
+    image: ggbot
     build:
       context: ../
       cache_from:
-        - ${GRADLE_IMAGE:-renameme-gradle_container}
-        - ${MAIN_IMAGE:-renameme}
+        - ${GRADLE_IMAGE:-ggbot-gradle_container}
+        - ${MAIN_IMAGE:-ggbot}
       dockerfile: ./docker/Dockerfile
     ports:
       - 8000:8000
       - 8080:8080
     networks:
-      - renameme-network
+      - ggbot-network
     links:
-      - renameme-database
+      - ggbot-database
     depends_on:
-      - renameme-database
+      - ggbot-database

@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-MAIN_IMAGE='renameme'
+MAIN_IMAGE='ggbot'
 DATABASE="${MAIN_IMAGE}-database"
 
 NOFORMAT='\033[0m' PURPLE='\033[0;35m'

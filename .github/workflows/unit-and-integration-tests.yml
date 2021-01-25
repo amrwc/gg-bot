@@ -12,7 +12,6 @@ on:
       - '*.gradle'
 
 env:
-  INTEGRATION_TESTS_ENABLED: 'true'
   GRADLE_CACHE: 'cache-gradle'
   TMP_CACHE: 'cache-tmp'
 

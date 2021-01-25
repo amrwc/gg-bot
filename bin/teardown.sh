@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-MAIN_IMAGE='renameme'
+MAIN_IMAGE='ggbot'
 NETWORK="${MAIN_IMAGE}-network"
 DATABASE="${MAIN_IMAGE}-database"
 CACHE_VOLUME='gradle-cache'
