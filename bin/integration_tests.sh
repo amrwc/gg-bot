@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-MAIN_IMAGE='renameme'
+MAIN_IMAGE='ggbot'
 DATABASE="${MAIN_IMAGE}-test-database"
 DATABASE_IMAGE='postgres:latest'
 

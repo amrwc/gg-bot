@@ -1,4 +1,4 @@
-package me.rename.renameme;
+package dev.amrw.ggbot;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;

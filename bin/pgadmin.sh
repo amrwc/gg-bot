@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-MAIN_IMAGE='renameme'
+MAIN_IMAGE='ggbot'
 NETWORK="${MAIN_IMAGE}-network"
 PGADMIN_IMAGE='dpage/pgadmin4'
 CONTAINER_NAME='pgadmin'

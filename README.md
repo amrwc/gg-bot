@@ -1,19 +1,9 @@
-# Spring Boot Template
+# GG Bot
 
-[![Docker](https://github.com/amrwc/spring-boot-template/workflows/Docker/badge.svg)](https://github.com/amrwc/spring-boot-template/actions)
-[![Unit and Integration Tests](https://github.com/amrwc/spring-boot-template/workflows/Unit%20and%20Integration%20Tests/badge.svg)](https://github.com/amrwc/spring-boot-template/actions)
+[![Docker](https://github.com/amrwc/gg-bot/workflows/Docker/badge.svg)](https://github.com/amrwc/gg-bot/actions)
+[![Unit and Integration Tests](https://github.com/amrwc/gg-bot/workflows/Unit%20and%20Integration%20Tests/badge.svg)](https://github.com/amrwc/gg-bot/actions)
 
-In this template:
-
-- Spring Boot,
-- PostgreSQL,
-- Docker + Docker Compose,
-- GitHub workflows:
-  - pure Docker and Docker Compose setups,
-  - unit and integration tests of the Spring Boot application.
-
-This template has been bootstrapped using [this Spring Initializr
-configuration][spring_initializr].
+Discord bot to play games with.
 
 ## Setup
 
@@ -92,108 +82,10 @@ docker volume rm gradle-cache
 ./gradlew build && ./bin/integration_tests.sh
 ```
 
-## API
-
-### `/api/welcome`
-
-#### GET `[/<id>]`
-
-Returns a welcome message with the given ID.
-
-Path variables:
-
-- `id` – primary key of the `WELCOME_MESSAGES` table. Default: `1`
-
-##### Example
-
-```console
-# {"id":2,"content":"Foo"}
-curl http://localhost:8080/api/welcome/2
-```
-
-#### POST
-
-Stores a new welcome message in the database.
-
-Request body:
-
-- `content` – welcome message content.
-
-##### Example
-
-```console
-curl \
-    --request POST \
-    --header 'Content-Type: application/json' \
-    --data '{"content": "Bar"}' \
-    http://localhost:8080/api/welcome
-```
-
 ## Caveats
 
 - The `--suspend` option in `setup.sh` doesn't seem to work – something's wrong
   with the `8000` port when the application is suspended, and the debugger
   fails to connect.
 
-## White-label clean-up
-
-Places around the project that need renaming.
-
-<details>
-
-<summary>
-Click here to expand
-</summary>
-
-1. `.github/workflows/docker.yml`:
-   - `MAIN_IMAGE: 'renameme'`
-   - `url='http://localhost:8080/api/welcome/1'`
-1. `docker/docker-compose.yml`:
-   - `renameme-network:`
-   - `container_name: renameme-database`
-   - `- renameme-network`
-   - `renameme-service`
-   - `container_name: renameme`
-   - `image: renameme`
-   - `- ${GRADLE_IMAGE:-renameme-gradle_container}`
-   - `- ${MAIN_IMAGE:-renameme}`
-   - `- renameme-database`
-1. `docker/postgres-envars.list`:
-   - `POSTGRES_DB=renameme`
-1. `bin/pgadmin.sh`:
-   - `MAIN_IMAGE='renameme'`
-1. `bin/integration_tests.sh`:
-   - `MAIN_IMAGE='renameme'`
-1. `bin/setup.sh`:
-   - `MAIN_IMAGE='renameme'`
-1. `bin/start.sh`:
-   - `MAIN_IMAGE='renameme'`
-1. `bin/teardown.sh`:
-   - `MAIN_IMAGE='renameme'`
-1. Directory structure:
-   - `src/main/java/me/rename/renameme`
-   - `src/test/java/me/rename/renameme`
-1. `src/main/resources/application.yml`:
-   - `url: 'jdbc:postgresql://renameme-database:5432/renameme'`
-1. `src/main/resources/liquibase.properties`:
-   - `url=jdbc:postgresql://localhost:5432/renameme`
-1. `src/main/resourcees/log4j2.xml`:
-   - `fileName="log/renameme.log"`
-   - `filePattern="log/renameme-%d{yyyy-MM-dd}-%i.log.gz"`
-   - `<IfFileName glob="log/renameme-*.log.gz"/>`
-1. `src/test/resources/application.yml`:
-   - `url: 'jdbc:postgresql://127.0.0.1:5432/renameme'`
-1. `src/test/resources/log4j2.xml`:
-   - `fileName="log/test/renameme.log"`
-   - `filePattern="log/test/renameme-%d{yyyy-MM-dd}-%i.log.gz"`
-   - `<IfFileName glob="log/test/renameme-*.log.gz"/>`
-1. `build.gradle`:
-   - `group: 'me.rename'`
-1. `settings.gradle`:
-   - `rootProject.name = 'renameme'`
-
-</details>
-
-[spring_initializr]:
-  https://start.spring.io/#!type=gradle-project&language=java&platformVersion=2.4.2.RELEASE&packaging=jar&jvmVersion=11&groupId=me.rename&artifactId=renameme&name=renameme&description=&packageName=me.rename.renameme&dependencies=devtools,lombok,web,data-jpa,liquibase,postgresql,validation
 [db_migrations]: ./docs/database-migrations.md

@@ -1,7 +1,7 @@
 spring:
   datasource:
     # Use `localhost` instead of `*-database` when running a local PostgreSQL instance.
-    url: 'jdbc:postgresql://renameme-database:5432/renameme'
+    url: 'jdbc:postgresql://ggbot-database:5432/ggbot'
     username: 'postgres'
     password: 'password'
   liquibase:

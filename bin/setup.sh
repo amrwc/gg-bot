@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 CACHE_VOLUME='gradle-cache'
-MAIN_IMAGE='renameme'
+MAIN_IMAGE='ggbot'
 NETWORK="${MAIN_IMAGE}-network"
 DATABASE="${MAIN_IMAGE}-database"
 DATABASE_IMAGE='postgres:latest'

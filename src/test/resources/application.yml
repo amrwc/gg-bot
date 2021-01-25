@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: 'jdbc:postgresql://127.0.0.1:5432/renameme'
+    url: 'jdbc:postgresql://127.0.0.1:5432/ggbot'
     username: 'postgres'
     password: 'password'
   liquibase:

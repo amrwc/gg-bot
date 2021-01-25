@@ -1,4 +1,4 @@
-package me.rename.renameme;
+package dev.amrw.ggbot;
 
 /**
  * Marker class for tests.
