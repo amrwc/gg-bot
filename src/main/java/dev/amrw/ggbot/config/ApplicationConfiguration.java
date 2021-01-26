@@ -20,10 +20,10 @@ public class ApplicationConfiguration {
      * @return {@link DiscordConnector} instance
      */
     @Bean
-    @ConditionalOnResource(resources = BotConfigReader.BOT_CONFIG_PATH)
+    @ConditionalOnResource(resources = BotConfig.PATH)
     public DiscordConnector discordConnector() {
         final var objectMapper = new ObjectMapper(new YAMLFactory());
-        final var discordConnector = new DiscordConnector(new BotConfigReader(objectMapper), new DiscordApiBuilder());
+        final var discordConnector = new DiscordConnector(new ConfigReader(objectMapper), new DiscordApiBuilder());
         discordConnector.getApi().addListener(new PingPongListener());
         return discordConnector;
     }

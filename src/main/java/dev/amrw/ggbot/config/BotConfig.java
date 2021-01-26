@@ -8,5 +8,7 @@ import lombok.Data;
 @Data
 public class BotConfig {
 
+    public static final String PATH = "/bot-config.yml";
+
     public String authToken;
 }
