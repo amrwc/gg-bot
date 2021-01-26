@@ -3,6 +3,7 @@ package dev.amrw.ggbot.listener;
 import dev.amrw.ggbot.resource.BotConfig;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,8 +12,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class PingPongListener implements MessageCreateListener {
 
-    private final BotConfig botConfig;
+    private BotConfig botConfig;
 
+    private PingPongListener() {
+        // noop
+    }
+
+    @Autowired(required = false)
     public PingPongListener(final BotConfig botConfig) {
         this.botConfig = botConfig;
     }
