@@ -25,6 +25,10 @@
         </RollingFile>
     </Appenders>
     <Loggers>
+        <Logger name="org.javacord" level="DEBUG">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollBySizeAndTime"/>
+        </Logger>
         <Root level="INFO">
             <AppenderRef ref="ConsoleAppender"/>
             <AppenderRef ref="RollBySizeAndTime"/>
