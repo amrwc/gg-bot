@@ -1,4 +1,4 @@
-package dev.amrw.ggbot.config;
+package dev.amrw.ggbot.resource;
 
 import lombok.Data;
 
@@ -11,4 +11,5 @@ public class BotConfig {
     public static final String PATH = "/bot-config.yml";
 
     public String authToken;
+    public String trigger;
 }

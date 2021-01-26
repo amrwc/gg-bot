@@ -1,4 +1,4 @@
-package dev.amrw.ggbot.config;
+package dev.amrw.ggbot.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,13 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConfigReaderTest {
+class ResourceReaderTest {
 
     @Mock
     private ObjectMapper objectMapper;
     @Spy
     @InjectMocks
-    private ConfigReader reader;
+    private ResourceReader reader;
 
     private String configPath;
     @Mock
@@ -41,16 +41,16 @@ class ConfigReaderTest {
     @Test
     @DisplayName("Should have handled an IOException when reading the bot config resource")
     void shouldHaveHandledIOException() throws IOException {
-        when(reader.getResource(configPath)).thenReturn(botConfigStream);
+        when(reader.getResourceAsStream(configPath)).thenReturn(botConfigStream);
         when(objectMapper.readValue(botConfigStream, BotConfig.class)).thenThrow(new IOException());
-        assertThat(reader.getConfig(configPath, BotConfig.class)).isEqualTo(Optional.empty());
+        assertThat(reader.readResource(configPath, BotConfig.class)).isEqualTo(Optional.empty());
     }
 
     @Test
     @DisplayName("Should have gotten the bot config instance")
     void shouldHaveGottenBotConfig() throws IOException {
-        when(reader.getResource(configPath)).thenReturn(botConfigStream);
+        when(reader.getResourceAsStream(configPath)).thenReturn(botConfigStream);
         when(objectMapper.readValue(botConfigStream, BotConfig.class)).thenReturn(botConfig);
-        assertThat(reader.getConfig(configPath, BotConfig.class)).isEqualTo(Optional.of(botConfig));
+        assertThat(reader.readResource(configPath, BotConfig.class)).isEqualTo(Optional.of(botConfig));
     }
 }
