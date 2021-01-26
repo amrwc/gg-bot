@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * Config reader for the bot properties.
@@ -11,7 +13,7 @@ import java.io.IOException;
 @Log4j2
 public class BotConfigReader {
 
-    static final String BOT_CONFIG_PATH = "/bot-config.yml";
+    public static final String BOT_CONFIG_PATH = "/bot-config.yml";
 
     private final ObjectMapper objectMapper;
 
@@ -19,14 +21,17 @@ public class BotConfigReader {
         this.objectMapper = objectMapper;
     }
 
-    /** @return bot authentication token */
-    public String getAuthToken() {
+    /** @return {@link BotConfig} instance built from {@link #BOT_CONFIG_PATH} */
+    public Optional<BotConfig> getBotConfig() {
         try {
-            var configFile = BotConfigReader.class.getResourceAsStream(BOT_CONFIG_PATH);
-            return objectMapper.readValue(configFile, BotConfig.class).getAuthToken();
+            return Optional.of(objectMapper.readValue(readBotConfig(), BotConfig.class));
         } catch (final IOException exception) {
-            log.error("Failed to read value from {}", BOT_CONFIG_PATH);
-            return "";
+            log.error("Failed to read values from {}", BOT_CONFIG_PATH, exception);
+            return Optional.empty();
         }
+    }
+
+    protected InputStream readBotConfig() {
+        return BotConfigReader.class.getResourceAsStream(BOT_CONFIG_PATH);
     }
 }

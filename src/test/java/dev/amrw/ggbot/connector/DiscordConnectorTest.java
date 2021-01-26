@@ -1,5 +1,6 @@
 package dev.amrw.ggbot.connector;
 
+import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.config.BotConfigReader;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -12,25 +13,28 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DiscordConnectorTest {
 
     @Mock
-    private DiscordApiBuilder discordApiBuilder;
-    @Mock
     private BotConfigReader botConfigReader;
+    @Mock
+    private DiscordApiBuilder discordApiBuilder;
     @Mock
     private DiscordApi discordApi;
 
-    String authToken;
+    @Mock
+    private BotConfig botConfig;
+    private String authToken;
     @Mock
     private CompletableFuture<DiscordApi> discordApiCompletableFuture;
     @Captor
@@ -42,17 +46,30 @@ class DiscordConnectorTest {
     }
 
     @Test
+    @DisplayName("Should have thrown IllegalStateException when the BotConfig hasn't been present")
+    void shouldHaveThrownExceptionWhenBotConfigHasNotBeenPresent() {
+        when(botConfigReader.getBotConfig()).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> new DiscordConnector(botConfigReader, discordApiBuilder))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Could not load bot config");
+        verifyNoInteractions(discordApiBuilder);
+    }
+
+    @Test
     @DisplayName("Should have initialised Discord API")
     void shouldHaveInitialisedDiscordApi() {
-        when(botConfigReader.getAuthToken()).thenReturn(authToken);
+        when(botConfigReader.getBotConfig()).thenReturn(Optional.of(botConfig));
+        when(botConfig.getAuthToken()).thenReturn(authToken);
         when(discordApiBuilder.setToken(anyString())).thenReturn(discordApiBuilder);
         when(discordApiBuilder.login()).thenReturn(discordApiCompletableFuture);
         when(discordApiCompletableFuture.join()).thenReturn(discordApi);
 
-        final var connector = new DiscordConnector(discordApiBuilder, botConfigReader);
+        final var connector = new DiscordConnector(botConfigReader, discordApiBuilder);
 
         assertThat(connector.getApi()).isEqualTo(discordApi);
         verify(discordApiBuilder).setToken(stringCaptor.capture());
         assertThat(stringCaptor.getValue()).isEqualTo(authToken);
+        verify(discordApiBuilder).login();
+        verify(discordApiCompletableFuture).join();
     }
 }
