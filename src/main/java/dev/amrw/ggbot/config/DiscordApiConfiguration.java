@@ -27,6 +27,14 @@ public class DiscordApiConfiguration {
         this.listeners = listeners;
     }
 
+    /**
+     * NOTE: It <em>requires</em> a valid authentication token, which should come from the given {@link BotConfig}.
+     * Otherwise, if the token is invalid or not present, the <code>.login().join()</code> part will fail, and the bean
+     * will not get produced. Therefore, it's important to have this step done <em>after</em> {@link BotConfig} bean
+     * could have been produced.
+     * @param botConfig {@link BotConfig} produced from a config file
+     * @return {@link DiscordApi} bean
+     */
     @Bean
     public DiscordApi discordApi(final BotConfig botConfig) {
         log.info("Initialising connection with Discord");
