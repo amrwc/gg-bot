@@ -1,10 +1,12 @@
 #!/usr/bin/env sh
 
+DEBUG_PORT='8000'
+
 # shellcheck disable=SC2153
-[ 'true' = "$SUSPEND" ] && _suspend='y' || _suspend='n'
-[ 'true' = "$DEBUG" ] \
-    && _debug_arg="-agentlib:jdwp=transport=dt_socket,server=y,suspend=${_suspend},address=*:8000" \
-    || _debug_arg=''
+if [ 'true' = "$DEBUG" ] || [ 'true' = "$SUSPEND" ]; then
+    [ 'true' = "$SUSPEND" ] && suspend='y' || suspend='n'
+    debug_arg="-agentlib:jdwp=transport=dt_socket,server=y,suspend=${suspend},address=*:${DEBUG_PORT}"
+fi
 
 # shellcheck disable=SC2086
-java $_debug_arg -jar app.jar
+java $debug_arg -jar app.jar

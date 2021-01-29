@@ -10,29 +10,38 @@ LIQUIBASE_DIR='./tmp/liquibase'
 LIQUIBASE_PATH="${LIQUIBASE_DIR}/liquibase.jar"
 LIQUIBASE_ARCHIVE="${LIQUIBASE_DIR}/liquibase.tar.gz"
 
-NOFORMAT='\033[0m' RED='\033[0;31m' PURPLE='\033[0;35m'
+log() {
+    COLOUR_RESET='\033[0m'
+    PURPLE_BOLD='\033[1;35m'
+    echo "${PURPLE_BOLD}==> ${1} <==${COLOUR_RESET}"
+}
+
+error() {
+    COLOUR_RESET='\033[0m'
+    RED_BOLD='\033[1;31m'
+    echo "${RED_BOLD}==> ${1} <==${COLOUR_RESET}"
+    exit 1
+}
 
 if [ ! -f "$DRIVER_PATH" ]; then
-    echo "${PURPLE}Downloading database driver to ${DRIVER_PATH}${NOFORMAT}"
+    log "Downloading database driver to '${DRIVER_PATH}'"
     mkdir -p "$(dirname "$DRIVER_PATH")"
     curl --silent --output "${DRIVER_PATH}" "$DRIVER_URL"
     sha256="$(sha256sum "$DRIVER_PATH" | awk '{printf $1}')"
     if [ "$SHA256_DRIVER" != "$sha256" ]; then
-        echo "${RED}SHA256 checksum of '${DRIVER_PATH}' doesn't match ${SHA256_DRIVER}${NOFORMAT}"
-        exit 1
+        error "SHA256 checksum of '${DRIVER_PATH}' doesn't match '${SHA256_DRIVER}'"
     fi
 fi
 
 liquibase_cmd='liquibase'
 if ! $liquibase_cmd --version >/dev/null 2>&1; then
     if [ ! -f "$LIQUIBASE_PATH" ]; then
-        echo "${PURPLE}Downloading and extracting Liquibase to ${LIQUIBASE_PATH}${NOFORMAT}"
+        log "Downloading and extracting Liquibase to '${LIQUIBASE_PATH}'"
         mkdir -p "$LIQUIBASE_DIR"
         curl --silent --location --output "$LIQUIBASE_ARCHIVE" "$LIQUIBASE_URL"
         sha256="$(sha256sum "$LIQUIBASE_ARCHIVE" | awk '{printf $1}')"
         if [ "$SHA256_LIQUIBASE_ARCHIVE" != "$sha256" ]; then
-            echo "${RED}SHA256 checksum of '${LIQUIBASE_ARCHIVE}' doesn't match ${SHA256_LIQUIBASE_ARCHIVE}${NOFORMAT}"
-            exit 1
+            error "SHA256 checksum of '${LIQUIBASE_ARCHIVE}' doesn't match '${SHA256_LIQUIBASE_ARCHIVE}'"
         fi
         tar -C "$LIQUIBASE_DIR" -zxf "$LIQUIBASE_ARCHIVE" liquibase.jar
         rm "$LIQUIBASE_ARCHIVE"
