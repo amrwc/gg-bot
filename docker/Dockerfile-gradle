@@ -1,0 +1,11 @@
+FROM gradle:jdk11
+
+RUN mkdir -p /home/gradle/project/src/main
+COPY build.gradle /home/gradle/project
+COPY settings.gradle /home/gradle/project
+COPY src/main /home/gradle/project/src/main
+
+WORKDIR /home/gradle/project
+RUN chown gradle:gradle --recursive .
+
+USER gradle

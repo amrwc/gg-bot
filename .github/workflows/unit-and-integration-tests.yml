@@ -6,7 +6,7 @@ on:
       - '.github/workflows/unit-and-integration-tests.yml'
       - 'bin/apply_migrations.sh'
       - 'bin/integration_tests.sh'
-      - 'src/main/**.java'
+      - '**.java'
       - 'src/main/resources/application.yml'
       - 'src/main/resources/*.xml'
       - '*.gradle'
