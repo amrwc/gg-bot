@@ -7,6 +7,29 @@ Discord bot to play games with.
 
 ## Setup
 
+### Discord
+
+1. Create a new application on
+   [Discord Developer Portal](https://discord.com/developers/applications).
+  1. `Bot` settings.
+    1. Add a bot and customise it.
+    1. Save the authentication token.
+  1. `OAuth2` settings.
+    1. Add a redirect at `http://localhost:5000`.
+    1. Choose the newly added redirect URL in the `OAuth2 URL Generator`
+       section.
+    1. In `scopes` section, tick `bot`.
+    1. In `bot permissions` section, tick `Administrator`, or choose more
+       granular permissions.
+    1. Copy the invitation URL from the bottom of the `scopes` section and
+       navigate to it in the browser. Sign in to a relevant Discord account and
+       add the bot to a server.
+1. Create bot config.
+  1. Duplicate `bot-config.example.yml` inside `src/main/resources/` and call
+     it `bot-config.yml`.
+  1. Replace the example the authentication token in the config file with the
+     one generated on Discord Developer Portal.
+
 ### Migrations
 
 See the [Database Migrations][db_migrations] document.
