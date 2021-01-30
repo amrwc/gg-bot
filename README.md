@@ -5,6 +5,14 @@
 
 Discord bot to play games with.
 
+## Documentation
+
+The bot interacts with Discord using the [Javacord][javacord] library. The
+documentation can be found [here][javacord_docs].
+
+If the Javacord's documentation doesn't cover certain Discord-specific topics,
+documentation of [Discord.js][discordjs_docs] may have more information.
+
 ## Setup
 
 ### Discord
@@ -64,3 +72,6 @@ option has been used, the debugger is listening on port `8000`.
 ```
 
 [db_migrations]: ./docs/database-migrations.md
+[discordjs_docs]: https://discordjs.guide
+[javacord]: https://github.com/Javacord/Javacord
+[javacord_docs]: https://javacord.org/wiki
