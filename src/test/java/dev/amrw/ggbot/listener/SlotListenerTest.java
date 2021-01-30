@@ -103,7 +103,7 @@ class SlotListenerTest {
         when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(service.play(bet)).thenReturn(slotResult);
-        when(slotResult.getRoll()).thenReturn("💯💯💯");
+        when(slotResult.getPayline()).thenReturn("💯💯💯");
         when(event.getChannel()).thenReturn(channel);
 
         listener.onMessageCreate(event);

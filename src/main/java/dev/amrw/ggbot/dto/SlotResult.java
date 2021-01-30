@@ -14,7 +14,7 @@ public class SlotResult {
 
     private long bet;
     private long creditsWon;
-    private String roll;
+    private String payline;
 
     public long getNetProfit() {
         return this.creditsWon - this.bet;

@@ -121,9 +121,9 @@ public class SlotListener implements MessageCreateListener {
                 .addField("Result", "**------------------**\n" +
                         String.format(
                                 "**| %s | %s | %s |**\n",
-                                result.getRoll().substring(0, 2),
-                                result.getRoll().substring(2, 4),
-                                result.getRoll().substring(4)) +
+                                result.getPayline().substring(0, 2),
+                                result.getPayline().substring(2, 4),
+                                result.getPayline().substring(4)) +
                         "**------------------**\n" +
                         "**-- YOU " + (result.getNetProfit() > 0L ? "WON" : "LOST") + " --**")
                 .addField("Credits won", String.valueOf(result.getCreditsWon()));

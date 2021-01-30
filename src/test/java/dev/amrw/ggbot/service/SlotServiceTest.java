@@ -37,23 +37,27 @@ class SlotServiceTest {
 
     @ParameterizedTest
     @CsvSource({
+            "'❔🥇🥇', 50",
+            "'🥇❔🥇', 0",
+            "'🥇🥇❔', 50",
             "'🥇🥇🥇', 250",
+            "'❔💎💎', 200",
+            "'💎❔💎', 0",
+            "'💎💎❔', 200",
             "'💎💎💎', 300",
+            "'❔💯💯', 200",
+            "'💯❔💯', 0",
+            "'💯💯❔', 200",
             "'💯💯💯', 400",
+            "'❔💵💵', 350",
+            "'💵❔💵', 0",
+            "'💵💵❔', 350",
             "'💵💵💵', 700",
             "'💰💰💰', 1500",
-            "'🥇🥇❔', 50",
-            "'❔🥇🥇', 50",
-            "'💎💎❔', 200",
-            "'❔💎💎', 200",
-            "'💯💯❔', 200",
-            "'❔💯💯', 200",
-            "'💵💵❔', 350",
-            "'❔💵💵', 350",
             "'🥇💎💯', 0",
     })
     @DisplayName("Should have accurately calculated the winnings")
-    void shouldHaveCalculatedWinnings(final String roll, final long expectedResult) {
-        assertThat(service.calculateWinnings(100L, roll)).isEqualTo(expectedResult);
+    void shouldHaveCalculatedWinnings(final String payline, final long expectedResult) {
+        assertThat(service.calculateWinnings(100L, payline)).isEqualTo(expectedResult);
     }
 }
