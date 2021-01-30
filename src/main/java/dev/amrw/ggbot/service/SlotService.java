@@ -29,6 +29,7 @@ public class SlotService {
         PAYLINE_MULTIPLIERS.put("💵💵💵", 7);
         PAYLINE_MULTIPLIERS.put("💵💵", 3.5);
         PAYLINE_MULTIPLIERS.put("💰💰💰", 15);
+        PAYLINE_MULTIPLIERS.put("💰💰", 7);
     }
 
     private final SecureRandom random;
