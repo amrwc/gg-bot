@@ -1,6 +1,6 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.dto.SlotResult;
+import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.resource.BotConfig;
 import dev.amrw.ggbot.service.SlotService;
 import lombok.extern.log4j.Log4j2;
@@ -23,16 +23,19 @@ public class SlotListener implements MessageCreateListener {
     static final String KEYWORD = "slot";
 
     private final SlotService service;
+    private final SlotListenerHelper helper;
     private BotConfig botConfig;
 
     @Autowired(required = false)
-    private SlotListener(final SlotService service) {
+    private SlotListener(final SlotService service, final SlotListenerHelper helper) {
         this.service = service;
+        this.helper = helper;
     }
 
     @Autowired(required = false)
-    public SlotListener(final SlotService service, final BotConfig botConfig) {
+    public SlotListener(final SlotService service, final SlotListenerHelper helper, final BotConfig botConfig) {
         this.service = service;
+        this.helper = helper;
         this.botConfig = botConfig;
     }
 
@@ -55,7 +58,7 @@ public class SlotListener implements MessageCreateListener {
             return;
         }
 
-        displayResult(event, service.play(bet));
+        helper.displayResultSuspensefully(event, service.play(bet));
     }
 
     /**
@@ -112,21 +115,5 @@ public class SlotListener implements MessageCreateListener {
             ));
         }
         return bet;
-    }
-
-    private void displayResult(final MessageCreateEvent event, final SlotResult result) {
-        final var embedBuilder = new EmbedBuilder()
-                .setColor(Color.ORANGE)
-                .setTitle("Slot Machine")
-                .addField("Result", "**------------------**\n" +
-                        String.format(
-                                "**| %s | %s | %s |**\n",
-                                result.getPayline().substring(0, 2),
-                                result.getPayline().substring(2, 4),
-                                result.getPayline().substring(4)) +
-                        "**------------------**\n" +
-                        "**-- YOU " + (result.getNetProfit() > 0L ? "WON" : "LOST") + " --**")
-                .addField("Credits won", String.valueOf(result.getCreditsWon()));
-        event.getChannel().sendMessage(embedBuilder);
     }
 }

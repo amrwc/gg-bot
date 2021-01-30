@@ -1,6 +1,7 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.dto.SlotResult;
+import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.resource.BotConfig;
 import dev.amrw.ggbot.service.SlotService;
 import org.javacord.api.entity.channel.TextChannel;
@@ -32,6 +33,8 @@ class SlotListenerTest {
 
     @Mock
     private SlotService service;
+    @Mock
+    private SlotListenerHelper helper;
     @Mock
     private BotConfig botConfig;
     @InjectMocks
@@ -108,11 +111,9 @@ class SlotListenerTest {
         when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(service.play(bet)).thenReturn(slotResult);
-        when(slotResult.getPayline()).thenReturn("💯💯💯");
-        when(event.getChannel()).thenReturn(channel);
 
         listener.onMessageCreate(event);
 
-        verify(channel).sendMessage(any(EmbedBuilder.class));
+        verify(helper).displayResultSuspensefully(event, slotResult);
     }
 }
