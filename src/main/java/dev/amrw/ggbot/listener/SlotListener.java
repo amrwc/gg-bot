@@ -25,6 +25,7 @@ public class SlotListener implements MessageCreateListener {
     private final SlotService service;
     private BotConfig botConfig;
 
+    @Autowired(required = false)
     private SlotListener(final SlotService service) {
         this.service = service;
     }
