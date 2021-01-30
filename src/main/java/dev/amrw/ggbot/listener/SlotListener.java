@@ -105,8 +105,8 @@ public class SlotListener implements MessageCreateListener {
         }
         if (bet < 0) {
             event.getChannel().sendMessage(String.format(
-                    "@%s, '%s' is an invalid bet. You can view the instructions with `%s slot help`",
-                    event.getMessage().getAuthor().getDiscriminatedName(),
+                    "%s'%s' is an invalid bet. You can view the instructions with `%s slot help`",
+                    event.getMessage().getAuthor().asUser().map(u -> u.getMentionTag() + ", ").orElse(""),
                     betString,
                     botConfig.getTrigger()
             ));

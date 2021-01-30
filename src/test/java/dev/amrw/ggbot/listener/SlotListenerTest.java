@@ -7,6 +7,7 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
@@ -81,10 +84,12 @@ class SlotListenerTest {
     @DisplayName("Should have played a game of slots and displayed the result")
     void shouldNotHavePlayedWithInvalidBet(final String bet) {
         final var author = mock(MessageAuthor.class);
-        final var discriminatedName = randomAlphanumeric(16);
+        final var user = mock(User.class);
+        final var mentionTag = randomAlphanumeric(16);
         when(event.getMessage()).thenReturn(message);
         when(message.getAuthor()).thenReturn(author);
-        when(author.getDiscriminatedName()).thenReturn(discriminatedName);
+        when(author.asUser()).thenReturn(Optional.of(user));
+        when(user.getMentionTag()).thenReturn(mentionTag);
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(event.getChannel()).thenReturn(channel);
 
@@ -93,7 +98,7 @@ class SlotListenerTest {
         verifyNoInteractions(service);
         final var stringCaptor = ArgumentCaptor.forClass(String.class);
         verify(channel).sendMessage(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).contains(discriminatedName).contains("invalid bet");
+        assertThat(stringCaptor.getValue()).contains(mentionTag).contains("invalid bet");
     }
 
     @Test
