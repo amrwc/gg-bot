@@ -4,13 +4,15 @@ on:
   push:
     paths:
       - '.github/workflows/docker.yml'
-      - 'bin/apply_migrations.sh'
-      - 'bin/run.sh'
-      - 'bin/teardown.sh'
-      - 'docker/*'
+      - 'bin/**'
+      - '!bin/integration_tests.sh'
+      - '!bin/pgadmin.sh'
+      - 'docker/**'
       - 'src/main/**.java'
-      - '**application.yml'
-      - '*.gradle'
+      - 'src/main/resources/**'
+      - 'build.gradle'
+      - 'gradle.properties'
+      - 'settings.gradle'
 
 env:
   USE_CACHE: 'true'
@@ -24,32 +26,6 @@ env:
       echo "BUILD_IMAGE=${build_image}" >> $GITHUB_ENV
       echo "BUILD_CONTAINER_CACHE=${REGISTRY}/${GITHUB_REPOSITORY}/${build_image}" >> $GITHUB_ENV
       echo "MAIN_CONTAINER_CACHE=${REGISTRY}/${GITHUB_REPOSITORY}/${MAIN_IMAGE}" >> $GITHUB_ENV
-    fi
-
-  PULL_CACHE: |
-    docker pull "$BUILD_CONTAINER_CACHE" || echo "::warning::Failed to pull ${BUILD_CONTAINER_CACHE}"
-    docker pull "$MAIN_CONTAINER_CACHE" || echo "::warning::Failed to pull ${MAIN_CONTAINER_CACHE}"
-
-  TAG_PUSH: |
-    if docker tag "$BUILD_IMAGE" "$BUILD_CONTAINER_CACHE"; then
-      docker push "$BUILD_CONTAINER_CACHE" || echo "::warning::Failed to push ${BUILD_CONTAINER_CACHE}"
-    else
-      echo "::warning::Failed to tag ${BUILD_IMAGE}"
-    fi
-    if docker tag "$MAIN_IMAGE" "$MAIN_CONTAINER_CACHE"; then
-      docker push "$MAIN_CONTAINER_CACHE" || echo "::warning::Failed to push ${MAIN_CONTAINER_CACHE}"
-    else
-      echo "::warning::Failed to tag ${MAIN_IMAGE}"
-    fi
-
-  TEST_API: |
-    # Testing the API
-    sleep 15 # Wait for Tomcat to come up
-    url='http://localhost:8080/api/ready'
-    response_code="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
-    if [ 200 -ne "$response_code" ]; then
-      echo "::error::Expected 200 response code but received ${response_code} from ${url}"
-      exit 1
     fi
 
 jobs:
@@ -79,7 +55,9 @@ jobs:
 
       - name: Pull cached images
         if: ${{ 'true' == env.USE_CACHE }}
-        run: ${{ env.PULL_CACHE }}
+        run: |
+          docker pull "$BUILD_CONTAINER_CACHE" || echo "::warning::Failed to pull ${BUILD_CONTAINER_CACHE}"
+          docker pull "$MAIN_CONTAINER_CACHE" || echo "::warning::Failed to pull ${MAIN_CONTAINER_CACHE}"
 
       - name: Build and run the container
         run: |
@@ -91,10 +69,22 @@ jobs:
 
       - name: Tag and push the images
         if: ${{ 'true' == env.USE_CACHE }}
-        run: ${{ env.TAG_PUSH }}
+        run: |
+          if docker tag "$BUILD_IMAGE" "$BUILD_CONTAINER_CACHE"; then
+            docker push "$BUILD_CONTAINER_CACHE" || echo "::warning::Failed to push ${BUILD_CONTAINER_CACHE}"
+          else
+            echo "::warning::Failed to tag ${BUILD_IMAGE}"
+          fi
+          if docker tag "$MAIN_IMAGE" "$MAIN_CONTAINER_CACHE"; then
+            docker push "$MAIN_CONTAINER_CACHE" || echo "::warning::Failed to push ${MAIN_CONTAINER_CACHE}"
+          else
+            echo "::warning::Failed to tag ${MAIN_IMAGE}"
+          fi
 
       - name: Test the API
-        run: ${{ env.TEST_API }}
+        run: |
+          sleep 15 # Wait for Tomcat to come up
+          ./bin/test_api.sh
 
       - name: Teardown
         run: ./bin/teardown.sh --include-db

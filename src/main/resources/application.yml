@@ -12,3 +12,10 @@ spring:
       ddl-auto: 'none'
     # See: https://stackoverflow.com/a/48222934/10620237
     open-in-view: false
+
+management:
+  endpoints:
+    enabled-by-default: false
+  endpoint:
+    info:
+      enabled: true
