@@ -5,11 +5,12 @@ on:
     paths:
       - '.github/workflows/unit-and-integration-tests.yml'
       - 'bin/apply_migrations.sh'
+      - 'bin/database.sh'
       - 'bin/integration_tests.sh'
-      - '**.java'
-      - 'src/main/resources/application.yml'
-      - 'src/main/resources/*.xml'
-      - '*.gradle'
+      - 'src/*'
+      - 'build.gradle'
+      - 'gradle.properties'
+      - 'settings.gradle'
 
 env:
   GRADLE_CACHE: 'cache-gradle'
