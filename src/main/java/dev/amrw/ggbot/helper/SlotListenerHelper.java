@@ -22,17 +22,17 @@ public class SlotListenerHelper {
      * @param result {@link SlotResult}
      */
     public void displayResultSuspensefully(final MessageCreateEvent event, final SlotResult result) {
-        final var resultFormat = "**------------------**\n**| %s | %s | %s |**\n**------------------**";
+        final var paylineFormat = "**------------------**\n**| %s | %s | %s |**\n**------------------**";
         final var columns = new String[] {
                 result.getPayline().substring(0, 2),
                 result.getPayline().substring(2, 4),
                 result.getPayline().substring(4)
         };
-        var future = event.getChannel().sendMessage(getEmbedBuilder(String.format(resultFormat, "❔", "❔", "❔")));
+        var future = event.getChannel().sendMessage(getEmbedBuilder(String.format(paylineFormat, "❔", "❔", "❔")));
         final var edits = new EmbedBuilder[] {
-                getEmbedBuilder(String.format(resultFormat, columns[0], "❔", "❔")),
-                getEmbedBuilder(String.format(resultFormat, columns[0], columns[1], "❔")),
-                getEmbedBuilder(String.format(resultFormat + "\n**-- YOU %s --**",
+                getEmbedBuilder(String.format(paylineFormat, columns[0], "❔", "❔")),
+                getEmbedBuilder(String.format(paylineFormat, columns[0], columns[1], "❔")),
+                getEmbedBuilder(String.format(paylineFormat + "\n**-- YOU %s --**",
                         columns[0], columns[1], columns[2], result.getCreditsWon() > 0L ? "WON" : "LOST"))
                         .addField("Credits won", String.valueOf(result.getCreditsWon()))
         };
