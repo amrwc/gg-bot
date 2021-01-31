@@ -1,6 +1,12 @@
-.git*
-.gradle
-docker
-log
-*.md
-**/*.class
+# Ignore all
+*
+
+# Include directories
+!gradle
+!src
+
+# Include files
+!docker/entrypoint.sh
+!build.gradle
+!gradle.properties
+!settings.gradle
