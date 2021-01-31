@@ -7,7 +7,7 @@ on:
       - 'bin/apply_migrations.sh'
       - 'bin/database.sh'
       - 'bin/integration_tests.sh'
-      - 'src/*'
+      - 'src/**'
       - 'build.gradle'
       - 'gradle.properties'
       - 'settings.gradle'
