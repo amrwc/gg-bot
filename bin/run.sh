@@ -12,9 +12,7 @@ BUILD_IMAGE="${MAIN_IMAGE}-gradle-build"
 BUILD_CONTAINER="$BUILD_IMAGE"
 BUILD_COMMAND='gradle build --stacktrace --exclude-task test'
 
-DATABASE_IMAGE='postgres:latest'
 DATABASE_CONTAINER="${MAIN_IMAGE}-database"
-DATABASE_PORT='5432'
 
 log() {
     COLOUR_RESET='\033[0m'
@@ -32,7 +30,7 @@ error() {
 while [ "$#" -gt 0 ]; do
     case $1 in
     --apply-migrations)
-        _apply_migrations='true'
+        _apply_migrations='--apply-migrations'
         ;;
     --cache-from)
         shift
@@ -125,7 +123,7 @@ fi
 docker create $interactive \
     $publish_main \
     --name "$MAIN_CONTAINER" \
-    --network="$NETWORK" \
+    --network "$NETWORK" \
     "$MAIN_IMAGE"
 
 log "Copying JAR into '${MAIN_CONTAINER}'"
@@ -134,19 +132,7 @@ docker cp ./build/libs/app.jar "${MAIN_CONTAINER}:/home/project/app.jar"
 ##############################################################################
 ########################## Run the database image ############################
 ##############################################################################
-log "Running '${DATABASE_IMAGE}' container, name: ${DATABASE_CONTAINER}"
-docker run --detach \
-    --name "$DATABASE_CONTAINER" \
-    --publish "${DATABASE_PORT}:${DATABASE_PORT}" \
-    --network="$NETWORK" \
-    --env-file ./docker/postgres-envars.list \
-    "$DATABASE_IMAGE"
-
-if [ 'true' = "$_apply_migrations" ]; then
-    log 'Applying database migrations'
-    sleep 3 # Wait for the database to come up
-    ./bin/apply_migrations.sh
-fi
+./bin/database.sh $_apply_migrations --container-name "$DATABASE_CONTAINER" --network "$NETWORK"
 
 ##############################################################################
 ############################ Start the main image ############################

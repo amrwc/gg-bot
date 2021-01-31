@@ -1,11 +1,7 @@
 #!/usr/bin/env sh
 
 MAIN_IMAGE='ggbot'
-
-DATABASE="${MAIN_IMAGE}-test-database"
-DATABASE_IMAGE='postgres:latest'
-DATABASE_PORT='5432'
-
+DATABASE_CONTAINER="${MAIN_IMAGE}-test-database"
 TEMP_DIRECTORIES='.gradle build tmp'
 
 log() {
@@ -27,28 +23,19 @@ error() {
     exit 1
 }
 
-log "Running '${DATABASE_IMAGE}' container, name: ${DATABASE}"
-docker run --detach \
-    --publish "${DATABASE_PORT}:${DATABASE_PORT}" \
-    --env-file ./docker/postgres-envars.list \
-    --name "$DATABASE" \
-    "$DATABASE_IMAGE"
-
-log 'Applying database migrations'
-sleep 3 # Wait for the database to come up
-./bin/apply_migrations.sh
+./bin/database.sh --apply-migrations --container-name "$DATABASE_CONTAINER"
 
 log 'Running integration tests'
-if ! ./gradlew integrationTest; then
+if ! ./gradlew integrationTest --info; then
     tests_failed='true'
     warn 'One or more integration tests failed'
 fi
 
-log "Stopping '${DATABASE}' container"
-docker container stop "$DATABASE"
+log "Stopping '${DATABASE_CONTAINER}' container"
+docker container stop "$DATABASE_CONTAINER"
 
-log "Removing '${DATABASE}' container"
-docker container rm --volumes "$DATABASE"
+log "Removing '${DATABASE_CONTAINER}' container"
+docker container rm --volumes "$DATABASE_CONTAINER"
 
 for directory in $TEMP_DIRECTORIES; do
     log "Removing '${directory}' temp directory"
