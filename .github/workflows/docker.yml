@@ -85,14 +85,8 @@ jobs:
 
       - name: Test the API
         run: |
-          # Testing the API
           sleep 15 # Wait for Tomcat to come up
-          url='http://localhost:8080/api/ready'
-          response_code="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
-          if [ 200 -ne "$response_code" ]; then
-            echo "::error::Expected 200 response code but received ${response_code} from ${url}"
-            exit 1
-          fi
+          ./bin/test_api.sh
 
       - name: Teardown
         run: ./bin/teardown.sh --include-db
