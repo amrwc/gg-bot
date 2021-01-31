@@ -38,8 +38,8 @@ public class DiscordApiConfiguration {
     @Bean
     public DiscordApi discordApi(final BotConfig botConfig) {
         log.info("Initialising connection with Discord");
-        final var api = new DiscordApiBuilder().setToken(botConfig.getAuthToken()).login().join();
-        listeners.forEach(api::addListener);
-        return api;
+        final var apiBuilder = new DiscordApiBuilder().setToken(botConfig.getAuthToken());
+        listeners.forEach(apiBuilder::addListener);
+        return apiBuilder.login().join();
     }
 }
