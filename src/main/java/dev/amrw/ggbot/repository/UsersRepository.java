@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 @Repository
 @Transactional
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UsersRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByDiscordUserId(String discordUserId);
 }

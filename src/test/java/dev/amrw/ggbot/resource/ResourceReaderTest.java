@@ -47,8 +47,8 @@ class ResourceReaderTest {
     }
 
     @Test
-    @DisplayName("Should have gotten the bot config instance")
-    void shouldHaveGottenBotConfig() throws IOException {
+    @DisplayName("Should have got the bot config instance")
+    void shouldHaveGotBotConfig() throws IOException {
         when(reader.getResourceAsStream(configPath)).thenReturn(botConfigStream);
         when(objectMapper.readValue(botConfigStream, BotConfig.class)).thenReturn(botConfig);
         assertThat(reader.readResource(configPath, BotConfig.class)).isEqualTo(Optional.of(botConfig));

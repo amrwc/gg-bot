@@ -31,15 +31,14 @@ class PingPongListenerTest {
     private TextChannel channel;
 
     @Test
-    @DisplayName("Should not have handled a message that doesn't match the required pattern")
-    void shouldNotHaveHandledNotMatchingMessage() {
+    @DisplayName("Should not have handled a message with wrong prefix")
+    void shouldNotHaveHandledMessageWithWrongPrefix() {
         when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(randomAlphanumeric(16));
         when(botConfig.getTrigger()).thenReturn("");
 
         listener.onMessageCreate(event);
 
-        verify(message).getContent();
         verifyNoMoreInteractions(event, message);
     }
 
