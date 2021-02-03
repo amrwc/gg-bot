@@ -18,6 +18,7 @@ public class DailyListener implements MessageCreateListener {
     private final UserCreditsService userCreditsService;
     private BotConfig botConfig;
 
+    @Autowired(required = false)
     private DailyListener(final UserCreditsService userCreditsService) {
         this.userCreditsService = userCreditsService;
     }
