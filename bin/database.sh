@@ -52,5 +52,7 @@ docker run --detach \
 if [ 'true' = "$_apply_migrations" ]; then
     log 'Applying database migrations'
     sleep 3 # Wait for the database to come up
-    ./bin/apply_migrations.sh
+    if ! ./bin/apply_migrations.sh; then
+        error 'Database migration failed'
+    fi
 fi

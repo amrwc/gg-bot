@@ -132,7 +132,9 @@ docker cp ./build/libs/app.jar "${MAIN_CONTAINER}:/home/project/app.jar"
 ##############################################################################
 ########################## Run the database image ############################
 ##############################################################################
-./bin/database.sh $_apply_migrations --container-name "$DATABASE_CONTAINER" --network "$NETWORK"
+if ! ./bin/database.sh $_apply_migrations --container-name "$DATABASE_CONTAINER" --network "$NETWORK"; then
+    error 'Database startup failed'
+fi
 
 ##############################################################################
 ############################ Start the main image ############################
