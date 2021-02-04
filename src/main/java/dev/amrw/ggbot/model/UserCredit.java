@@ -27,6 +27,7 @@ public class UserCredit {
     @Column(name = "ID", unique = true, nullable = false, insertable = false, updatable = false)
     private UUID id;
 
+    @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "USER_ID", referencedColumnName = "ID")
     private User user;
@@ -34,7 +35,7 @@ public class UserCredit {
     @NotNull
     @PositiveOrZero
     @Column(name = "CREDITS", nullable = false)
-    private Long credits;
+    private Long credits = 0L;
 
     /** When the daily credits were successfully claimed last time. */
     @Column(name = "LAST_DAILY")

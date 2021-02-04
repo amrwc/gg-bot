@@ -45,7 +45,6 @@ public class UserCreditsService {
             log.debug("Creating new UserCredit: user={}", user.toString());
             final var newUserCredit = new UserCredit();
             newUserCredit.setUser(user);
-            newUserCredit.setCredits(0L);
             return userCreditsRepository.save(newUserCredit);
         });
     }
