@@ -8,10 +8,6 @@ import org.javacord.api.entity.message.MessageAuthor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.Optional;
 
 /**
  * Service for managing user credits.
@@ -61,31 +57,5 @@ public class UserCreditsService {
      */
     public Long getCurrentBalance(final MessageAuthor messageAuthor) {
         return getOrCreateUserCredit(messageAuthor).getCredits();
-    }
-
-    /**
-     * Adds credit to the user's account if they claim it after the configured time has elapsed.
-     * @param messageAuthor Discord-native user ID
-     * @param newCredits amount of credits to claim
-     * @return whether the credits have been applied
-     */
-    @Transactional
-    public boolean claimDailyCredits(final MessageAuthor messageAuthor, final Long newCredits) {
-        final var user = usersService.getOrCreateUser(messageAuthor);
-        return Optional.ofNullable(user.getUserCredit()).map(userCredit -> {
-            final var cooldownStart = Date.from(Instant.now().minus(30L, ChronoUnit.SECONDS));
-            if (userCredit.getLastDaily().after(cooldownStart)) {
-                return false;
-            }
-            userCredit.setCredits(newCredits + userCredit.getCredits());
-            userCredit.setLastDaily(new Date());
-            return true;
-        }).orElseGet(() -> {
-            final var userCredit = getOrCreateUserCredit(user);
-            userCredit.setCredits(newCredits);
-            userCredit.setLastDaily(new Date());
-            user.setUserCredit(userCredit);
-            return true;
-        });
     }
 }

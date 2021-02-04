@@ -1,5 +1,6 @@
 package dev.amrw.ggbot.model;
 
+import dev.amrw.ggbot.service.DailyService;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -41,14 +42,19 @@ public class UserCredit {
     private Date lastDaily;
 
     /** @return duration until new daily credits can be claimed */
-    public Duration getDurationUntilNextDaily() {
-        final var elapsed = Duration.between(lastDaily.toInstant(), Instant.now());
-        final var remainingDuration = Duration.ofHours(24L).minus(elapsed);
+    public Duration getRemainingDailyCooldown() {
+        final var elapsed = Duration.between(this.lastDaily.toInstant(), Instant.now());
+        final var remainingDuration = DailyService.DEFAULT_COOLDOWN.minus(elapsed);
         return remainingDuration.isNegative() ? Duration.ZERO : remainingDuration;
+    }
+
+    /** @return whether the user's daily cooldown has elapsed */
+    public boolean canClaimDailyCredits() {
+        return Duration.ZERO.equals(this.getRemainingDailyCooldown());
     }
 
     /** @return time left until new daily credits can be claimed in <code>HH:mm:ss</code> format */
     public String getTimeLeftUntilNextDaily() {
-        return DurationFormatUtils.formatDuration(getDurationUntilNextDaily().toMillis(), "HH:mm:ss", true);
+        return DurationFormatUtils.formatDuration(this.getRemainingDailyCooldown().toMillis(), "HH:mm:ss", true);
     }
 }

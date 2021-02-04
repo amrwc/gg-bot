@@ -28,9 +28,21 @@ public class UserCreditTest {
             "25, 0",
     })
     @DisplayName("Should have got duration until new daily credits can be claimed")
-    void shouldHaveGotDurationUntilNextDaily(final long elapsed, final long left) {
-        userCredit.setLastDaily(Date.from(Instant.now().minus(elapsed, ChronoUnit.HOURS)));
-        assertThat(userCredit.getDurationUntilNextDaily()).isLessThanOrEqualTo(Duration.ofHours(left));
+    void shouldHaveGotDurationUntilNextDaily(final long hoursElapsed, final long left) {
+        setLastDailyHoursAgo(hoursElapsed);
+        assertThat(userCredit.getRemainingDailyCooldown()).isLessThanOrEqualTo(Duration.ofHours(left));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "4, false",
+            "19, false",
+            "25, true",
+    })
+    @DisplayName("Should have determined whether the user can already claim new daily credits")
+    void shouldHaveDeterminedWhetherCanClaimDailyCredits(final long hoursElapsed, final boolean expectedResult) {
+        setLastDailyHoursAgo(hoursElapsed);
+        assertThat(userCredit.canClaimDailyCredits()).isEqualTo(expectedResult);
     }
 
     @ParameterizedTest
@@ -40,9 +52,14 @@ public class UserCreditTest {
             "25, '00:00:'",
     })
     @DisplayName("Should have got time left until new daily credits can be claimed")
-    void shouldHaveGotTimeLeftUntilNextDaily(final long elapsed, final String timeLeftPrefix) {
-        userCredit.setLastDaily(Date.from(Instant.now().minus(elapsed, ChronoUnit.HOURS)));
+    void shouldHaveGotTimeLeftUntilNextDaily(final long hoursElapsed, final String timeLeftPrefix) {
+        setLastDailyHoursAgo(hoursElapsed);
         assertThat(userCredit.getTimeLeftUntilNextDaily()).contains(timeLeftPrefix);
+        // This test has this peculiar form to compensate for the time elapsed during runtime.
         assertThat(userCredit.getTimeLeftUntilNextDaily()).matches(timeLeftPrefix + "\\d\\d");
+    }
+
+    private void setLastDailyHoursAgo(final long hoursElapsed) {
+        userCredit.setLastDaily(Date.from(Instant.now().minus(hoursElapsed, ChronoUnit.HOURS)));
     }
 }

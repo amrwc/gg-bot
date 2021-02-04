@@ -2,6 +2,7 @@ package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.model.UserCredit;
 import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.service.DailyService;
 import dev.amrw.ggbot.service.UserCreditsService;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
@@ -28,6 +29,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DailyListenerTest {
 
+    @Mock
+    private DailyService dailyService;
     @Mock
     private UserCreditsService userCreditsService;
     @Mock
@@ -65,9 +68,9 @@ class DailyListenerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
+    @ValueSource(longs = {0L, 2_500L})
     @DisplayName("Should have claimed daily credits and notified the channel")
-    void shouldHaveClaimedDailyCreditsAndNotifiedChannel(final boolean claimedDailyCredits) {
+    void shouldHaveClaimedDailyCreditsAndNotifiedChannel(final long claimedCredits) {
         final var mentionTag = randomAlphanumeric(16);
         final var credits = nextLong();
         when(message.getContent()).thenReturn("!gg daily");
@@ -75,7 +78,7 @@ class DailyListenerTest {
         when(message.getAuthor()).thenReturn(messageAuthor);
         when(messageAuthor.asUser()).thenReturn(Optional.of(user));
         when(user.getMentionTag()).thenReturn(mentionTag);
-        when(userCreditsService.claimDailyCredits(messageAuthor, 2_500L)).thenReturn(claimedDailyCredits);
+        when(dailyService.claimDailyCredits(messageAuthor)).thenReturn(claimedCredits);
         when(userCreditsService.getOrCreateUserCredit(messageAuthor)).thenReturn(userCredit);
         when(userCredit.getCredits()).thenReturn(credits);
         when(event.getChannel()).thenReturn(channel);

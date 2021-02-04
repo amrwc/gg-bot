@@ -1,6 +1,7 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.service.DailyService;
 import dev.amrw.ggbot.service.UserCreditsService;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
@@ -19,16 +20,23 @@ public class DailyListener implements MessageCreateListener {
 
     static final String KEYWORD = "daily";
 
+    private final DailyService dailyService;
     private final UserCreditsService userCreditsService;
     private BotConfig botConfig;
 
     @Autowired(required = false)
-    private DailyListener(final UserCreditsService userCreditsService) {
+    private DailyListener(final DailyService dailyService, final UserCreditsService userCreditsService) {
+        this.dailyService = dailyService;
         this.userCreditsService = userCreditsService;
     }
 
     @Autowired(required = false)
-    public DailyListener(final UserCreditsService userCreditsService, final BotConfig botConfig) {
+    public DailyListener(
+            final DailyService dailyService,
+            final UserCreditsService userCreditsService,
+            final BotConfig botConfig
+    ) {
+        this.dailyService = dailyService;
         this.userCreditsService = userCreditsService;
         this.botConfig = botConfig;
     }
@@ -46,17 +54,17 @@ public class DailyListener implements MessageCreateListener {
                 .setTitle("Daily Credits")
                 .addField("User",
                         messageAuthor.asUser().map(User::getMentionTag).orElseGet(messageAuthor::getDisplayName));
-        final var claimedDailyCredits = userCreditsService.claimDailyCredits(messageAuthor, 2_500L);
+        final var claimedCredits = dailyService.claimDailyCredits(messageAuthor);
         final var userCredit = userCreditsService.getOrCreateUserCredit(messageAuthor);
-        if (claimedDailyCredits) {
+        if (claimedCredits > 0L) {
             embedBuilder
                     .setColor(Color.ORANGE)
-                    .addField("New credits", "" + 2_500);
+                    .addField("New credits", "" + claimedCredits);
         } else {
             embedBuilder
                     .setColor(Color.RED)
-                    .addField("Error", "_You have already collected your daily credits_")
-                    .addField("Next daily", userCredit.getTimeLeftUntilNextDaily());
+                    .addField("Error", "_You have already collected your daily credits today_")
+                    .addField("Next daily in", userCredit.getTimeLeftUntilNextDaily());
         }
         embedBuilder.addField("Current balance", "" + userCredit.getCredits());
         event.getChannel().sendMessage(embedBuilder);

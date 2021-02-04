@@ -29,28 +29,17 @@ error() {
 
 while [ "$#" -gt 0 ]; do
     case $1 in
-    --apply-migrations)
-        _apply_migrations='--apply-migrations'
-        ;;
+    --apply-migrations) _apply_migrations='--apply-migrations' ;;
     --cache-from)
         shift
         _cache_from="${_cache_from} --cache-from=${1}"
         ;;
-    --debug)
-        _debug='debug=true'
-        ;;
-    --detach)
-        _detach='true'
-        ;;
-    --no-cache)
-        _no_cache='--no-cache'
-        ;;
-    --suspend)
-        _suspend='suspend=true'
-        ;;
-    *)
-        error "Unknown option: '${1}'"
-        ;;
+    --debug) _debug='debug=true' ;;
+    --detach) _detach='true' ;;
+    --no-cache) _no_cache='--no-cache' ;;
+    --start-db) _start_db='true' ;;
+    --suspend) _suspend='suspend=true' ;;
+    *) error "Unknown option: '${1}'" ;;
     esac
     shift
 done
@@ -92,8 +81,8 @@ docker run $interactive \
 log "Copying JAR from '${BUILD_CONTAINER}'"
 rm -r ./build/libs >/dev/null 2>&1
 mkdir -p ./build/libs
-docker cp "${BUILD_CONTAINER}:/home/gradle/project/build/libs" ./build \
-    || error "Failed to copy JAR out ${BUILD_CONTAINER}"
+docker cp "${BUILD_CONTAINER}:/home/gradle/project/build/libs" ./build ||
+    error "Failed to copy JAR out ${BUILD_CONTAINER}"
 mv ./build/libs/*.jar ./build/libs/app.jar
 
 ##############################################################################
@@ -132,8 +121,9 @@ docker cp ./build/libs/app.jar "${MAIN_CONTAINER}:/home/project/app.jar"
 ##############################################################################
 ########################## Run the database image ############################
 ##############################################################################
-if ! ./bin/database.sh $_apply_migrations --container-name "$DATABASE_CONTAINER" --network "$NETWORK"; then
-    error 'Database startup failed'
+if [ 'true' = "$_start_db" ]; then
+    ./bin/database.sh $_apply_migrations --container-name "$DATABASE_CONTAINER" --network "$NETWORK" ||
+        error 'Database startup failed'
 fi
 
 ##############################################################################
