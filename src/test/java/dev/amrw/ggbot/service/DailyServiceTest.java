@@ -10,8 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Date;
 
 import static org.apache.commons.lang3.RandomUtils.nextLong;
@@ -53,10 +51,9 @@ class DailyServiceTest {
     @Test
     @DisplayName("An existing user should not have claimed credits before the configured time has elapsed")
     void existingUserShouldNotHaveClaimedCredits() {
-        final var lastDaily = Date.from(Instant.now().minus(DailyService.DEFAULT_COOLDOWN).plus(Duration.ofHours(1L)));
         when(usersService.getOrCreateUser(messageAuthor)).thenReturn(user);
         when(user.getUserCredit()).thenReturn(userCredit);
-        when(userCredit.getLastDaily()).thenReturn(lastDaily);
+        when(userCredit.canClaimDailyCredits()).thenReturn(false);
 
         assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(0L);
 
@@ -66,11 +63,10 @@ class DailyServiceTest {
     @Test
     @DisplayName("An existing user should have claimed daily credits")
     void existingUserShouldHaveClaimedCredits() {
-        final var lastDaily = Date.from(Instant.now().minus(DailyService.DEFAULT_COOLDOWN));
         final var currentCredits = nextLong(0, Integer.MAX_VALUE);
         when(usersService.getOrCreateUser(messageAuthor)).thenReturn(user);
         when(user.getUserCredit()).thenReturn(userCredit);
-        when(userCredit.getLastDaily()).thenReturn(lastDaily);
+        when(userCredit.canClaimDailyCredits()).thenReturn(true);
         when(userCredit.getCredits()).thenReturn(currentCredits);
 
         assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(DailyService.DEFAULT_DAILY_CREDITS);
