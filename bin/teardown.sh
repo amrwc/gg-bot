@@ -33,6 +33,9 @@ while [ "$#" -gt 0 ]; do
     --include-db)
         _include_db='true'
         ;;
+    --include-tmp)
+        _include_tmp='true'
+        ;;
     *)
         error "Unknown option: '${1}'"
         ;;
@@ -72,7 +75,9 @@ if [ 'true' = "$_include_cache" ]; then
     docker volume rm "$CACHE_VOLUME"
 fi
 
-for directory in $TEMP_DIRECTORIES; do
-    log "Removing '${directory}' temp directory"
-    rm -rf "$directory"
-done
+if [ 'true' = "$_include_tmp" ]; then
+    for directory in $TEMP_DIRECTORIES; do
+        log "Removing '${directory}' temp directory"
+        rm -rf "$directory"
+    done
+fi

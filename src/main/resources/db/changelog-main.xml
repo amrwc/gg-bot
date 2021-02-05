@@ -4,5 +4,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd"
 >
-
+    <include relativeToChangelogFile="true" file="changelog/20210202-01--create-uuid-ossp-extension.sql"/>
+    <include relativeToChangelogFile="true" file="changelog/20210202-02--create-users-table.sql"/>
+    <include relativeToChangelogFile="true" file="changelog/20210202-03--create-user_credits-table.sql"/>
 </databaseChangeLog>

@@ -35,6 +35,7 @@ class SlotListenerHelperTest {
     private CompletableFuture<Message> future;
 
     @Test
+    @SuppressWarnings("unchecked") // For `BiConsumer.class`
     @DisplayName("Should have suspensefully displayed the result message")
     void shouldHaveDisplayedResultSuspensefully() {
         when(slotResult.getPayline()).thenReturn("💯💯💯");
