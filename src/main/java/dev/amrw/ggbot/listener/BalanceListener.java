@@ -1,6 +1,8 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.service.UserCreditsService;
+import dev.amrw.ggbot.util.MessageAuthorUtil;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -10,21 +12,24 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 
 /**
- * Listener that lists available games.
+ * Listener that displays the user's credit balance.
  */
 @Component
-public class GamesListener implements MessageCreateListener {
+public class BalanceListener implements MessageCreateListener {
 
-    static final String KEYWORD = "games";
+    static final String KEYWORD = "balance";
 
+    private final UserCreditsService userCreditsService;
     private BotConfig botConfig;
 
-    private GamesListener() {
-        // noop
+    @Autowired(required = false)
+    private BalanceListener(final UserCreditsService userCreditsService) {
+        this.userCreditsService = userCreditsService;
     }
 
     @Autowired(required = false)
-    public GamesListener(final BotConfig botConfig) {
+    public BalanceListener(final UserCreditsService userCreditsService, final BotConfig botConfig) {
+        this.userCreditsService = userCreditsService;
         this.botConfig = botConfig;
     }
 
@@ -36,10 +41,13 @@ public class GamesListener implements MessageCreateListener {
             return;
         }
 
+        final var messageAuthor = event.getMessage().getAuthor();
+        final var userCredit = userCreditsService.getOrCreateUserCredit(messageAuthor);
         final var embedBuilder = new EmbedBuilder()
                 .setColor(Color.ORANGE)
-                .setTitle("Currently available games")
-                .setDescription("- Slot Machine (`slot`)");
+                .setTitle("Credit Balance")
+                .addField("User", MessageAuthorUtil.getMentionTagOrDisplayName(messageAuthor))
+                .addField("Current balance", "" + userCredit.getCredits());
         event.getChannel().sendMessage(embedBuilder);
     }
 }

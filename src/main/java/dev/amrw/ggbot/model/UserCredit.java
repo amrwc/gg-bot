@@ -28,7 +28,7 @@ public class UserCredit {
     private UUID id;
 
     @NotNull
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID", referencedColumnName = "ID")
     private User user;
 
@@ -44,6 +44,9 @@ public class UserCredit {
 
     /** @return duration until new daily credits can be claimed */
     public Duration getRemainingDailyCooldown() {
+        if (null == lastDaily) {
+            return Duration.ZERO;
+        }
         final var elapsed = Duration.between(this.lastDaily.toInstant(), Instant.now());
         final var remainingDuration = DailyService.DEFAULT_COOLDOWN.minus(elapsed);
         return remainingDuration.isNegative() ? Duration.ZERO : remainingDuration;

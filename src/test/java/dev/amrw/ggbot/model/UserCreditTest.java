@@ -2,6 +2,7 @@ package dev.amrw.ggbot.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -19,6 +20,13 @@ public class UserCreditTest {
     @BeforeEach
     void beforeEach() {
         userCredit = new UserCredit();
+    }
+
+    @Test
+    @DisplayName("Should have got Duration.ZERO when the `lastDaily` field is null")
+    void shouldHaveGotDurationZero() {
+        userCredit.setLastDaily(null);
+        assertThat(userCredit.getRemainingDailyCooldown()).isEqualTo(Duration.ZERO);
     }
 
     @ParameterizedTest
