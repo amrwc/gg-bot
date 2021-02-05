@@ -65,7 +65,7 @@ jobs:
             cache_from="--cache-from ${BUILD_CONTAINER_CACHE} --cache-from ${MAIN_CONTAINER_CACHE}"
           fi
           # shellcheck disable=SC2086
-          ./bin/run.sh --apply-migrations --detach $cache_from
+          ./bin/run.sh --start-db --apply-migrations --detach $cache_from
 
       - name: Tag and push the images
         if: ${{ 'true' == env.USE_CACHE }}

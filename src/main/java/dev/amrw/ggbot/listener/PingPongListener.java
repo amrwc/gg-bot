@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class PingPongListener implements MessageCreateListener {
 
+    static final String KEYWORD = "ping";
+
     private BotConfig botConfig;
 
     private PingPongListener() {
@@ -25,7 +27,9 @@ public class PingPongListener implements MessageCreateListener {
 
     @Override
     public void onMessageCreate(final MessageCreateEvent event) {
-        if (!event.getMessage().getContent().equalsIgnoreCase(botConfig.getTrigger() + " ping")) {
+        final var messageContent = event.getMessage().getContent().toLowerCase();
+        final var prefix = (botConfig.getTrigger() + " " + KEYWORD).toLowerCase();
+        if (!messageContent.startsWith(prefix)) {
             return;
         }
         event.getMessage().addReaction("🏓");

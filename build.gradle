@@ -68,3 +68,10 @@ task integrationTest(type: Test) {
         includeTags 'integration-test'
     }
 }
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        // Display `unchecked` warnings
+        options.compilerArgs << '-Xlint:unchecked'
+    }
+}

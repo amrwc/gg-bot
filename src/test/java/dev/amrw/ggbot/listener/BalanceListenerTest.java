@@ -1,8 +1,12 @@
 package dev.amrw.ggbot.listener;
 
+import dev.amrw.ggbot.model.UserCredit;
 import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.service.UserCreditsService;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,12 +21,14 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PingPongListenerTest {
+class BalanceListenerTest {
 
+    @Mock
+    private UserCreditsService userCreditsService;
     @Mock
     private BotConfig botConfig;
     @InjectMocks
-    private PingPongListener listener;
+    private BalanceListener listener;
 
     @Mock
     private MessageCreateEvent event;
@@ -30,12 +36,16 @@ class PingPongListenerTest {
     private Message message;
     private String prefix;
     @Mock
+    private MessageAuthor messageAuthor;
+    @Mock
+    private UserCredit userCredit;
+    @Mock
     private TextChannel channel;
 
     @BeforeEach
     void beforeEach() {
         final var trigger = randomAlphabetic(3);
-        prefix = trigger + " " + PingPongListener.KEYWORD;
+        prefix = trigger + " " + BalanceListener.KEYWORD;
         when(event.getMessage()).thenReturn(message);
         when(botConfig.getTrigger()).thenReturn(trigger);
     }
@@ -49,12 +59,15 @@ class PingPongListenerTest {
     }
 
     @Test
-    @DisplayName("Should have handled a message with correct trigger and pattern")
-    void shouldHaveHandledMessage() {
+    @DisplayName("Should have displayed the user's credit balance")
+    void shouldHaveDisplayedCreditBalance() {
         when(message.getContent()).thenReturn(prefix);
         when(event.getChannel()).thenReturn(channel);
+        when(message.getAuthor()).thenReturn(messageAuthor);
+        when(userCreditsService.getOrCreateUserCredit(messageAuthor)).thenReturn(userCredit);
+
         listener.onMessageCreate(event);
-        verify(message).addReaction("🏓");
-        verify(channel).sendMessage("pong!");
+
+        verify(channel).sendMessage(any(EmbedBuilder.class));
     }
 }

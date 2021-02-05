@@ -54,18 +54,15 @@ class SlotListenerTest {
     void beforeEach() {
         final var trigger = randomAlphabetic(3);
         prefix = trigger + " " + SlotListener.KEYWORD;
+        when(event.getMessage()).thenReturn(message);
         when(botConfig.getTrigger()).thenReturn(trigger);
     }
 
     @Test
     @DisplayName("Should not have handled a message with wrong prefix")
     void shouldNotHaveHandledMessageWithWrongPrefix() {
-        when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(randomAlphanumeric(16));
-
         listener.onMessageCreate(event);
-
-        verify(message).getContent();
         verifyNoMoreInteractions(event, message);
     }
 
@@ -73,12 +70,9 @@ class SlotListenerTest {
     @ValueSource(strings = {"", " help"})
     @DisplayName("Should have sent help message")
     void shouldHaveSentHelpMessage(final String messageContent) {
-        when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(prefix + messageContent);
         when(event.getChannel()).thenReturn(channel);
-
         listener.onMessageCreate(event);
-
         verify(channel).sendMessage(any(EmbedBuilder.class));
     }
 
@@ -86,12 +80,11 @@ class SlotListenerTest {
     @ValueSource(strings = {"-1", "-123", "abcd", "💯💯💯"})
     @DisplayName("Should have played a game of slots and displayed the result")
     void shouldNotHavePlayedWithInvalidBet(final String bet) {
-        final var author = mock(MessageAuthor.class);
+        final var messageAuthor = mock(MessageAuthor.class);
         final var user = mock(User.class);
         final var mentionTag = randomAlphanumeric(16);
-        when(event.getMessage()).thenReturn(message);
-        when(message.getAuthor()).thenReturn(author);
-        when(author.asUser()).thenReturn(Optional.of(user));
+        when(message.getAuthor()).thenReturn(messageAuthor);
+        when(messageAuthor.asUser()).thenReturn(Optional.of(user));
         when(user.getMentionTag()).thenReturn(mentionTag);
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(event.getChannel()).thenReturn(channel);
@@ -108,12 +101,9 @@ class SlotListenerTest {
     @DisplayName("Should have played a game of slots and displayed the result")
     void shouldHavePlayedAndDisplayedResult() {
         final var bet = 100L;
-        when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(service.play(bet)).thenReturn(slotResult);
-
         listener.onMessageCreate(event);
-
         verify(helper).displayResultSuspensefully(event, slotResult);
     }
 }
