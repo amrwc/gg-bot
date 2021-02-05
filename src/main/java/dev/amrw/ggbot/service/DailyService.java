@@ -28,7 +28,7 @@ public class DailyService {
     /**
      * Adds credit to the user's account if they claim it after the configured time has elapsed.
      * @param messageAuthor author of the Discord message
-     * @return number of credits that have been added
+     * @return number of credits that have been added; <code>0L</code> if the user cannot yet claim the daily credits
      */
     @Transactional
     public long claimDailyCredits(final MessageAuthor messageAuthor) {

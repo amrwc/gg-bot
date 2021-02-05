@@ -34,7 +34,7 @@ class ResourceReaderTest {
     private BotConfig botConfig;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         configPath = randomAlphanumeric(16);
     }
 

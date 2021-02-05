@@ -34,7 +34,7 @@ class UsersServiceTest {
     private String discordUserId;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         discordUserId = randomAlphanumeric(16);
         when(messageAuthor.getIdAsString()).thenReturn(discordUserId);
     }

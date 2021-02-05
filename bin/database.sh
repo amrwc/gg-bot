@@ -18,9 +18,7 @@ error() {
 
 while [ "$#" -gt 0 ]; do
     case $1 in
-    --apply-migrations)
-        _apply_migrations='true'
-        ;;
+    --apply-migrations) _apply_migrations='true' ;;
     --container-name)
         shift
         _container_name="$1"
@@ -29,9 +27,7 @@ while [ "$#" -gt 0 ]; do
         shift
         _network="--network ${1}"
         ;;
-    *)
-        error "Unknown option: '${1}'"
-        ;;
+    *) error "Unknown option: '${1}'" ;;
     esac
     shift
 done
@@ -52,7 +48,5 @@ docker run --detach \
 if [ 'true' = "$_apply_migrations" ]; then
     log 'Applying database migrations'
     sleep 3 # Wait for the database to come up
-    if ! ./bin/apply_migrations.sh; then
-        error 'Database migration failed'
-    fi
+    ./bin/apply_migrations.sh || error 'Database migration failed'
 fi

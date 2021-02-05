@@ -41,7 +41,7 @@ class DailyServiceTest {
         when(user.getUserCredit()).thenReturn(null);
         when(userCreditsService.getOrCreateUserCredit(user)).thenReturn(userCredit);
 
-        assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(2_500L);
+        assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(DailyService.DEFAULT_DAILY_CREDITS);
 
         verify(userCredit).setCredits(DailyService.DEFAULT_DAILY_CREDITS);
         verify(userCredit).setLastDaily(any(Date.class));
