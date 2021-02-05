@@ -49,7 +49,7 @@ See the [Database Migrations][db_migrations] document.
 ### Docker
 
 ```console
-./bin/run.sh [--apply-migrations --cache-from <cache_image_tag> --debug --detach --no-cache --suspend]
+./bin/run.sh [--apply-migrations --cache-from <cache_image_tag> --debug --detach --no-cache --start-db --suspend]
 ```
 
 The application is now listening at `http://localhost:8080`. If the `--debug`
@@ -58,7 +58,7 @@ option has been used, the debugger is listening on port `8000`.
 #### Clean
 
 ```console
-./bin/teardown.sh [--include-cache --include-db]
+./bin/teardown.sh [--include-cache --include-db --include-tmp]
 ```
 
 ## Test
@@ -66,13 +66,13 @@ option has been used, the debugger is listening on port `8000`.
 ### Unit tests
 
 ```console
-./gradlew build && ./gradlew test
+./gradlew test
 ```
 
 ### Integration tests
 
 ```console
-./gradlew build && ./bin/integration_tests.sh
+./bin/integration_tests.sh
 ```
 
 [db_migrations]: ./docs/database-migrations.md
