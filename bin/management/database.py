@@ -16,7 +16,6 @@ Options:
   -v, --version         Show the version
 """
 
-import configparser
 import hashlib
 import os
 import pathlib
@@ -30,8 +29,7 @@ import utils
 
 SCRIPT_PATH = os.path.realpath(__file__)
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
-CONFIG = configparser.ConfigParser()
-CONFIG.read(f"{SCRIPT_DIR}/config.ini")
+CONFIG = utils.get_config(os.path.join(SCRIPT_DIR, 'config.ini'))
 
 DATABASE_IMAGE = 'postgres:latest'
 DATABASE_PORT = '5432'

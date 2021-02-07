@@ -2,6 +2,7 @@
 
 """Common utilities."""
 
+import configparser
 import datetime
 import subprocess
 from typing import Callable, List
@@ -9,8 +10,18 @@ from typing import Callable, List
 import sys
 
 
-def docker_item_exists(docker_client, kind: str, name: str) -> bool:
-    return bool(docker_client.__getattribute__(kind).list(filters={'name': [name]}))
+def get_config(config_path: str) -> configparser.ConfigParser:
+    """Reads config on the given path.
+
+    Args:
+        config_path (str): Path to the config file.
+
+    Returns:
+        `ConfigParser` instance with the loaded config.
+    """
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    return config
 
 
 def raise_error(message: str, cmd: List[str] = None, usage: Callable[[], None] = None) -> None:
@@ -19,7 +30,7 @@ def raise_error(message: str, cmd: List[str] = None, usage: Callable[[], None] =
     Args:
         message (str): Error message to display.
         cmd (list): Optional; The command that caused the error. If defined, it's displayed for reference.
-        usage: Optional; Closure that displays usage instructions upon calling.
+        usage (Callable): Optional; Closure that displays usage instructions upon calling.
     """
     print_coloured(f"[{get_time()}] ", 'white')
     print_coloured('ERROR: ', 'red', 'bold')
@@ -113,17 +124,19 @@ def get_text_effect(effect: str) -> str:
     return f"{sequence_base}{effects[effect]}"
 
 
-def execute_cmd(cmd: List[str]) -> subprocess.CompletedProcess:
+def execute_cmd(cmd: List[str], pipe_stdout: bool = False) -> subprocess.CompletedProcess:
     """Executes the given shell command.
 
     Args:
         cmd (list): Shell directive to execute.
+        pipe_stdout (bool): Whether to pipe stdout into the `stdout` field in the `CompletedProcess` object.
 
     Returns:
         `CompletedProcess` object.
     """
     try:
-        return subprocess.run(cmd)
+        stdout = subprocess.PIPE if pipe_stdout else None
+        return subprocess.run(cmd, stdout=stdout)
     except subprocess.CalledProcessError:
         raise_error('Exception occurred while running the following command:', cmd)
     except KeyboardInterrupt:
