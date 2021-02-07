@@ -51,7 +51,7 @@ def log(message: str) -> None:
     Args:
         message (str): Log message to be displayed.
     """
-    print_coloured(f"[{get_time()}] {message}\n", 'white')
+    print_coloured(f"[{get_time()}] ➜ {message}\n", colour='purple', effect='bold')
 
 
 def print_cmd(cmd: List[str]) -> None:
@@ -81,7 +81,9 @@ def print_coloured(text: str, colour: str, effect: str = '') -> None:
         effect (str): Optional; Effect to use, such as 'bold' or 'underline'.
     """
     text_effect = get_text_effect(effect)
-    sys.stdout.write(f"{text_effect}{get_colour(colour)}{text}{get_text_effect('reset')}")
+    text_colour = get_colour(colour)
+    reset = get_text_effect('reset')
+    sys.stdout.write(f"{text_effect}{text_colour}{text}{reset}")
 
 
 def get_colour(colour: str) -> str:
@@ -98,7 +100,8 @@ def get_colour(colour: str) -> str:
         'red': '31m',
         'yellow': '33m',
         'green': '32m',
-        'blue': '34m',
+        'violet': '34m',
+        'purple': '35m',
         'grey': '37m',
         'white': '97m'
     }

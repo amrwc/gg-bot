@@ -5,19 +5,27 @@
 Build and run the application.
 
 Usage:
-  run.py [--cache-from <cache>... | --no-cache] [--start-db | --apply-migrations] [--debug | --suspend] [--detach]
+  run.py [--apply-migrations | --start-db]
+         [--cache-from <c>... | --no-cache]
+         [--debug | --suspend]
+         [--detach]
+         [-h | --help]
+         [--rebuild]
+         [-v | --version]
 
 Options:
-  --apply-migrations       Apply database migrations; equivalent to `--start-db --apply-migrations`
-  --cache-from <cache>...  Docker image(s) to reuse cache from
-  --debug                  Enable Tomcat debug port
-  --detach                 Detach the Docker container
-  -h, --help               Show this help
-  --no-cache               Don't use cache for the build
-  --start-db               Start the database container
-  --suspend                Suspend the web server until the remote debugger has connected; equivalent to
-                           `--debug --suspend`
-  -v, --version            Show the version
+  --apply-migrations   Apply database migrations; includes `--start-db`.
+  --cache-from <c>...  Docker image(s) to reuse cache from.
+  --debug              Enable Tomcat debug port.
+  --detach             Detach the Docker container.
+  -h, --help           Show this help message.
+  --no-cache           Don't use cache for the build.
+  --rebuild            Recreate the build container and rebuild the main
+                       container.
+  --start-db           Start the database container
+  --suspend            Suspend the web server until the remote debugger has
+                       connected; includes `--debug`.
+  -v, --version        Show the script's version.
 """
 
 import glob
@@ -35,53 +43,50 @@ SCRIPT_PATH = os.path.realpath(__file__)
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 CONFIG = utils.get_config(os.path.join(SCRIPT_DIR, 'config.ini'))
 
-MAIN_IMAGE = CONFIG['DEFAULT']['project_name']
-MAIN_CONTAINER = MAIN_IMAGE
-SPRING_PORT = CONFIG['SPRING']['port']
-DEBUG_PORT = CONFIG['SPRING']['debug_port']
-
-CACHE_VOLUME = CONFIG['DOCKER']['cache_volume']
-NETWORK = f"{MAIN_CONTAINER}-network"
-
-BUILD_IMAGE = f"{MAIN_IMAGE}-gradle-build"
-BUILD_CONTAINER = BUILD_IMAGE
-BUILD_COMMAND = 'gradle build --stacktrace --exclude-task test'
-
-DATABASE_CONTAINER = f"{MAIN_IMAGE}-database"
-
 
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
     create_cache_volume()
     create_network()
-    tag_build_image(args)
-    run_build_container(args)
-    tag_main_image(args)
+    build_build_image(args)
+    run_build_image(args)
+    build_main_image(args)
     create_main_container(args)
     start_db(args)
     start_main_container(args)
 
 
 def create_cache_volume() -> None:
-    if CACHE_VOLUME not in utils.execute_cmd(['docker', 'volume', 'ls'], pipe_stdout=True).stdout.decode('utf8'):
-        utils.log(f"Creating '{CACHE_VOLUME}' volume")
-        utils.execute_cmd(['docker', 'volume', 'create', CACHE_VOLUME])
+    """Creates Docker volume for persisting Gradle cache."""
+    cache_volume = CONFIG['DOCKER']['cache_volume']
+    if cache_volume not in utils.execute_cmd(['docker', 'volume', 'ls'], pipe_stdout=True).stdout.decode('utf8'):
+        utils.log(f"Creating '{cache_volume}' volume")
+        utils.execute_cmd(['docker', 'volume', 'create', cache_volume])
 
 
 def create_network() -> None:
-    if NETWORK not in utils.execute_cmd(['docker', 'network', 'ls'], pipe_stdout=True).stdout.decode('utf8'):
-        utils.log(f"Creating '{NETWORK}' network")
-        utils.execute_cmd(['docker', 'network', 'create', NETWORK])
+    """Creates Docker network."""
+    network = CONFIG['DOCKER']['network']
+    if network not in utils.execute_cmd(['docker', 'network', 'ls'], pipe_stdout=True).stdout.decode('utf8'):
+        utils.log(f"Creating '{network}' network")
+        utils.execute_cmd(['docker', 'network', 'create', network])
 
 
-def tag_build_image(args: dict) -> None:
-    utils.log(f"Building '{BUILD_IMAGE}' image")
+def build_build_image(args: dict) -> None:
+    """Builds the build image.
+
+    Args:
+        args (dict): Parsed command-line arguments passed to the script.
+    """
+    build_image = CONFIG['DOCKER']['build_image']
+
+    utils.log(f"Building '{build_image}' image")
     build_image_cmd = [
         'docker',
         'build',
         '--tag',
-        BUILD_IMAGE,
+        build_image,
         '--file',
         os.path.join('docker', 'Dockerfile-gradle'),
         '.',
@@ -94,41 +99,64 @@ def tag_build_image(args: dict) -> None:
     utils.execute_cmd(build_image_cmd)
 
 
-def run_build_container(args: dict) -> None:
-    utils.log(f"Running '{BUILD_CONTAINER}' image")
+def run_build_image(args: dict) -> None:
+    """Runs the build image and copies the compiled JAR file out of the container.
+
+    Args:
+        args (dict): Parsed command-line arguments passed to the script.
+    """
+    build_image = CONFIG['DOCKER']['build_image']
+    build_container = build_image
+
+    if args['--rebuild']:
+        remove_container(build_container)
+
+    utils.log(f"Running '{build_image}' image")
     build_container_cmd = [
         'docker',
         'run',
         '--name',
-        BUILD_CONTAINER,
+        build_container,
         '--volume',
-        f"{CACHE_VOLUME}:/home/gradle/.gradle",
+        f"{CONFIG['DOCKER']['cache_volume']}:/home/gradle/.gradle",
         '--user',
         'gradle',
-        BUILD_IMAGE,
+        build_image,
     ]
-    build_container_cmd.extend(BUILD_COMMAND.split(' '))
+    build_container_cmd.extend(CONFIG['DOCKER']['build_command'].split(' '))
     if not args['--detach']:
         build_container_cmd[2:2] = ['--interactive', '--tty']
     utils.execute_cmd(build_container_cmd)
 
-    utils.log(f"Copying JAR from '{BUILD_CONTAINER}'")
+    utils.log(f"Copying JAR from '{build_container}' container")
     shutil.rmtree(os.path.join('build', 'libs'), ignore_errors=True)
     pathlib.Path(os.path.join('build')).mkdir(parents=True, exist_ok=True)
-    utils.execute_cmd(['docker', 'cp', f"{BUILD_CONTAINER}:/home/gradle/project/build/libs", os.path.join('build')])
+    utils.execute_cmd([
+        'docker',
+        'cp',
+        f"{build_container}:/home/gradle/project/build/libs",
+        os.path.join('build'),
+    ])
     for file in glob.glob(os.path.join('build', 'libs', '*.jar')):
         if file.endswith('.jar'):
             os.rename(file, os.path.join('build', 'libs', 'app.jar'))
             break
 
 
-def tag_main_image(args: dict) -> None:
-    utils.log(f"Building '{MAIN_IMAGE}' image")
+def build_main_image(args: dict) -> None:
+    """Builds the main image.
+
+    Args:
+        args (dict): Parsed command-line arguments passed to the script.
+    """
+    main_image = CONFIG['DEFAULT']['project_name']
+
+    utils.log(f"Building '{main_image}' image")
     main_image_cmd = [
         'docker',
         'build',
         '--tag',
-        MAIN_IMAGE,
+        main_image,
         '--file',
         os.path.join('docker', 'Dockerfile'),
         '.',
@@ -144,47 +172,83 @@ def tag_main_image(args: dict) -> None:
 
 
 def create_main_container(args: dict) -> None:
-    utils.log(f"Creating '{MAIN_CONTAINER}' container")
+    """Creates main Docker container.
+
+    Args:
+        args (dict): Parsed command-line arguments passed to the script.
+    """
+    main_image = CONFIG['DEFAULT']['project_name']
+    main_container = main_image
+
+    if args['--rebuild']:
+        remove_container(main_container)
+
+    utils.log(f"Creating '{main_container}' container")
+    spring_port = CONFIG['SPRING']['port']
     main_container_cmd = [
         'docker',
         'create',
         '--publish',
-        f"{SPRING_PORT}:{SPRING_PORT}",
+        f"{spring_port}:{spring_port}",
         '--name',
-        MAIN_CONTAINER,
+        main_container,
         '--network',
-        NETWORK,
-        MAIN_IMAGE,
+        CONFIG['DOCKER']['network'],
+        main_image,
     ]
     if args['--suspend'] or args['--debug']:
-        main_container_cmd[2:2] = ['--publish', f"{DEBUG_PORT}:{DEBUG_PORT}"]
+        debug_port = CONFIG['SPRING']['debug_port']
+        main_container_cmd[2:2] = ['--publish', f"{debug_port}:{debug_port}"]
     if not args['--detach']:
         main_container_cmd[2:2] = ['--interactive', '--tty']
     utils.execute_cmd(main_container_cmd)
 
-    utils.log(f"Copying JAR into '{MAIN_CONTAINER}'")
+    utils.log(f"Copying JAR into '{main_container}'")
     utils.execute_cmd([
         'docker',
         'cp',
         os.path.join('build', 'libs', 'app.jar'),
-        f"{MAIN_CONTAINER}:/home/project/app.jar",
+        f"{main_container}:/home/project/app.jar",
     ])
 
 
 def start_db(args: dict) -> None:
+    """Runs the database image, and applies migrations, depending on the command-line arguments.
+
+    Args:
+        args (dict): Parsed command-line arguments passed to the script.
+    """
     if args['--apply-migrations'] or args['--start-db']:
-        database.run_db_container(DATABASE_CONTAINER, NETWORK)
+        database.run_db_container(CONFIG['DOCKER']['database_container'], CONFIG['DOCKER']['network'])
         if args['--apply-migrations']:
             time.sleep(3)  # Wait for the database to come up
             database.apply_migrations()
 
 
 def start_main_container(args: dict) -> None:
-    utils.log(f"Starting '{MAIN_CONTAINER}'")
-    main_start_cmd = ['docker', 'start', MAIN_CONTAINER]
+    """Builds the main image.
+
+    Args:
+        args (dict): Parsed command-line arguments passed to the script.
+    """
+    main_container = CONFIG['DEFAULT']['project_name']
+
+    utils.log(f"Starting '{main_container}'")
+    main_start_cmd = ['docker', 'start', main_container]
     if not args['--detach']:
         main_start_cmd[2:2] = ['--attach', '--interactive']
     utils.execute_cmd(main_start_cmd)
+
+
+def remove_container(container: str) -> None:
+    """Removes the given Docker container if it exists.
+
+    Args:
+         container (str): Name of the container to remove.
+    """
+    if container in utils.execute_cmd(['docker', 'ps', '-a'], pipe_stdout=True).stdout.decode('utf8'):
+        utils.log(f"Removing '{container}' container")
+        utils.execute_cmd(['docker', 'rm', container])
 
 
 if __name__ == '__main__':
