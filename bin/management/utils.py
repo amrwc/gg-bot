@@ -4,24 +4,40 @@
 
 import configparser
 import datetime
+import os
 import subprocess
 from typing import Callable, List
 
 import sys
 
 
-def get_config(config_path: str) -> configparser.ConfigParser:
+def get_config(config_path: str = None, module_path: str = None) -> configparser.ConfigParser:
     """Reads config on the given path.
 
     Args:
-        config_path (str): Path to the config file.
+        config_path (str): Optional; Path to the config file.
+        module_path (str): Optional; Path to the calling module. Normally, the value of `__file__`.
 
     Returns:
         `ConfigParser` instance with the loaded config.
+
+    Raises:
+        ValueError: If neither or both parameters have a value.
     """
+    if not config_path and not module_path:
+        raise ValueError('One of `config_path`, `module_path` parameters must be provided')
+    if config_path and module_path:
+        raise ValueError('Only one of `config_path`, `module_path` parameters must be provided')
+
     config = configparser.ConfigParser()
-    config.read(config_path)
-    return config
+    if config_path:
+        config.read(config_path)
+        return config
+    if module_path:
+        script_path = os.path.realpath(module_path)
+        script_dir = os.path.dirname(script_path)
+        config.read(os.path.join(script_dir, 'config.ini'))
+        return config
 
 
 def raise_error(message: str, cmd: List[str] = None, usage: Callable[[], None] = None) -> None:

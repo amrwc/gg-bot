@@ -27,12 +27,7 @@ import docopt
 
 import utils
 
-SCRIPT_PATH = os.path.realpath(__file__)
-SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
-CONFIG = utils.get_config(os.path.join(SCRIPT_DIR, 'config.ini'))
-
-DATABASE_IMAGE = 'postgres:latest'
-DATABASE_PORT = '5432'
+CONFIG = utils.get_config(module_path=__file__)
 
 DRIVER_URL = 'https://jdbc.postgresql.org/download/postgresql-42.2.18.jar'
 SHA256_DRIVER = '0c891979f1eb2fe44432da114d09760b5063dad9e669ac0ac6b0b6bfb91bb3ba'
@@ -63,7 +58,10 @@ def run_db_container(container_name: str, network: str) -> None:
         container_name (str): Name to use for the database container.
         network (str): Name of a Docker network to plug the database into.
     """
-    utils.log(f"Running '{DATABASE_IMAGE}' container, name: {container_name}")
+    docker_image = CONFIG['DATABASE']['docker_image']
+    port = CONFIG['DATABASE']['port']
+
+    utils.log(f"Running '{docker_image}' container, name: {container_name}")
     utils.execute_cmd([
         'docker',
         'run',
@@ -71,12 +69,12 @@ def run_db_container(container_name: str, network: str) -> None:
         '--name',
         container_name,
         '--publish',
-        f"{DATABASE_PORT}:{DATABASE_PORT}",
+        f"{port}:{port}",
         '--network',
         network,
         '--env-file',
         os.path.join('docker', 'postgres-envars.list'),
-        DATABASE_IMAGE,
+        docker_image,
     ])
 
 
