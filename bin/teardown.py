@@ -6,12 +6,18 @@ Stops and removes the build container and image, and main container. Also
 removes the items specified in the command-line arguments.
 
 Usage:
-  teardown.py [--cache] [--db] [-h | --help] [--tmp] [-v | --version]
+  teardown.py [--cache]
+              [--db]
+              [-h | --help]
+              [--network]
+              [--tmp]
+              [-v | --version]
 
 Options:
   --cache        Remove build container cache volume.
   --db           Remove the database container.
   -h, --help     Show this help message.
+  --network      Remove Docker network.
   --tmp          Remove build and temporary directories.
   -v, --version  Show the scripts' version.
 """
@@ -53,8 +59,7 @@ def main() -> None:
     for image in images:
         rm_image(image)
 
-    if args['--db']:
-        # Nothing should exist within the network at this point
+    if args['--network']:
         utils.execute_cmd(['docker', 'network', 'rm', CONFIG['DOCKER']['network']])
     if args['--cache']:
         utils.execute_cmd(['docker', 'volume', 'rm', CONFIG['DOCKER']['cache_volume']])

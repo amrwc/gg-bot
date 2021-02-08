@@ -9,12 +9,13 @@ Usage:
 
 Options:
   -h, --help     Show this help message.
-  -v, --version  Show the script's version.
+  -v, --version  Show the scripts' version.
 """
 
 import docopt
 
 import database
+import docker_utils
 import teardown
 import utils
 
@@ -25,10 +26,13 @@ def main() -> None:
     docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
     database_container = CONFIG['DATABASE']['database_container']
+    network = CONFIG['DOCKER']['network']
+
+    docker_utils.create_network(network)
 
     database.run_db_container(
         container_name=database_container,
-        network=CONFIG['DOCKER']['network']
+        network=network
     )
     database.apply_migrations()
 

@@ -37,6 +37,7 @@ import docopt
 import time
 
 import database
+import docker_utils
 import teardown
 import utils
 
@@ -65,11 +66,8 @@ def create_cache_volume() -> None:
 
 
 def create_network() -> None:
-    """Creates Docker network."""
-    network = CONFIG['DOCKER']['network']
-    if not utils.exists_docker_item('network', network):
-        utils.log(f"Creating '{network}' network")
-        utils.execute_cmd(['docker', 'network', 'create', network])
+    """Creates a Docker network."""
+    docker_utils.create_network(CONFIG['DOCKER']['network'])
 
 
 def build_build_image(args: dict) -> None:

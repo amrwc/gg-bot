@@ -6,6 +6,7 @@ Database-related tasks.
 
 Usage:
   database.py [--apply-migrations | --start-db]
+              [--attach]
               [--container <n>]
               [-h | --help]
               [--network <n>]
@@ -13,6 +14,7 @@ Usage:
 
 Options:
   --apply-migrations  Apply database migrations; includes `--start-db`.
+  --attach            Attach to the running database container. Note that bailing out will stop the database container.
   --container <n>     Name to use for the database container. Defaults to the
                       container name from the config file.
   -h, --help          Show this help.
@@ -52,15 +54,18 @@ LIQUIBASE_PROPERTIES_PATH = os.path.join('src', 'main', 'resources', 'liquibase.
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
-    if args['--apply-migrations'] or args['--start-db']:
-        container_name = args['--container'] if args['--container'] \
-            else CONFIG['DATABASE']['database_container']
-        network_name = args['--network'] if args['--network'] else CONFIG['DOCKER']['network']
+    container_name = args['--container'] if args['--container'] \
+        else CONFIG['DATABASE']['database_container']
+    network_name = args['--network'] if args['--network'] else CONFIG['DOCKER']['network']
 
+    if args['--apply-migrations'] or args['--start-db']:
         run_db_container(container_name, network_name)
         if args['--apply-migrations']:
             time.sleep(3)  # Wait for the database to come up
             apply_migrations()
+
+    if args['--attach'] and utils.exists_docker_item('container', container_name):
+        utils.execute_cmd(['docker', 'attach', container_name])
 
 
 def run_db_container(container_name: str, network: str) -> None:
