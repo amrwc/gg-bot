@@ -147,7 +147,7 @@ def build_main_image(args: dict) -> None:
     Args:
         args (dict): Parsed command-line arguments passed to the script.
     """
-    main_image = CONFIG['DEFAULT']['project_name']
+    main_image = CONFIG['DOCKER']['main_image']
 
     utils.log(f"Building '{main_image}' image")
     main_image_cmd = [
@@ -175,7 +175,7 @@ def create_main_container(args: dict) -> None:
     Args:
         args (dict): Parsed command-line arguments passed to the script.
     """
-    main_image = CONFIG['DEFAULT']['project_name']
+    main_image = CONFIG['DOCKER']['main_image']
     main_container = main_image
 
     if args['--rebuild']:
@@ -229,7 +229,7 @@ def start_main_container(args: dict) -> None:
     Args:
         args (dict): Parsed command-line arguments passed to the script.
     """
-    main_container = CONFIG['DEFAULT']['project_name']
+    main_container = CONFIG['DOCKER']['main_image']
 
     utils.log(f"Starting '{main_container}'")
     main_start_cmd = ['docker', 'start', main_container]
