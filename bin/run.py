@@ -25,7 +25,7 @@ Options:
   --start-db           Start the database container
   --suspend            Suspend the web server until the remote debugger has
                        connected; includes `--debug`.
-  -v, --version        Show the script's version.
+  -v, --version        Show the scripts' version.
 """
 
 import glob
@@ -59,7 +59,7 @@ def main() -> None:
 def create_cache_volume() -> None:
     """Creates Docker volume for persisting Gradle cache."""
     cache_volume = CONFIG['DOCKER']['cache_volume']
-    if cache_volume not in utils.execute_cmd(['docker', 'volume', 'ls'], pipe_stdout=True).stdout.decode('utf8'):
+    if not utils.exists_docker_item('volume', cache_volume):
         utils.log(f"Creating '{cache_volume}' volume")
         utils.execute_cmd(['docker', 'volume', 'create', cache_volume])
 
@@ -67,7 +67,7 @@ def create_cache_volume() -> None:
 def create_network() -> None:
     """Creates Docker network."""
     network = CONFIG['DOCKER']['network']
-    if network not in utils.execute_cmd(['docker', 'network', 'ls'], pipe_stdout=True).stdout.decode('utf8'):
+    if not utils.exists_docker_item('network', network):
         utils.log(f"Creating '{network}' network")
         utils.execute_cmd(['docker', 'network', 'create', network])
 
@@ -218,7 +218,7 @@ def start_db(args: dict) -> None:
         args (dict): Parsed command-line arguments passed to the script.
     """
     if args['--apply-migrations'] or args['--start-db']:
-        database.run_db_container(CONFIG['DOCKER']['database_container'], CONFIG['DOCKER']['network'])
+        database.run_db_container(CONFIG['DATABASE']['database_container'], CONFIG['DOCKER']['network'])
         if args['--apply-migrations']:
             time.sleep(3)  # Wait for the database to come up
             database.apply_migrations()

@@ -143,19 +143,21 @@ def get_text_effect(effect: str) -> str:
     return f"{sequence_base}{effects[effect]}"
 
 
-def execute_cmd(cmd: List[str], pipe_stdout: bool = False) -> subprocess.CompletedProcess:
+def execute_cmd(cmd: List[str], pipe_stdout: bool = False, pipe_stderr: bool = False) -> subprocess.CompletedProcess:
     """Executes the given shell command.
 
     Args:
         cmd (list): Shell directive to execute.
         pipe_stdout (bool): Whether to pipe stdout into the `stdout` field in the `CompletedProcess` object.
+        pipe_stderr (bool): Whether to pipe stderr into the `stderr` field in the `CompletedProcess` object.
 
     Returns:
         `CompletedProcess` object.
     """
     try:
         stdout = subprocess.PIPE if pipe_stdout else None
-        return subprocess.run(cmd, stdout=stdout)
+        stderr = subprocess.PIPE if pipe_stderr else None
+        return subprocess.run(cmd, stdout=stdout, stderr=stderr)
     except subprocess.CalledProcessError:
         raise_error('Exception occurred while running the following command:', cmd)
     except KeyboardInterrupt:
@@ -164,3 +166,14 @@ def execute_cmd(cmd: List[str], pipe_stdout: bool = False) -> subprocess.Complet
         print_coloured('User halted the execution of the following command:\n', 'yellow')
         print_cmd(cmd)
         sys.exit(1)
+
+
+def exists_docker_item(command: str, item: str) -> bool:
+    """Determines whether the given Docker item exists.
+
+    Args:
+        command (str): Docker command dictating the type of the given item. E.g. `container`, `volume`, `network`. See
+                       `docker --help` for a full list of commands.
+        item (str): Name of the checked Docker item.
+    """
+    return item in execute_cmd(['docker', command, 'ls'], pipe_stdout=True).stdout.decode('utf8')

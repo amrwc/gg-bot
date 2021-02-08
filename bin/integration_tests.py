@@ -24,7 +24,7 @@ CONFIG = utils.get_config(module_path=__file__)
 def main() -> None:
     docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
-    database_container = CONFIG['DOCKER']['database_container']
+    database_container = CONFIG['DATABASE']['database_container']
 
     database.run_db_container(
         container_name=database_container,

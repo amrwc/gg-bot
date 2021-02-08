@@ -13,7 +13,7 @@ Options:
   --db           Remove the database container.
   -h, --help     Show this help message.
   --tmp          Remove build and temporary directories.
-  -v, --version  Show the script's version.
+  -v, --version  Show the scripts' version.
 """
 
 import shutil
@@ -46,7 +46,7 @@ def main() -> None:
     ]
 
     if args['--db']:
-        containers.append(DockerContainer(CONFIG['DOCKER']['database_container'], rm_volumes=True))
+        containers.append(DockerContainer(CONFIG['DATABASE']['database_container'], rm_volumes=True))
 
     for container in containers:
         rm_container(container)
