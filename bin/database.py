@@ -5,8 +5,7 @@
 Database-related tasks.
 
 Usage:
-  database.py --container-name <n>
-              --network-name <n>
+  database.py --container-name <n> --network-name <n>
               [--apply-migrations | --start-db]
               [-h | --help]
               [-v | --version]
