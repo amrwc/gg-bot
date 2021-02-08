@@ -4,8 +4,10 @@ on:
   push:
     paths:
       - '.github/workflows/unit-and-integration-tests.yml'
-      - 'bin/database.py'
-      - 'bin/integration_tests.py'
+      - 'bin/**'
+      - '!bin/api_tests.py'
+      - '!bin/pgadmin.py'
+      - '!bin/run.py'
       - 'src/**'
       - 'build.gradle'
       - 'gradle.properties'
