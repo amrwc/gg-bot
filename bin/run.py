@@ -37,6 +37,7 @@ import docopt
 import time
 
 import database
+import teardown
 import utils
 
 CONFIG = utils.get_config(module_path=__file__)
@@ -245,8 +246,7 @@ def remove_container(container: str) -> None:
          container (str): Name of the container to remove.
     """
     if container in utils.execute_cmd(['docker', 'ps', '-a'], pipe_stdout=True).stdout.decode('utf8'):
-        utils.log(f"Removing '{container}' container")
-        utils.execute_cmd(['docker', 'rm', container])
+        teardown.rm_container(teardown.DockerContainer(container))
 
 
 if __name__ == '__main__':

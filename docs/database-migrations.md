@@ -65,7 +65,7 @@ More information can be found in the documentation
 Scripted:
 
 ```console
-./bin/apply_migrations.sh
+./bin/database.py --container-name <name> --network-name <name> --apply-migrations
 ```
 
 Manually:
