@@ -117,6 +117,7 @@ def check_sha256(file_path: str, sha256_hash: str) -> None:
         file_path (str): Path to the file to be checked.
         sha256_hash (str): Hash to compare against.
     """
+    utils.log(f"Checking SHA256 digest of {file_path}")
     with open(file_path, 'rb') as file:
         file_bytes = file.read()
         driver_digest = hashlib.sha256(file_bytes).hexdigest()
