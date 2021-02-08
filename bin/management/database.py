@@ -5,15 +5,19 @@
 Database-related tasks.
 
 Usage:
-  database.py [--start-db | --apply-migrations] --container-name <n> --network-name <n>
+  database.py --container-name <n>
+              --network-name <n>
+              [--apply-migrations | --start-db]
+              [-h | --help]
+              [-v | --version]
 
 Options:
-  --apply-migrations    Apply database migrations; equivalent to `--start-db --apply-migrations`
-  --container-name <n>  Name to use for the database container
-  -h, --help            Show this help
-  --network-name <n>    Name of a Docker network to operate within
-  --start-db            Start the database container
-  -v, --version         Show the version
+  --apply-migrations    Apply database migrations; includes `--start-db`.
+  --container-name <n>  Name to use for the database container.
+  -h, --help            Show this help.
+  --network-name <n>    Name of a Docker network to operate within.
+  --start-db            Start the database container.
+  -v, --version         Show the version.
 """
 
 import hashlib

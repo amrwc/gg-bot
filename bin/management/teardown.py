@@ -6,14 +6,14 @@ Stops and removes the build container and image, and main container. Also
 removes the items specified in the command-line arguments.
 
 Usage:
-  teardown.py [--db] [--cache] [--tmp]
+  teardown.py [--cache] [--db] [-h | --help] [--tmp] [-v | --version]
 
 Options:
-  --cache              Remove build container cache volume.
-  --db                 Remove the database container.
-  -h, --help           Show this help message.
-  --tmp                Remove build and temporary directories.
-  -v, --version        Show the script's version.
+  --cache        Remove build container cache volume.
+  --db           Remove the database container.
+  -h, --help     Show this help message.
+  --tmp          Remove build and temporary directories.
+  -v, --version  Show the script's version.
 """
 
 import shutil
