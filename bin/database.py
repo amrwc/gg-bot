@@ -55,8 +55,10 @@ LIQUIBASE_PROPERTIES_PATH = os.path.join('src', 'main', 'resources', 'liquibase.
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
+    container_name = args['--container'] if args['--container'] else CONFIG['DATABASE']['database_container']
+
     start(
-        container=args['--container'],
+        container=container_name,
         network=args['--network'],
         migrations=args['--apply-migrations'],
         start_db=args['--start-db']

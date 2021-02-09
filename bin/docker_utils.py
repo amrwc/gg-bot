@@ -88,3 +88,31 @@ def rm_image(image: str) -> None:
 
     utils.log(f"Removing '{image}' image")
     utils.execute_cmd(['docker', 'image', 'rm', image])
+
+
+def rm_network(network: str) -> None:
+    """Removes the given Docker network.
+
+    Args:
+        network (str): Network to remove.
+    """
+    if not item_exists('network', network):
+        utils.warn(f"Network '{network}' doesn't exist, not removing")
+        return
+
+    utils.log(f"Removing '{network}' network")
+    utils.execute_cmd(['docker', 'network', 'rm', network])
+
+
+def rm_volume(volume: str) -> None:
+    """Removes the given Docker volume.
+
+    Args:
+        volume (str): Volume to remove.
+    """
+    if not item_exists('volume', volume):
+        utils.warn(f"Volume '{volume}' doesn't exist, not removing")
+        return
+
+    utils.log(f"Removing '{volume}' volume")
+    utils.execute_cmd(['docker', 'volume', 'rm', volume])

@@ -55,9 +55,9 @@ def main() -> None:
         docker_utils.rm_image(image)
 
     if args['--network']:
-        utils.execute_cmd(['docker', 'network', 'rm', CONFIG['DOCKER']['network']])
+        docker_utils.rm_network(CONFIG['DOCKER']['network'])
     if args['--cache']:
-        utils.execute_cmd(['docker', 'volume', 'rm', CONFIG['DOCKER']['cache_volume']])
+        docker_utils.rm_volume(CONFIG['DOCKER']['cache_volume'])
     if args['--tmp']:
         for tmp in TEMP_DIRECTORIES:
             shutil.rmtree(tmp, ignore_errors=True)
