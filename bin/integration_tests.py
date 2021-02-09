@@ -24,16 +24,13 @@ CONFIG = utils.get_config(module_path=__file__)
 def main() -> None:
     docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
-    database_container = CONFIG['DATABASE']['database_container']
+    database_container = CONFIG['DATABASE']['database_test_container']
     network = CONFIG['DOCKER']['network']
 
-    docker_utils.create_network(network)
+    if not docker_utils.item_exists('network', network):
+        docker_utils.create_network(network)
 
-    database.run_db_container(
-        container_name=database_container,
-        network=network
-    )
-    database.apply_migrations()
+    database.start(container=database_container, network=network, migrations=True)
 
     utils.log('Running integration tests')
     utils.execute_cmd(['./gradlew', 'integrationTest', '--info'])
