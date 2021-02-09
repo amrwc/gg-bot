@@ -33,8 +33,8 @@ import os
 
 import docopt
 
+import docker_utils
 import utils
-import teardown
 
 CONFIG = utils.get_config(module_path=__file__)
 
@@ -53,7 +53,7 @@ def main() -> None:
     image_name = CONFIG['DATABASE']['pgadmin_image']
     container_name = CONFIG['DATABASE']['pgadmin_container']
     network = args['--network'] if args['--network'] else CONFIG['DOCKER']['network']
-    if not utils.exists_docker_item('network', network):
+    if not docker_utils.item_exists('network', network):
         utils.raise_error(f"Docker network '{network}' doesn't exist")
 
     def create_pgadmin_container() -> None:
@@ -76,9 +76,9 @@ def main() -> None:
             image_name,
         ])
 
-    if utils.exists_docker_item('container', container_name):
+    if docker_utils.item_exists('container', container_name):
         if args['--rebuild']:
-            teardown.rm_container(teardown.DockerContainer(container_name, rm_volumes=True))
+            docker_utils.rm_container(docker_utils.DockerContainer(container_name, rm_volumes=True))
             create_pgadmin_container()
     else:
         create_pgadmin_container()

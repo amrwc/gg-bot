@@ -70,6 +70,15 @@ def log(message: str) -> None:
     print_coloured(f"[{get_time()}] ➜ {message}\n", colour='purple', effect='bold')
 
 
+def warn(message: str) -> None:
+    """Logs the given warning to the command line.
+
+    Args:
+        message (str): Warning message to be displayed.
+    """
+    print_coloured(f"[{get_time()}] ➜ {message}\n", colour='yellow', effect='bold')
+
+
 def print_cmd(cmd: List[str]) -> None:
     """Prints the given command to the command line.
 
@@ -166,14 +175,3 @@ def execute_cmd(cmd: List[str], pipe_stdout: bool = False, pipe_stderr: bool = F
         print_coloured('User halted the execution of the following command:\n', 'yellow')
         print_cmd(cmd)
         sys.exit(1)
-
-
-def exists_docker_item(command: str, item: str) -> bool:
-    """Determines whether the given Docker item exists.
-
-    Args:
-        command (str): Docker command dictating the type of the given item. E.g. `container`, `volume`, `network`. See
-                       `docker --help` for a full list of commands.
-        item (str): Name of the checked Docker item.
-    """
-    return item in execute_cmd(['docker', command, 'ls'], pipe_stdout=True).stdout.decode('utf8')

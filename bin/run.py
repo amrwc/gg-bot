@@ -34,11 +34,9 @@ import pathlib
 import shutil
 
 import docopt
-import time
 
 import database
 import docker_utils
-import teardown
 import utils
 
 CONFIG = utils.get_config(module_path=__file__)
@@ -47,27 +45,14 @@ CONFIG = utils.get_config(module_path=__file__)
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
-    create_cache_volume()
-    create_network()
+    docker_utils.create_volume(CONFIG['DOCKER']['cache_volume'])
+    docker_utils.create_network(CONFIG['DOCKER']['network'])
     build_build_image(args)
     run_build_image(args)
     build_main_image(args)
     create_main_container(args)
-    start_db(args)
+    database.start(migrations=args['--apply-migrations'], start_db=args['--start-db'])
     start_main_container(args)
-
-
-def create_cache_volume() -> None:
-    """Creates Docker volume for persisting Gradle cache."""
-    cache_volume = CONFIG['DOCKER']['cache_volume']
-    if not utils.exists_docker_item('volume', cache_volume):
-        utils.log(f"Creating '{cache_volume}' volume")
-        utils.execute_cmd(['docker', 'volume', 'create', cache_volume])
-
-
-def create_network() -> None:
-    """Creates a Docker network."""
-    docker_utils.create_network(CONFIG['DOCKER']['network'])
 
 
 def build_build_image(args: dict) -> None:
@@ -106,7 +91,7 @@ def run_build_image(args: dict) -> None:
     build_container = build_image
 
     if args['--rebuild']:
-        remove_container(build_container)
+        docker_utils.rm_container(docker_utils.DockerContainer(build_container))
 
     utils.log(f"Running '{build_image}' image")
     build_container_cmd = [
@@ -178,7 +163,7 @@ def create_main_container(args: dict) -> None:
     main_container = main_image
 
     if args['--rebuild']:
-        remove_container(main_container)
+        docker_utils.rm_container(docker_utils.DockerContainer(main_container, rm_volumes=True))
 
     utils.log(f"Creating '{main_container}' container")
     spring_port = CONFIG['SPRING']['port']
@@ -209,19 +194,6 @@ def create_main_container(args: dict) -> None:
     ])
 
 
-def start_db(args: dict) -> None:
-    """Runs the database image, and applies migrations, depending on the command-line arguments.
-
-    Args:
-        args (dict): Parsed command-line arguments passed to the script.
-    """
-    if args['--apply-migrations'] or args['--start-db']:
-        database.run_db_container(CONFIG['DATABASE']['database_container'], CONFIG['DOCKER']['network'])
-        if args['--apply-migrations']:
-            time.sleep(3)  # Wait for the database to come up
-            database.apply_migrations()
-
-
 def start_main_container(args: dict) -> None:
     """Builds the main image.
 
@@ -235,16 +207,6 @@ def start_main_container(args: dict) -> None:
     if not args['--detach']:
         main_start_cmd[2:2] = ['--attach', '--interactive']
     utils.execute_cmd(main_start_cmd)
-
-
-def remove_container(container: str) -> None:
-    """Removes the given Docker container if it exists.
-
-    Args:
-         container (str): Name of the container to remove.
-    """
-    if container in utils.execute_cmd(['docker', 'ps', '-a'], pipe_stdout=True).stdout.decode('utf8'):
-        teardown.rm_container(teardown.DockerContainer(container))
 
 
 if __name__ == '__main__':

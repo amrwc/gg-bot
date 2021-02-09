@@ -16,7 +16,6 @@ import docopt
 
 import database
 import docker_utils
-import teardown
 import utils
 
 CONFIG = utils.get_config(module_path=__file__)
@@ -39,7 +38,7 @@ def main() -> None:
     utils.log('Running integration tests')
     utils.execute_cmd(['./gradlew', 'integrationTest', '--info'])
 
-    teardown.rm_container(teardown.DockerContainer(database_container, rm_volumes=True))
+    docker_utils.rm_container(docker_utils.DockerContainer(database_container, rm_volumes=True))
 
 
 if __name__ == '__main__':

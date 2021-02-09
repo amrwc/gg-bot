@@ -34,6 +34,7 @@ import urllib.request
 import docopt
 import time
 
+import docker_utils
 import utils
 
 CONFIG = utils.get_config(module_path=__file__)
@@ -54,18 +55,34 @@ LIQUIBASE_PROPERTIES_PATH = os.path.join('src', 'main', 'resources', 'liquibase.
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
-    container_name = args['--container'] if args['--container'] \
-        else CONFIG['DATABASE']['database_container']
-    network_name = args['--network'] if args['--network'] else CONFIG['DOCKER']['network']
+    start(
+        container=args['--container'],
+        network=args['--network'],
+        migrations=args['--apply-migrations'],
+        start_db=args['--start-db']
+    )
 
-    if args['--apply-migrations'] or args['--start-db']:
+    if args['--attach'] and docker_utils.item_exists('container', container_name):
+        utils.execute_cmd(['docker', 'attach', container_name])
+
+
+def start(container: str = None, network: str = None, migrations: bool = False, start_db: bool = False) -> None:
+    """Starts the database container.
+
+    Args:
+        container (str): Optional; The database container's name. Defaults to the config value.
+        network (str): Optional; Name of the network to operate within. Defaults to the config value.
+        migrations (bool): Optional; Whether to apply the migrations. Includes `start_db`.
+        start_db (bool): Optional; Whether to start the database container.
+    """
+    container_name = container if container else CONFIG['DATABASE']['database_container']
+    network_name = network if network else CONFIG['DOCKER']['network']
+
+    if migrations or start_db:
         run_db_container(container_name, network_name)
-        if args['--apply-migrations']:
+        if migrations:
             time.sleep(3)  # Wait for the database to come up
             apply_migrations()
-
-    if args['--attach'] and utils.exists_docker_item('container', container_name):
-        utils.execute_cmd(['docker', 'attach', container_name])
 
 
 def run_db_container(container_name: str, network: str) -> None:
@@ -78,10 +95,10 @@ def run_db_container(container_name: str, network: str) -> None:
     docker_image = CONFIG['DATABASE']['docker_image']
     port = CONFIG['DATABASE']['port']
 
-    if utils.exists_docker_item('container', container_name):
+    if docker_utils.item_exists('container', container_name):
         utils.log(f"Container '{container_name}' already exists, not running '{docker_image}' image")
         return
-    if not utils.exists_docker_item('network', network):
+    if not docker_utils.item_exists('network', network):
         utils.raise_error(f"Docker network '{network}' doesn't exist")
 
     utils.log(f"Running '{docker_image}' container, name: {container_name}")
@@ -98,7 +115,7 @@ def run_db_container(container_name: str, network: str) -> None:
         '--env-file',
         os.path.join('docker', 'postgres-envars.list'),
         docker_image,
-    ], pipe_stderr=True)
+    ])
 
 
 def apply_migrations() -> None:
