@@ -85,7 +85,7 @@ def run_db_container(container_name: str, network: str) -> None:
         utils.raise_error(f"Docker network '{network}' doesn't exist")
 
     utils.log(f"Running '{docker_image}' container, name: {container_name}")
-    completed_process = utils.execute_cmd([
+    utils.execute_cmd([
         'docker',
         'run',
         '--detach',
@@ -99,8 +99,6 @@ def run_db_container(container_name: str, network: str) -> None:
         os.path.join('docker', 'postgres-envars.list'),
         docker_image,
     ], pipe_stderr=True)
-    if completed_process.stderr:
-        utils.raise_error(completed_process.stderr.decode('utf8'))
 
 
 def apply_migrations() -> None:
