@@ -19,7 +19,8 @@ def item_exists(command: str, item: str) -> bool:
     cmd = ['docker']
     # Special treatment for containers
     cmd.extend(['ps', '-a'] if 'container' == command else [command, 'ls'])
-    return item in utils.execute_cmd(cmd, pipe_stdout=True).stdout.decode('utf8')
+    items = utils.execute_cmd(cmd, pipe_stdout=True).stdout.decode('utf8')
+    return any([item == word for word in items.split()])
 
 
 def create_network(name: str = None) -> None:
@@ -30,7 +31,7 @@ def create_network(name: str = None) -> None:
     """
     network_name = name if name else CONFIG['DOCKER']['network']
     if item_exists('network', network_name):
-        utils.warn(f"Network '{network_name}' already exists. Skipping")
+        utils.warn(f"Network '{network_name}' already exists, not creating")
     else:
         utils.log(f"Creating '{network_name}' network")
         utils.execute_cmd(['docker', 'network', 'create', network_name])
@@ -43,7 +44,7 @@ def create_volume(name: str) -> None:
         name (str): Name of the volume.
     """
     if item_exists('volume', name):
-        utils.warn(f"Volume '{name}' already exists. Skipping")
+        utils.warn(f"Volume '{name}' already exists, not creating")
     else:
         utils.log(f"Creating '{name}' volume")
         utils.execute_cmd(['docker', 'volume', 'create', name])
@@ -73,3 +74,17 @@ def rm_container(container: DockerContainer) -> None:
     if container.rm_volumes:
         rm_cmd[3:3] = ['--volumes']
     utils.execute_cmd(rm_cmd)
+
+
+def rm_image(image: str) -> None:
+    """Removes the given Docker image.
+
+    Args:
+        image (str): Image to remove.
+    """
+    if not item_exists('image', image):
+        utils.warn(f"Image '{image}' doesn't exist, not removing")
+        return
+
+    utils.log(f"Removing '{image}' image")
+    utils.execute_cmd(['docker', 'image', 'rm', image])

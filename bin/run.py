@@ -45,23 +45,37 @@ CONFIG = utils.get_config(module_path=__file__)
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
+    main_image = CONFIG['DOCKER']['main_image']
+    build_image = CONFIG['DOCKER']['build_image']
+
+    if args['--rebuild']:
+        docker_utils.rm_container(docker_utils.DockerContainer(main_image, rm_volumes=True))
+        docker_utils.rm_image(main_image)
+        docker_utils.rm_container(docker_utils.DockerContainer(build_image))
+        docker_utils.rm_image(build_image)
+
     docker_utils.create_volume(CONFIG['DOCKER']['cache_volume'])
     docker_utils.create_network(CONFIG['DOCKER']['network'])
-    build_build_image(args)
-    run_build_image(args)
+    build_build_image(args, build_image)
+    run_build_image(args, build_image)
     build_main_image(args)
     create_main_container(args)
     database.start(migrations=args['--apply-migrations'], start_db=args['--start-db'])
     start_main_container(args)
 
 
-def build_build_image(args: dict) -> None:
+def build_build_image(args: dict, build_image: str = None) -> None:
     """Builds the build image.
 
     Args:
         args (dict): Parsed command-line arguments passed to the script.
+        build_image (str): Optional; Build image name. Defaults to the value from config file.
     """
-    build_image = CONFIG['DOCKER']['build_image']
+    build_image = build_image if build_image else CONFIG['DOCKER']['build_image']
+
+    if not args['--rebuild'] and docker_utils.item_exists('image', build_image):
+        utils.warn(f"Image '{build_image}' already exists, not building")
+        return
 
     utils.log(f"Building '{build_image}' image")
     build_image_cmd = [
@@ -81,17 +95,19 @@ def build_build_image(args: dict) -> None:
     utils.execute_cmd(build_image_cmd)
 
 
-def run_build_image(args: dict) -> None:
+def run_build_image(args: dict, build_image: str = None) -> None:
     """Runs the build image and copies the compiled JAR file out of the container.
 
     Args:
         args (dict): Parsed command-line arguments passed to the script.
+        build_image (str): Optional; Build image name. Defaults to the value from config file.
     """
-    build_image = CONFIG['DOCKER']['build_image']
+    build_image = build_image if build_image else CONFIG['DOCKER']['build_image']
     build_container = build_image
 
-    if args['--rebuild']:
-        docker_utils.rm_container(docker_utils.DockerContainer(build_container))
+    if not args['--rebuild'] and docker_utils.item_exists('container', build_container):
+        utils.warn(f"Container '{build_container}' already exists, not running")
+        return
 
     utils.log(f"Running '{build_image}' image")
     build_container_cmd = [
@@ -125,13 +141,18 @@ def run_build_image(args: dict) -> None:
             break
 
 
-def build_main_image(args: dict) -> None:
+def build_main_image(args: dict, main_image: str = None) -> None:
     """Builds the main image.
 
     Args:
         args (dict): Parsed command-line arguments passed to the script.
+        main_image (str): Optional; Main image name. Defaults to the value from config file.
     """
-    main_image = CONFIG['DOCKER']['main_image']
+    main_image = main_image if main_image else CONFIG['DOCKER']['main_image']
+
+    if not args['--rebuild'] and docker_utils.item_exists('image', main_image):
+        utils.warn(f"Image '{main_image}' already exists, not building")
+        return
 
     utils.log(f"Building '{main_image}' image")
     main_image_cmd = [
@@ -153,17 +174,19 @@ def build_main_image(args: dict) -> None:
     utils.execute_cmd(main_image_cmd)
 
 
-def create_main_container(args: dict) -> None:
+def create_main_container(args: dict, main_image: str = None) -> None:
     """Creates main Docker container.
 
     Args:
         args (dict): Parsed command-line arguments passed to the script.
+        main_image (str): Optional; Main image name. Defaults to the value from config file.
     """
-    main_image = CONFIG['DOCKER']['main_image']
+    main_image = main_image if main_image else CONFIG['DOCKER']['main_image']
     main_container = main_image
 
-    if args['--rebuild']:
-        docker_utils.rm_container(docker_utils.DockerContainer(main_container, rm_volumes=True))
+    if not args['--rebuild'] and docker_utils.item_exists('container', main_container):
+        utils.warn(f"Container '{main_container}' already exists, not creating")
+        return
 
     utils.log(f"Creating '{main_container}' container")
     spring_port = CONFIG['SPRING']['port']

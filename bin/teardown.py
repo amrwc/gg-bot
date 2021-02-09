@@ -52,7 +52,7 @@ def main() -> None:
     for container in containers:
         docker_utils.rm_container(container)
     for image in images:
-        rm_image(image)
+        docker_utils.rm_image(image)
 
     if args['--network']:
         utils.execute_cmd(['docker', 'network', 'rm', CONFIG['DOCKER']['network']])
@@ -61,16 +61,6 @@ def main() -> None:
     if args['--tmp']:
         for tmp in TEMP_DIRECTORIES:
             shutil.rmtree(tmp, ignore_errors=True)
-
-
-def rm_image(name: str) -> None:
-    """Removes the given Docker image.
-
-    Args:
-        name (str): Image to remove.
-    """
-    utils.log(f"Removing '{name}' image")
-    utils.execute_cmd(['docker', 'image', 'rm', name])
 
 
 if __name__ == '__main__':
