@@ -36,12 +36,6 @@ jobs:
       - name: Clone the repository
         uses: actions/checkout@v2
 
-      - name: Set up Python 3
-        uses: gabrielfalcao/pyenv-action@v7
-        with:
-          default: 3.9.0
-          command: pip install -r ./bin/requirements.txt
-
       - name: Cache ./tmp/*
         uses: actions/cache@v2
         with:
@@ -51,6 +45,12 @@ jobs:
             ${{ runner.os }}-build-${{ env.TMP_CACHE }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
+      - name: Install Python requirements
+        run: |
+          sudo python3 -m pip install -U pip
+          sudo python3 -m pip install -U setuptools
+          pip3 install -r ./bin/requirements.txt
 
       - name: Add variables
         run: ${{ env.SET_VARIABLES }}
