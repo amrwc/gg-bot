@@ -58,8 +58,8 @@ def main() -> None:
     docker_utils.create_network(CONFIG['DOCKER']['network'])
     build_build_image(args, build_image)
     run_build_image(args, build_image)
-    build_main_image(args)
-    create_main_container(args)
+    build_main_image(args, main_image)
+    create_main_container(args, main_image)
     database.start(migrations=args['--apply-migrations'], start_db=args['--start-db'])
     start_main_container(args)
 
