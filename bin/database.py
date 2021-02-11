@@ -5,7 +5,7 @@
 Database-related tasks.
 
 Usage:
-  database.py [--apply-migrations | --start-db]
+  database.py [--apply-migrations | --rollback=<c> | --start-db]
               [--attach]
               [--container <n>]
               [-h | --help]
@@ -13,7 +13,7 @@ Usage:
               [-v | --version]
 
 Options:
-  --apply-migrations  Apply database migrations; includes `--start-db`.
+  --apply-migrations  Apply database migrations. Includes `--start-db`.
   --attach            Attach to the running database container. Note that
                       bailing out will stop the database container.
   --container <n>     Name to use for the database container. Defaults to the
@@ -21,6 +21,8 @@ Options:
   -h, --help          Show this help.
   --network <n>       Name of a Docker network to operate within. Defaults to
                       the network name from the config file.
+  --rollback=<c>      Rollback count. It specifies the number of change sets to
+                      roll back. Includes `--start-db`.
   --start-db          Start the database container.
   -v, --version       Show the scripts' version.
 
@@ -35,9 +37,9 @@ Envars:
 
 Example:
   export POSTGRES_URL='jdbc:postgresql://localhost:5432'
-  export POSTGRES_DB='foobar'
+  export POSTGRES_DB='dbname'
   export POSTGRES_USER='postgres'
-  export POSTGRES_PASSWORD='SuperSecret'
+  export POSTGRES_PASSWORD='SuperuserPassword'
   ./bin/database.py --apply-migrations
 """
 
@@ -46,10 +48,11 @@ import os
 import pathlib
 import shutil
 import tarfile
+import time
 import urllib.request
+from typing import List
 
 import docopt
-import time
 
 import docker_utils
 import utils
@@ -80,16 +83,31 @@ def main() -> None:
     utils.verify_envars(REQUIRED_ENVARS, 'Postgres', __doc__)
 
     container_name = args['--container'] if args['--container'] else CONFIG['DATABASE']['database_container']
-
-    start(
-        container=container_name,
-        network=args['--network'],
-        migrations=args['--apply-migrations'],
-        start_db=args['--start-db']
-    )
-
+    _start(container_name, args)
     if args['--attach'] and docker_utils.item_exists('container', container_name):
         utils.execute_cmd(['docker', 'attach', container_name])
+
+
+def _start(container_name: str, args: dict) -> None:
+    """Starts the database container, and applies rollbacks, if specified. Not to be used outside of this module.
+
+    Args:
+        container_name (str): The database container's name.
+        args (dict): Parsed command-line arguments passed to the script.
+    """
+    network_name = args['--network'] if args['--network'] else CONFIG['DOCKER']['network']
+
+    if args['--rollback']:
+        run_db_container(container_name, network_name)
+        time.sleep(3)  # Wait for the database to come up
+        roll_back(args['--rollback'])
+    else:
+        start(
+            container=container_name,
+            network=network_name,
+            migrations=args['--apply-migrations'],
+            start_db=args['--start-db']
+        )
 
 
 def start(container: str = None, network: str = None, migrations: bool = False, start_db: bool = False) -> None:
@@ -152,24 +170,37 @@ def run_db_container(container_name: str, network: str) -> None:
 
 def apply_migrations() -> None:
     """Applies database migrations."""
-    if not os.path.isfile(DRIVER_PATH):
-        utils.log(f"Downloading database driver to '{DRIVER_PATH}'")
-        pathlib.Path(os.path.dirname(DRIVER_PATH)).mkdir(parents=True, exist_ok=True)
-        urllib.request.urlretrieve(DRIVER_URL, DRIVER_PATH)
-    check_sha256(DRIVER_PATH, SHA256_DRIVER)
+    liquibase_cmd = fetch_dependencies()
+    liquibase_cmd.append('update')
+
+    utils.log('Applying database migrations')
+    utils.execute_cmd(liquibase_cmd)
+
+
+def roll_back(count: str) -> None:
+    """Rolls back the given number of database change sets.
+
+    Args:
+        count (str): Number of latest change sets to roll back.
+    """
+    liquibase_cmd = fetch_dependencies()
+    liquibase_cmd.extend(['rollbackCount', count])
+
+    utils.log('Applying database migrations')
+    utils.execute_cmd(liquibase_cmd)
+
+
+def fetch_dependencies() -> List[str]:
+    """Fetches external file dependencies and prepares base Liquibase command.
+
+    Returns:
+        Base Liquibase command with prefilled required arguments.
+    """
+    fetch_db_driver()
 
     liquibase_cmd = ['liquibase']
     if shutil.which('liquibase') is None:
-        if not os.path.isfile(LIQUIBASE_PATH):
-            utils.log(f"Downloading and extracting Liquibase to '{LIQUIBASE_PATH}'")
-            pathlib.Path(os.path.dirname(LIQUIBASE_PATH)).mkdir(parents=True, exist_ok=True)
-            urllib.request.urlretrieve(LIQUIBASE_URL, LIQUIBASE_ARCHIVE)
-            check_sha256(LIQUIBASE_ARCHIVE, SHA256_LIQUIBASE_ARCHIVE)
-            with tarfile.open(LIQUIBASE_ARCHIVE) as liquibase_archive:
-                jar_reader = liquibase_archive.extractfile('liquibase.jar')
-                with open(LIQUIBASE_PATH, 'wb') as jar:
-                    jar.write(jar_reader.read())
-        check_sha256(LIQUIBASE_PATH, SHA256_LIQUIBASE_JAR)
+        fetch_liquibase_jar()
         liquibase_cmd = ['java', '-jar', LIQUIBASE_PATH]
 
     liquibase_cmd.extend([
@@ -178,11 +209,32 @@ def apply_migrations() -> None:
         f"--url={os.environ.get('POSTGRES_URL')}/{os.environ.get('POSTGRES_DB')}",
         f"--username={os.environ.get('POSTGRES_USER')}",
         f"--password={os.environ.get('POSTGRES_PASSWORD')}",
-        'update',
     ])
 
-    utils.log('Applying database migrations')
-    utils.execute_cmd(liquibase_cmd)
+    return liquibase_cmd
+
+
+def fetch_db_driver() -> None:
+    """Downloads database driver if it doesn't exist."""
+    if not os.path.isfile(DRIVER_PATH):
+        utils.log(f"Downloading database driver to '{DRIVER_PATH}'")
+        pathlib.Path(os.path.dirname(DRIVER_PATH)).mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(DRIVER_URL, DRIVER_PATH)
+    check_sha256(DRIVER_PATH, SHA256_DRIVER)
+
+
+def fetch_liquibase_jar() -> None:
+    """Downloads Liquibase archive and extracts the JAR file if it doesn't exist."""
+    if not os.path.isfile(LIQUIBASE_PATH):
+        utils.log(f"Downloading and extracting Liquibase to '{LIQUIBASE_PATH}'")
+        pathlib.Path(os.path.dirname(LIQUIBASE_PATH)).mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(LIQUIBASE_URL, LIQUIBASE_ARCHIVE)
+        check_sha256(LIQUIBASE_ARCHIVE, SHA256_LIQUIBASE_ARCHIVE)
+        with tarfile.open(LIQUIBASE_ARCHIVE) as liquibase_archive:
+            jar_reader = liquibase_archive.extractfile('liquibase.jar')
+            with open(LIQUIBASE_PATH, 'wb') as jar:
+                jar.write(jar_reader.read())
+    check_sha256(LIQUIBASE_PATH, SHA256_LIQUIBASE_JAR)
 
 
 def check_sha256(file_path: str, sha256_hash: str) -> None:

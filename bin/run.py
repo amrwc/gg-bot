@@ -14,7 +14,7 @@ Usage:
          [-v | --version]
 
 Options:
-  --apply-migrations   Apply database migrations; includes `--start-db`.
+  --apply-migrations   Apply database migrations. Includes `--start-db`.
   --cache-from <c>...  Docker image(s) to reuse cache from.
   --debug              Enable Tomcat debug port.
   --detach             Detach the Docker container.
@@ -24,7 +24,7 @@ Options:
                        container.
   --start-db           Start the database container
   --suspend            Suspend the web server until the remote debugger has
-                       connected; includes `--debug`.
+                       connected. Includes `--debug`.
   -v, --version        Show the scripts' version.
 
 Envars:
@@ -37,7 +37,7 @@ Envars:
 Example:
   export SPRING_DATASOURCE_URL='jdbc:postgresql://database-container:5432/dbname'
   export SPRING_DATASOURCE_USERNAME='springuser'
-  export SPRING_DATASOURCE_PASSWORD='SuperSecret'
+  export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
   ./bin/run.py --apply-migrations
 """
 

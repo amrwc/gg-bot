@@ -25,7 +25,7 @@ Envars:
 
 Example:
   export PG_USERNAME='user@domain.com'
-  export PG_PASSWORD='SuperSecret'
+  export PG_PASSWORD='PgadminUserPassword'
   ./bin/pgadmin.py --detach
 """
 

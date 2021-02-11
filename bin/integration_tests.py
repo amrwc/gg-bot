@@ -21,7 +21,7 @@ Envars:
 Example:
   export SPRING_DATASOURCE_URL='jdbc:postgresql://test-database-container:5432/dbname'
   export SPRING_DATASOURCE_USERNAME='springuser'
-  export SPRING_DATASOURCE_PASSWORD='SuperSecret'
+  export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
   ./bin/integration_tests.py
 """
 
