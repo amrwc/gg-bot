@@ -14,7 +14,8 @@ Usage:
 
 Options:
   --apply-migrations  Apply database migrations; includes `--start-db`.
-  --attach            Attach to the running database container. Note that bailing out will stop the database container.
+  --attach            Attach to the running database container. Note that
+                      bailing out will stop the database container.
   --container <n>     Name to use for the database container. Defaults to the
                       container name from the config file.
   -h, --help          Show this help.
@@ -22,6 +23,20 @@ Options:
                       the network name from the config file.
   --start-db          Start the database container.
   -v, --version       Show the scripts' version.
+
+Envars:
+  POSTGRES_DB         Name of the default database that is created when the
+                      image is first started.
+  POSTGRES_USER       Superuser username for PostgreSQL.
+  POSTGRES_PASSWORD   Superuser password for PostgreSQL.
+
+  Read more on https://hub.docker.com/_/postgres.
+
+Example:
+  export POSTGRES_DB='foobar'
+  export POSTGRES_USER='postgres'
+  export POSTGRES_PASSWORD='SuperSecret'
+  ./bin/database.py --apply-migrations
 """
 
 import hashlib
@@ -54,6 +69,7 @@ LIQUIBASE_PROPERTIES_PATH = os.path.join('src', 'main', 'resources', 'liquibase.
 
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
+    verify_postgres_envars()
 
     container_name = args['--container'] if args['--container'] else CONFIG['DATABASE']['database_container']
 
@@ -114,8 +130,12 @@ def run_db_container(container_name: str, network: str) -> None:
         f"{port}:{port}",
         '--network',
         network,
-        '--env-file',
-        os.path.join('docker', 'postgres-envars.list'),
+        '--env',
+        f"POSTGRES_DB={os.environ.get('POSTGRES_DB')}",
+        '--env',
+        f"POSTGRES_USER={os.environ.get('POSTGRES_USER')}",
+        '--env',
+        f"POSTGRES_PASSWORD={os.environ.get('POSTGRES_PASSWORD')}",
         docker_image,
     ])
 
@@ -165,6 +185,20 @@ def check_sha256(file_path: str, sha256_hash: str) -> None:
         driver_digest = hashlib.sha256(file_bytes).hexdigest()
         if sha256_hash != driver_digest:
             utils.raise_error(f"SHA256 checksum of '{file_path}' doesn't match '{sha256_hash}'")
+
+
+def verify_postgres_envars() -> None:
+    """Verifies that the required Postgres envars are defined. Results in an error otherwise."""
+    all_defined = bool(
+        os.environ.get('POSTGRES_DB')
+        and os.environ.get('POSTGRES_USER')
+        and os.environ.get('POSTGRES_PASSWORD')
+    )
+    if not all_defined:
+        utils.raise_error(
+            'One or more required Postgres envars have not been defined',
+            usage=lambda: print(__doc__.strip('\n'))
+        )
 
 
 if __name__ == '__main__':
