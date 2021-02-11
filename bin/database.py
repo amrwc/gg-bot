@@ -25,6 +25,7 @@ Options:
   -v, --version       Show the scripts' version.
 
 Envars:
+  POSTGRES_URL        URL at which the database server can be reached.
   POSTGRES_DB         Name of the default database that is created when the
                       image is first started.
   POSTGRES_USER       Superuser username for PostgreSQL.
@@ -33,6 +34,7 @@ Envars:
   Read more on https://hub.docker.com/_/postgres.
 
 Example:
+  export POSTGRES_URL='jdbc:postgresql://localhost:5432'
   export POSTGRES_DB='foobar'
   export POSTGRES_USER='postgres'
   export POSTGRES_PASSWORD='SuperSecret'
@@ -70,7 +72,6 @@ LIQUIBASE_PROPERTIES_PATH = os.path.join('src', 'main', 'resources', 'liquibase.
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
     verify_postgres_envars()
-
     container_name = args['--container'] if args['--container'] else CONFIG['DATABASE']['database_container']
 
     start(
@@ -93,6 +94,7 @@ def start(container: str = None, network: str = None, migrations: bool = False, 
         migrations (bool): Optional; Whether to apply the migrations. Includes `start_db`.
         start_db (bool): Optional; Whether to start the database container.
     """
+    verify_postgres_envars()
     container_name = container if container else CONFIG['DATABASE']['database_container']
     network_name = network if network else CONFIG['DOCKER']['network']
 
@@ -165,6 +167,9 @@ def apply_migrations() -> None:
     liquibase_cmd.extend([
         f"--classpath={DRIVER_PATH}",
         f"--defaultsFile={LIQUIBASE_PROPERTIES_PATH}",
+        f"--url={os.environ.get('POSTGRES_URL')}/{os.environ.get('POSTGRES_DB')}",
+        f"--username={os.environ.get('POSTGRES_USER')}",
+        f"--password={os.environ.get('POSTGRES_PASSWORD')}",
         'update',
     ])
 
@@ -190,7 +195,8 @@ def check_sha256(file_path: str, sha256_hash: str) -> None:
 def verify_postgres_envars() -> None:
     """Verifies that the required Postgres envars are defined. Results in an error otherwise."""
     all_defined = bool(
-        os.environ.get('POSTGRES_DB')
+        os.environ.get('POSTGRES_URL')
+        and os.environ.get('POSTGRES_DB')
         and os.environ.get('POSTGRES_USER')
         and os.environ.get('POSTGRES_PASSWORD')
     )
