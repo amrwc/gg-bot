@@ -65,6 +65,13 @@ jobs:
           docker pull "$BUILD_CONTAINER_CACHE" || echo "::warning::Failed to pull ${BUILD_CONTAINER_CACHE}"
           docker pull "$MAIN_CONTAINER_CACHE" || echo "::warning::Failed to pull ${MAIN_CONTAINER_CACHE}"
 
+      - name: Set required envars
+        run: |
+          export POSTGRES_URL='jdbc:postgresql://localhost:5432'
+          export POSTGRES_DB='ggbot'
+          export POSTGRES_USER='postgres'
+          export POSTGRES_PASSWORD="$(xxd -l 16 -c 16 -p < /dev/random)"
+
       - name: Build and run the container
         run: |
           if [ 'true' = "$USE_CACHE" ]; then
