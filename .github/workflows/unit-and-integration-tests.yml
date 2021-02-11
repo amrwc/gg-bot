@@ -100,4 +100,11 @@ jobs:
         run: ./gradlew build --info
 
       - name: Run integration tests
-        run: ./bin/integration_tests.py
+        run: |
+          # Set required envars
+          export POSTGRES_URL='jdbc:postgresql://localhost:5432'
+          export POSTGRES_DB='ggbot'
+          export POSTGRES_USER='postgres'
+          export POSTGRES_PASSWORD="$(xxd -l 16 -c 16 -p < /dev/random)"
+
+          ./bin/integration_tests.py
