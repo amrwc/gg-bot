@@ -175,3 +175,22 @@ def execute_cmd(cmd: List[str], pipe_stdout: bool = False, pipe_stderr: bool = F
         print_coloured('User halted the execution of the following command:\n', 'yellow')
         print_cmd(cmd)
         sys.exit(1)
+
+
+def verify_envars(
+        envars: List[str],
+        envars_category: str,
+        doc_string: str
+) -> None:
+    """Verifies that the required envars are defined. Results in an error otherwise.
+
+    Args:
+        envars (List[str]): List of envar names to be verified.
+        envars_category (str): Category of the envars for the error message.
+        doc_string (str): Docstring (__doc__) of the caller.
+    """
+    if not all([os.environ.get(envar) for envar in envars]):
+        raise_error(
+            f"One or more of the required {envars_category} envars have not been defined",
+            usage=lambda: print(doc_string.strip('\n'))
+        )

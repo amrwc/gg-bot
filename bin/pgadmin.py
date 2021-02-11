@@ -20,8 +20,8 @@ Options:
   -v, --version  Show the scripts' version.
 
 Envars:
-  PG_USERNAME    pgAdmin admin login username.
-  PG_PASSWORD    pgAdmin admin login password.
+  PG_USERNAME  pgAdmin admin login username.
+  PG_PASSWORD  pgAdmin admin login password.
 
 Example:
   export PG_USERNAME='user@domain.com'
@@ -37,10 +37,15 @@ import docker_utils
 import utils
 
 CONFIG = utils.get_config(module_path=__file__)
+REQUIRED_ENVARS = [
+    'PG_USERNAME',
+    'PG_PASSWORD',
+]
 
 
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
+    utils.verify_envars(REQUIRED_ENVARS, 'pgAdmin', __doc__)
 
     pg_username = os.environ.get('PG_USERNAME')
     pg_password = os.environ.get('PG_PASSWORD')

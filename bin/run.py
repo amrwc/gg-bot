@@ -26,6 +26,19 @@ Options:
   --suspend            Suspend the web server until the remote debugger has
                        connected; includes `--debug`.
   -v, --version        Show the scripts' version.
+
+Envars:
+  SPRING_DATASOURCE_URL       Database URL.
+  SPRING_DATASOURCE_USERNAME  Database username.
+  SPRING_DATASOURCE_PASSWORD  Database password.
+
+  The above are equivalent to setting `spring.datasource.*` in `application.yml`.
+
+Example:
+  export SPRING_DATASOURCE_URL='jdbc:postgresql://database-container:5432/dbname'
+  export SPRING_DATASOURCE_USERNAME='springuser'
+  export SPRING_DATASOURCE_PASSWORD='SuperSecret'
+  ./bin/run.py --apply-migrations
 """
 
 import glob
@@ -40,10 +53,16 @@ import docker_utils
 import utils
 
 CONFIG = utils.get_config(module_path=__file__)
+REQUIRED_ENVARS = [
+    'SPRING_DATASOURCE_URL',
+    'SPRING_DATASOURCE_USERNAME',
+    'SPRING_DATASOURCE_PASSWORD',
+]
 
 
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
+    utils.verify_envars(REQUIRED_ENVARS, 'Spring', __doc__)
 
     main_image = CONFIG['DOCKER']['main_image']
     build_image = CONFIG['DOCKER']['build_image']
@@ -199,6 +218,12 @@ def create_main_container(args: dict, main_image: str = None) -> None:
         main_container,
         '--network',
         CONFIG['DOCKER']['network'],
+        '--env',
+        f"SPRING_DATASOURCE_URL={os.environ.get('SPRING_DATASOURCE_URL')}",
+        '--env',
+        f"SPRING_DATASOURCE_USERNAME={os.environ.get('SPRING_DATASOURCE_USERNAME')}",
+        '--env',
+        f"SPRING_DATASOURCE_PASSWORD={os.environ.get('SPRING_DATASOURCE_PASSWORD')}",
         main_image,
     ]
     if args['--suspend'] or args['--debug']:

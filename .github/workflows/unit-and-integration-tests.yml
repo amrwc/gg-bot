@@ -107,4 +107,8 @@ jobs:
           export POSTGRES_USER='postgres'
           export POSTGRES_PASSWORD="$(xxd -l 16 -c 16 -p < /dev/random)"
 
+          export SPRING_DATASOURCE_URL='jdbc:postgresql://localhost:5432/ggbot'
+          export SPRING_DATASOURCE_USERNAME='postgres'
+          export SPRING_DATASOURCE_PASSWORD="$POSTGRES_PASSWORD"
+
           ./bin/integration_tests.py

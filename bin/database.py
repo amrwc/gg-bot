@@ -25,11 +25,11 @@ Options:
   -v, --version       Show the scripts' version.
 
 Envars:
-  POSTGRES_URL        URL at which the database server can be reached.
-  POSTGRES_DB         Name of the default database that is created when the
-                      image is first started.
-  POSTGRES_USER       Superuser username for PostgreSQL.
-  POSTGRES_PASSWORD   Superuser password for PostgreSQL.
+  POSTGRES_URL       URL at which the database server can be reached.
+  POSTGRES_DB        Name of the default database that is created when the
+                     image is first started.
+  POSTGRES_USER      Superuser username for PostgreSQL.
+  POSTGRES_PASSWORD  Superuser password for PostgreSQL.
 
   Read more on https://hub.docker.com/_/postgres.
 
@@ -55,6 +55,12 @@ import docker_utils
 import utils
 
 CONFIG = utils.get_config(module_path=__file__)
+REQUIRED_ENVARS = [
+    'POSTGRES_URL',
+    'POSTGRES_DB',
+    'POSTGRES_USER',
+    'POSTGRES_PASSWORD',
+]
 
 DRIVER_URL = 'https://jdbc.postgresql.org/download/postgresql-42.2.18.jar'
 SHA256_DRIVER = '0c891979f1eb2fe44432da114d09760b5063dad9e669ac0ac6b0b6bfb91bb3ba'
@@ -71,7 +77,8 @@ LIQUIBASE_PROPERTIES_PATH = os.path.join('src', 'main', 'resources', 'liquibase.
 
 def main() -> None:
     args = docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
-    verify_postgres_envars()
+    utils.verify_envars(REQUIRED_ENVARS, 'Postgres', __doc__)
+
     container_name = args['--container'] if args['--container'] else CONFIG['DATABASE']['database_container']
 
     start(
@@ -94,7 +101,8 @@ def start(container: str = None, network: str = None, migrations: bool = False, 
         migrations (bool): Optional; Whether to apply the migrations. Includes `start_db`.
         start_db (bool): Optional; Whether to start the database container.
     """
-    verify_postgres_envars()
+    utils.verify_envars(REQUIRED_ENVARS, 'Postgres', __doc__)
+
     container_name = container if container else CONFIG['DATABASE']['database_container']
     network_name = network if network else CONFIG['DOCKER']['network']
 
@@ -190,21 +198,6 @@ def check_sha256(file_path: str, sha256_hash: str) -> None:
         driver_digest = hashlib.sha256(file_bytes).hexdigest()
         if sha256_hash != driver_digest:
             utils.raise_error(f"SHA256 checksum of '{file_path}' doesn't match '{sha256_hash}'")
-
-
-def verify_postgres_envars() -> None:
-    """Verifies that the required Postgres envars are defined. Results in an error otherwise."""
-    all_defined = bool(
-        os.environ.get('POSTGRES_URL')
-        and os.environ.get('POSTGRES_DB')
-        and os.environ.get('POSTGRES_USER')
-        and os.environ.get('POSTGRES_PASSWORD')
-    )
-    if not all_defined:
-        utils.raise_error(
-            'One or more required Postgres envars have not been defined',
-            usage=lambda: print(__doc__.strip('\n'))
-        )
 
 
 if __name__ == '__main__':

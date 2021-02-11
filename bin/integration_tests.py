@@ -10,6 +10,19 @@ Usage:
 Options:
   -h, --help     Show this help message.
   -v, --version  Show the scripts' version.
+
+Envars:
+  SPRING_DATASOURCE_URL       Database URL.
+  SPRING_DATASOURCE_USERNAME  Database username.
+  SPRING_DATASOURCE_PASSWORD  Database password.
+
+  The above are equivalent to setting `spring.datasource.*` in `application.yml`.
+
+Example:
+  export SPRING_DATASOURCE_URL='jdbc:postgresql://test-database-container:5432/dbname'
+  export SPRING_DATASOURCE_USERNAME='springuser'
+  export SPRING_DATASOURCE_PASSWORD='SuperSecret'
+  ./bin/integration_tests.py
 """
 
 import docopt
@@ -19,10 +32,16 @@ import docker_utils
 import utils
 
 CONFIG = utils.get_config(module_path=__file__)
+REQUIRED_ENVARS = [
+    'SPRING_DATASOURCE_URL',
+    'SPRING_DATASOURCE_USERNAME',
+    'SPRING_DATASOURCE_PASSWORD',
+]
 
 
 def main() -> None:
     docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
+    utils.verify_envars(REQUIRED_ENVARS, 'Spring', __doc__)
 
     database_container = CONFIG['DATABASE']['database_test_container']
     network = CONFIG['DOCKER']['network']
