@@ -5,8 +5,6 @@ spring:
 #    url: 'jdbc:postgresql://docker-network:5432/dbname'
 #    username: 'springuser'
 #    password: 'SpringUserPassword'
-  liquibase:
-    change-log: classpath:db/changelog-main.xml
   jpa:
     hibernate:
       # Don't create/modify databases by inferring its properties from the models.
