@@ -46,6 +46,18 @@ documentation of [Discord.js][discordjs_docs] may have more information.
 
 See the [Database Migrations][db_migrations] document.
 
+### Scripts
+
+Some scripts inside `bin/` require environment variables set. To unset them,
+use this one-liner:
+
+```bash
+for var in $(export | grep -E '(POSTGRES|SPRING)' | awk -F'=' '{print $1}'); do unset "$var"; done
+```
+
+Note that in the above code snippet, `grep`'s use of `-E` flag may not work
+outside of macOS.
+
 ### Docker
 
 ```console
