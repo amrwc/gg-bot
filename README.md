@@ -23,24 +23,24 @@ documentation of [Discord.js][discordjs_docs] may have more information.
 
 1. Create a new application on
    [Discord Developer Portal][discord_developer_portal].
-  1. `Bot` settings.
-    1. Add a bot and customise it.
-    1. Save the authentication token.
-  1. `OAuth2` settings.
-    1. Add a redirect at `http://localhost:5000`.
-    1. Choose the newly added redirect URL in the `OAuth2 URL Generator`
-       section.
-    1. In `scopes` section, tick `bot`.
-    1. In `bot permissions` section, tick `Administrator`, or choose more
-       granular permissions.
-    1. Copy the invitation URL from the bottom of the `scopes` section and
-       navigate to it in the browser. Sign in to a relevant Discord account and
-       add the bot to a server.
+   1. `Bot` settings.
+      1. Add a bot and customise it.
+      1. Save the authentication token.
+   1. `OAuth2` settings.
+      1. Add a redirect at `http://localhost:5000`.
+      1. Choose the newly added redirect URL in the `OAuth2 URL Generator`
+         section.
+      1. In `scopes` section, tick `bot`.
+      1. In `bot permissions` section, tick `Administrator`, or choose more
+         granular permissions.
+      1. Copy the invitation URL from the bottom of the `scopes` section and
+         navigate to it in the browser. Sign in to a relevant Discord account and
+         add the bot to a server.
 1. Create bot config.
-  1. Duplicate `bot-config.example.yml` inside `src/main/resources/` and call
-     it `bot-config.yml`.
-  1. Replace the example the authentication token in the config file with the
-     one generated on Discord Developer Portal.
+   1. Duplicate `bot-config.example.yml` inside `src/main/resources/` and call
+      it `bot-config.yml`.
+   1. Replace the example the authentication token in the config file with the
+      one generated on Discord Developer Portal.
 
 ### Migrations
 
@@ -104,15 +104,6 @@ container names can be adjusted inside `./bin/config.ini`.
 ### Integration tests
 
 ```console
-export SPRING_DATASOURCE_URL='jdbc:postgresql://database-container:5432/dbname'
-export SPRING_DATASOURCE_USERNAME='springuser'
-export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
-
-export POSTGRES_URL='jdbc:postgresql://localhost:5432'
-export POSTGRES_DB='dbname'
-export POSTGRES_USER='postgres'
-export POSTGRES_PASSWORD='SuperuserPassword'
-
 ./bin/integration_tests.py
 ```
 
