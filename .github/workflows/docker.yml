@@ -5,8 +5,8 @@ on:
     paths:
       - '.github/workflows/docker.yml'
       - 'bin/**'
-      - '!bin/integration_tests.sh'
-      - '!bin/pgadmin.sh'
+      - '!bin/integration_tests.py'
+      - '!bin/pgadmin.py'
       - 'docker/**'
       - 'src/main/**.java'
       - 'src/main/resources/**'
@@ -46,6 +46,12 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      - name: Install Python requirements
+        run: |
+          sudo python3 -m pip install -U pip
+          sudo python3 -m pip install -U setuptools
+          pip3 install -r ./bin/requirements.txt
+
       - name: Add variables
         run: ${{ env.SET_VARIABLES }}
 
@@ -64,8 +70,19 @@ jobs:
           if [ 'true' = "$USE_CACHE" ]; then
             cache_from="--cache-from ${BUILD_CONTAINER_CACHE} --cache-from ${MAIN_CONTAINER_CACHE}"
           fi
+
+          # Set required envars
+          export POSTGRES_URL='jdbc:postgresql://localhost:5432'
+          export POSTGRES_DB='ggbot'
+          export POSTGRES_USER='postgres'
+          export POSTGRES_PASSWORD="$(xxd -l 16 -c 16 -p < /dev/random)"
+
+          export SPRING_DATASOURCE_URL='jdbc:postgresql://ggbot-database:5432/ggbot'
+          export SPRING_DATASOURCE_USERNAME='postgres'
+          export SPRING_DATASOURCE_PASSWORD="$POSTGRES_PASSWORD"
+
           # shellcheck disable=SC2086
-          ./bin/run.sh --start-db --apply-migrations --detach $cache_from
+          ./bin/run.py --apply-migrations --detach $cache_from
 
       - name: Tag and push the images
         if: ${{ 'true' == env.USE_CACHE }}
@@ -84,7 +101,7 @@ jobs:
       - name: Test the API
         run: |
           sleep 15 # Wait for Tomcat to come up
-          ./bin/test_api.sh
+          ./bin/api_tests.py
 
       - name: Teardown
-        run: ./bin/teardown.sh --include-db
+        run: ./bin/teardown.py --db --network

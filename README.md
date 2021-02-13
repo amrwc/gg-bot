@@ -1,7 +1,7 @@
 # GG Bot
 
-[![Docker](https://github.com/amrwc/gg-bot/workflows/Docker/badge.svg)](https://github.com/amrwc/gg-bot/actions)
-[![Unit and Integration Tests](https://github.com/amrwc/gg-bot/workflows/Unit%20and%20Integration%20Tests/badge.svg)](https://github.com/amrwc/gg-bot/actions)
+[![Docker][github_badge_docker]][github_actions]
+[![Unit and Integration Tests][github_badge_unit_integration]][github_actions]
 
 Discord bot to play games with.
 
@@ -22,7 +22,7 @@ documentation of [Discord.js][discordjs_docs] may have more information.
 ### Discord
 
 1. Create a new application on
-   [Discord Developer Portal](https://discord.com/developers/applications).
+   [Discord Developer Portal][discord_developer_portal].
   1. `Bot` settings.
     1. Add a bot and customise it.
     1. Save the authentication token.
@@ -46,19 +46,51 @@ documentation of [Discord.js][discordjs_docs] may have more information.
 
 See the [Database Migrations][db_migrations] document.
 
+### Scripts
+
+#### Install dependencies
+
+```console
+pip install -r bin/management/requirements.txt
+```
+
+#### Envars
+
+Some scripts inside `bin/` require environment variables set. To unset them,
+use this one-liner:
+
+```bash
+for var in $(export | grep -E '(POSTGRES|SPRING)' | awk -F'=' '{print $1}'); do unset "$var"; done
+```
+
+Note that in the above code snippet, `grep`'s use of `-E` flag may not work
+outside of macOS.
+
 ### Docker
 
 ```console
-./bin/run.sh [--apply-migrations --cache-from <cache_image_tag> --debug --detach --no-cache --start-db --suspend]
+export SPRING_DATASOURCE_URL='jdbc:postgresql://database-container:5432/dbname'
+export SPRING_DATASOURCE_USERNAME='springuser'
+export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
+
+export POSTGRES_URL='jdbc:postgresql://localhost:5432'
+export POSTGRES_DB='dbname'
+export POSTGRES_USER='postgres'
+export POSTGRES_PASSWORD='SuperuserPassword'
+
+./bin/run.py --apply-migrations [--debug]
 ```
 
 The application is now listening at `http://localhost:8080`. If the `--debug`
 option has been used, the debugger is listening on port `8000`.
 
+Defaults such as database and Spring ports, and volume, network, image,
+container names can be adjusted inside `./bin/config.ini`.
+
 #### Clean
 
 ```console
-./bin/teardown.sh [--include-cache --include-db --include-tmp]
+./bin/teardown.py [--cache --db --network --tmp]
 ```
 
 ## Test
@@ -72,11 +104,24 @@ option has been used, the debugger is listening on port `8000`.
 ### Integration tests
 
 ```console
-./bin/integration_tests.sh
+export SPRING_DATASOURCE_URL='jdbc:postgresql://database-container:5432/dbname'
+export SPRING_DATASOURCE_USERNAME='springuser'
+export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
+
+export POSTGRES_URL='jdbc:postgresql://localhost:5432'
+export POSTGRES_DB='dbname'
+export POSTGRES_USER='postgres'
+export POSTGRES_PASSWORD='SuperuserPassword'
+
+./bin/integration_tests.py
 ```
 
+[discord_developer_portal]: https://discord.com/developers/applications
 [db_migrations]: ./docs/database-migrations.md
 [discordjs_docs]: https://discordjs.guide
+[github_actions]: https://github.com/amrwc/gg-bot/actions
+[github_badge_docker]: https://github.com/amrwc/gg-bot/workflows/Docker/badge.svg
+[github_badge_unit_integration]: https://github.com/amrwc/gg-bot/workflows/Unit%20and%20Integration%20Tests/badge.svg
 [javacord]: https://github.com/Javacord/Javacord
 [javacord_docs]: https://javacord.org/wiki
 [supported_games]: ./docs/supported-games.md

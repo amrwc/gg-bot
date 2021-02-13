@@ -1,11 +1,10 @@
 spring:
-  datasource:
-    # Use `localhost` instead of `*-database` when running a local PostgreSQL instance.
-    url: 'jdbc:postgresql://ggbot-database:5432/ggbot'
-    username: 'postgres'
-    password: 'password'
-  liquibase:
-    change-log: classpath:db/changelog-main.xml
+# These properties are set using environment variables during the `docker create` step
+#  datasource:
+#    # Use `localhost` instead of using the Docker network name when running a local PostgreSQL instance.
+#    url: 'jdbc:postgresql://docker-network:5432/dbname'
+#    username: 'springuser'
+#    password: 'SpringUserPassword'
   jpa:
     hibernate:
       # Don't create/modify databases by inferring its properties from the models.
