@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Repository for `USER_CREDITS` table.
+ * Repository for <code>USER_CREDITS</code> table.
  */
 @Repository
 @Transactional

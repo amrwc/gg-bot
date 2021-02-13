@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Repository for `USERS` table.
+ * Repository for <code>USERS</code> table.
  */
 @Repository
 @Transactional
