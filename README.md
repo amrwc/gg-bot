@@ -48,6 +48,14 @@ See the [Database Migrations][db_migrations] document.
 
 ### Scripts
 
+#### Install dependencies
+
+```console
+pip install -r bin/management/requirements.txt
+```
+
+#### Envars
+
 Some scripts inside `bin/` require environment variables set. To unset them,
 use this one-liner:
 
