@@ -2,7 +2,7 @@ package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.dto.SlotResult;
 import dev.amrw.ggbot.helper.SlotListenerHelper;
-import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.service.SlotService;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;

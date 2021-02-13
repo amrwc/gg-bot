@@ -36,11 +36,12 @@ documentation of [Discord.js][discordjs_docs] may have more information.
       1. Copy the invitation URL from the bottom of the `scopes` section and
          navigate to it in the browser. Sign in to a relevant Discord account and
          add the bot to a server.
-1. Create bot config.
-   1. Duplicate `bot-config.example.yml` inside `src/main/resources/` and call
-      it `bot-config.yml`.
-   1. Replace the example the authentication token in the config file with the
-      one generated on Discord Developer Portal.
+1. Once the application's database has been provisioned, update the
+   `DISCORD_AUTH_TOKEN` row to the authentication token.
+
+   ```postgresql
+   UPDATE CONFIG SET VALUE = '<auth_token>' WHERE NAME = 'DISCORD_AUTH_TOKEN';
+   ```
 
 ### Migrations
 

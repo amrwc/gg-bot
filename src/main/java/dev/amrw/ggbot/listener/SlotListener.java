@@ -1,7 +1,7 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.helper.SlotListenerHelper;
-import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.service.SlotService;
 import lombok.extern.log4j.Log4j2;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -22,21 +22,14 @@ public class SlotListener implements MessageCreateListener {
 
     static final String KEYWORD = "slot";
 
+    private final BotConfig botConfig;
     private final SlotService service;
     private final SlotListenerHelper helper;
-    private BotConfig botConfig;
 
-    @Autowired(required = false)
-    private SlotListener(final SlotService service, final SlotListenerHelper helper) {
-        this.service = service;
-        this.helper = helper;
-    }
-
-    @Autowired(required = false)
-    public SlotListener(final SlotService service, final SlotListenerHelper helper, final BotConfig botConfig) {
-        this.service = service;
-        this.helper = helper;
+    public SlotListener(final BotConfig botConfig, final SlotService service, final SlotListenerHelper helper) {
         this.botConfig = botConfig;
+        this.service = service;
+        this.helper = helper;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.config.BotConfig;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -17,13 +17,8 @@ public class GamesListener implements MessageCreateListener {
 
     static final String KEYWORD = "games";
 
-    private BotConfig botConfig;
+    private final BotConfig botConfig;
 
-    private GamesListener() {
-        // noop
-    }
-
-    @Autowired(required = false)
     public GamesListener(final BotConfig botConfig) {
         this.botConfig = botConfig;
     }

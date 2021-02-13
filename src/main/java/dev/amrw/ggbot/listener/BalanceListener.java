@@ -1,12 +1,11 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.service.UserCreditsService;
 import dev.amrw.ggbot.util.MessageAuthorUtil;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
@@ -19,18 +18,12 @@ public class BalanceListener implements MessageCreateListener {
 
     static final String KEYWORD = "balance";
 
+    private final BotConfig botConfig;
     private final UserCreditsService userCreditsService;
-    private BotConfig botConfig;
 
-    @Autowired(required = false)
-    private BalanceListener(final UserCreditsService userCreditsService) {
-        this.userCreditsService = userCreditsService;
-    }
-
-    @Autowired(required = false)
-    public BalanceListener(final UserCreditsService userCreditsService, final BotConfig botConfig) {
-        this.userCreditsService = userCreditsService;
+    public BalanceListener(final BotConfig botConfig, final UserCreditsService userCreditsService) {
         this.botConfig = botConfig;
+        this.userCreditsService = userCreditsService;
     }
 
     @Override

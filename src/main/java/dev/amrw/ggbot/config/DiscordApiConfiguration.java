@@ -1,6 +1,5 @@
 package dev.amrw.ggbot.config;
 
-import dev.amrw.ggbot.resource.BotConfig;
 import lombok.extern.log4j.Log4j2;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;

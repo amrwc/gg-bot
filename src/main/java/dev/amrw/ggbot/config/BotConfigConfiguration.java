@@ -1,11 +1,7 @@
 package dev.amrw.ggbot.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import dev.amrw.ggbot.resource.BotConfig;
-import dev.amrw.ggbot.resource.ResourceReader;
+import dev.amrw.ggbot.repository.ConfigRepository;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,14 +16,25 @@ import org.springframework.context.annotation.Configuration;
  */
 @Log4j2
 @Configuration
-@ConditionalOnResource(resources = {BotConfig.PATH})
 public class BotConfigConfiguration {
+
+    private static final String DISCORD_AUTH_TOKEN = "DISCORD_AUTH_TOKEN";
+    private static final String EMBED_COLOUR = "EMBED_COLOUR";
+    private static final String TRIGGER = "TRIGGER";
+
+    private final ConfigRepository configRepository;
+
+    public BotConfigConfiguration(final ConfigRepository configRepository) {
+        this.configRepository = configRepository;
+    }
 
     @Bean
     public BotConfig botConfig() {
-        log.info("Reading {} config", BotConfig.PATH);
-        final var configReader = new ResourceReader(new ObjectMapper(new YAMLFactory()));
-        return configReader.readResource(BotConfig.PATH, BotConfig.class)
-                .orElseThrow(() -> new IllegalStateException("Failed to read " + BotConfig.PATH));
+        log.info("Building BotConfig");
+        return new BotConfig(
+                configRepository.findString(DISCORD_AUTH_TOKEN),
+                configRepository.findString(EMBED_COLOUR),
+                configRepository.findString(TRIGGER)
+        );
     }
 }
