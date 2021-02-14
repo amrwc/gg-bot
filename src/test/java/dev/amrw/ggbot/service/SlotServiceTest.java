@@ -9,10 +9,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextLong;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,8 +25,10 @@ class SlotServiceTest {
     @DisplayName("Should have played a game of slots")
     void shouldHavePlayed() {
         final var bet = nextLong();
+        final var roll = randomAlphanumeric(16);
         final var creditsWon = nextLong();
-        when(service.calculateWinnings(eq(bet), anyString())).thenReturn(creditsWon);
+        when(service.spin()).thenReturn(roll);
+        when(service.calculateWinnings(bet, roll)).thenReturn(creditsWon);
 
         final var result = service.play(bet);
 

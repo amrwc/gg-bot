@@ -1,10 +1,10 @@
 package dev.amrw.ggbot.service;
 
 import dev.amrw.ggbot.dto.SlotResult;
+import dev.amrw.ggbot.util.EmojiUtil;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,20 +17,18 @@ import java.util.Map;
 public class SlotService {
 
     private static final List<String> SYMBOLS = List.of("🥇", "💎", "💯", "💵", "💰");
-    private static final Map<String, Number> PAYLINE_MULTIPLIERS = new LinkedHashMap<>();
-
-    static {
-        PAYLINE_MULTIPLIERS.put("🥇🥇🥇", 2.5);
-        PAYLINE_MULTIPLIERS.put("🥇🥇", 0.5);
-        PAYLINE_MULTIPLIERS.put("💎💎💎", 3);
-        PAYLINE_MULTIPLIERS.put("💎💎", 2);
-        PAYLINE_MULTIPLIERS.put("💯💯💯", 4);
-        PAYLINE_MULTIPLIERS.put("💯💯", 2);
-        PAYLINE_MULTIPLIERS.put("💵💵💵", 7);
-        PAYLINE_MULTIPLIERS.put("💵💵", 3.5);
-        PAYLINE_MULTIPLIERS.put("💰💰💰", 15);
-        PAYLINE_MULTIPLIERS.put("💰💰", 7);
-    }
+    private static final Map<String, Double> PAYLINE_MULTIPLIERS = Map.of(
+            "🥇🥇🥇", 2.5,
+            "🥇🥇", 0.5,
+            "💎💎💎", 3.0,
+            "💎💎", 2.0,
+            "💯💯💯", 4.0,
+            "💯💯", 2.0,
+            "💵💵💵", 7.0,
+            "💵💵", 3.5,
+            "💰💰💰", 15.0,
+            "💰💰", 7.0
+    );
 
     private final SecureRandom random;
 
@@ -48,21 +46,25 @@ public class SlotService {
         return new SlotResult(bet, calculateWinnings(bet, payline), payline);
     }
 
-    protected long calculateWinnings(final long bet, final String payline) {
-        for (final Map.Entry<String, Number> multiplier : PAYLINE_MULTIPLIERS.entrySet()) {
-            if (payline.contains(multiplier.getKey())) {
-                return Math.round(bet * multiplier.getValue().doubleValue());
-            }
-        }
-        return 0L;
-    }
-
-    private String spin() {
+    protected String spin() {
         final var rollBuilder = new StringBuilder();
         for (int i = 0; i < 3; i++) {
             final var index = random.nextInt(SYMBOLS.size());
             rollBuilder.append(SYMBOLS.get(index));
         }
         return rollBuilder.toString();
+    }
+
+    protected long calculateWinnings(final long bet, final String payline) {
+        var multiplier = PAYLINE_MULTIPLIERS.get(payline);
+        if (null == multiplier) {
+            final var firstAndSecondColumn = EmojiUtil.getEmojiSubstring(payline, 0, 2);
+            multiplier = PAYLINE_MULTIPLIERS.get(firstAndSecondColumn);
+            if (null == multiplier) {
+                final var secondAndThirdColumn = EmojiUtil.getEmojiSubstring(payline, 1);
+                multiplier = PAYLINE_MULTIPLIERS.get(secondAndThirdColumn);
+            }
+        }
+        return null == multiplier ? 0L : Math.round(bet * multiplier);
     }
 }
