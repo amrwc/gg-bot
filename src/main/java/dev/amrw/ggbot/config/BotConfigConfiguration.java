@@ -5,6 +5,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.awt.Color;
+
 /**
  * Bean factory for {@link BotConfig}.
  * <p>
@@ -20,6 +22,7 @@ public class BotConfigConfiguration {
 
     private static final String DISCORD_AUTH_TOKEN = "DISCORD_AUTH_TOKEN";
     private static final String EMBED_COLOUR = "EMBED_COLOUR";
+    private static final Color DEFAULT_EMBED_COLOUR = Color.ORANGE;
     private static final String TRIGGER = "TRIGGER";
 
     private final ConfigRepository configRepository;
@@ -33,8 +36,26 @@ public class BotConfigConfiguration {
         log.info("Building BotConfig");
         return new BotConfig(
                 configRepository.findString(DISCORD_AUTH_TOKEN),
-                configRepository.findString(EMBED_COLOUR),
+                parseColour(configRepository.findString(EMBED_COLOUR)),
                 configRepository.findString(TRIGGER)
         );
+    }
+
+    /**
+     * Parses colour name into {@link Color} using its field name via reflection. Defaults to
+     * {@link #DEFAULT_EMBED_COLOUR} in case of an exception.
+     * <p>
+     * Read more on the solution and reasons for it <a href="https://stackoverflow.com/a/3772327/10620237">here</a>.
+     * @param colour field name from the {@link Color} class.
+     * @return parsed {@link Color} or {@link #DEFAULT_EMBED_COLOUR} in case an exception has been raised
+     */
+    private Color parseColour(final String colour) {
+        try {
+            final var field = Color.class.getField(colour);
+            return (Color) field.get(null);
+        } catch (final NoSuchFieldException | IllegalAccessException exception) {
+            log.error("Error when parsing colour: {}", colour, exception);
+            return DEFAULT_EMBED_COLOUR;
+        }
     }
 }

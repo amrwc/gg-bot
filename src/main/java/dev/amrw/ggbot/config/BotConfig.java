@@ -3,6 +3,8 @@ package dev.amrw.ggbot.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.awt.Color;
+
 /**
  * POJO holding bot configuration as a singleton.
  */
@@ -11,6 +13,6 @@ import lombok.Data;
 public class BotConfig {
 
     private String authToken;
-    private String embedColour;
+    private Color embedColour;
     private String trigger;
 }

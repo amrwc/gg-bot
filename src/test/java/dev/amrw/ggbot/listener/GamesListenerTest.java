@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.awt.Color;
+
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.mockito.Mockito.*;
@@ -54,6 +56,7 @@ class GamesListenerTest {
     @DisplayName("Should have displayed currently available games")
     void shouldHaveDisplayedAvailableGames() {
         when(message.getContent()).thenReturn(prefix);
+        when(botConfig.getEmbedColour()).thenReturn(Color.ORANGE);
         when(event.getChannel()).thenReturn(channel);
         listener.onMessageCreate(event);
         verify(channel).sendMessage(any(EmbedBuilder.class));

@@ -1,9 +1,9 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,7 +27,11 @@ public class PingPongListener implements MessageCreateListener {
         if (!messageContent.startsWith(prefix)) {
             return;
         }
+
         event.getMessage().addReaction("🏓");
-        event.getChannel().sendMessage("pong!");
+        final var embedBuilder = new EmbedBuilder()
+                .setColor(botConfig.getEmbedColour())
+                .setDescription("pong!");
+        event.getChannel().sendMessage(embedBuilder);
     }
 }

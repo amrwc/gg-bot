@@ -1,16 +1,14 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.config.BotConfig;
+import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.service.SlotService;
 import lombok.extern.log4j.Log4j2;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.util.Arrays;
 
 /**
@@ -51,7 +49,7 @@ public class SlotListener implements MessageCreateListener {
             return;
         }
 
-        helper.displayResultSuspensefully(event, service.play(bet));
+        helper.displayResultSuspensefully(event, service.play(bet), botConfig.getEmbedColour());
     }
 
     /**
@@ -69,7 +67,7 @@ public class SlotListener implements MessageCreateListener {
 
     private void sendHelpMessage(final MessageCreateEvent event) {
         final var embedBuilder = new EmbedBuilder()
-                .setColor(Color.ORANGE)
+                .setColor(botConfig.getEmbedColour())
                 .setTitle("Slot Machine")
                 .addField("Rules", "🥇🥇❔ – **0.5x**\n" +
                         "💎💎❔ – **2x**\n" +

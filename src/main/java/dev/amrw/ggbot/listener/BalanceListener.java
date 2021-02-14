@@ -8,8 +8,6 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
-
 /**
  * Listener that displays the user's credit balance.
  */
@@ -37,7 +35,7 @@ public class BalanceListener implements MessageCreateListener {
         final var messageAuthor = event.getMessage().getAuthor();
         final var userCredit = userCreditsService.getOrCreateUserCredit(messageAuthor);
         final var embedBuilder = new EmbedBuilder()
-                .setColor(Color.ORANGE)
+                .setColor(botConfig.getEmbedColour())
                 .setTitle("Credit Balance")
                 .addField("User", MessageAuthorUtil.getMentionTagOrDisplayName(messageAuthor))
                 .addField("Current balance", "" + userCredit.getCredits());

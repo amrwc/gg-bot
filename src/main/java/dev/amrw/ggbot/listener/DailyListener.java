@@ -7,10 +7,9 @@ import dev.amrw.ggbot.util.MessageAuthorUtil;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
+import java.awt.Color;
 
 /**
  * Listener that gives the user daily credits.
@@ -50,7 +49,7 @@ public class DailyListener implements MessageCreateListener {
         final var userCredit = userCreditsService.getOrCreateUserCredit(messageAuthor);
         if (claimedCredits > 0L) {
             embedBuilder
-                    .setColor(Color.ORANGE)
+                    .setColor(botConfig.getEmbedColour())
                     .addField("New credits", "" + claimedCredits);
         } else {
             embedBuilder

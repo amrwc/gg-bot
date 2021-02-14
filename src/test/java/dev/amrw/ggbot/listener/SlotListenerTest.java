@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.awt.Color;
 import java.util.Optional;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -103,7 +104,8 @@ class SlotListenerTest {
         final var bet = 100L;
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(service.play(bet)).thenReturn(slotResult);
+        when(botConfig.getEmbedColour()).thenReturn(Color.ORANGE);
         listener.onMessageCreate(event);
-        verify(helper).displayResultSuspensefully(event, slotResult);
+        verify(helper).displayResultSuspensefully(event, slotResult, Color.ORANGE);
     }
 }

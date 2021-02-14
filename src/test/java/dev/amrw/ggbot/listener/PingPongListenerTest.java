@@ -3,6 +3,7 @@ package dev.amrw.ggbot.listener;
 import dev.amrw.ggbot.config.BotConfig;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,6 +56,6 @@ class PingPongListenerTest {
         when(event.getChannel()).thenReturn(channel);
         listener.onMessageCreate(event);
         verify(message).addReaction("🏓");
-        verify(channel).sendMessage("pong!");
+        verify(channel).sendMessage(any(EmbedBuilder.class));
     }
 }

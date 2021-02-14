@@ -1,7 +1,7 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.model.UserCredit;
 import dev.amrw.ggbot.config.BotConfig;
+import dev.amrw.ggbot.model.UserCredit;
 import dev.amrw.ggbot.service.DailyService;
 import dev.amrw.ggbot.service.UserCreditsService;
 import org.javacord.api.entity.channel.TextChannel;
