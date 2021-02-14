@@ -1,16 +1,15 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.service.DailyService;
 import dev.amrw.ggbot.service.UserCreditsService;
 import dev.amrw.ggbot.util.MessageAuthorUtil;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
+import java.awt.Color;
 
 /**
  * Listener that gives the user daily credits.
@@ -20,25 +19,18 @@ public class DailyListener implements MessageCreateListener {
 
     static final String KEYWORD = "daily";
 
+    private final BotConfig botConfig;
     private final DailyService dailyService;
     private final UserCreditsService userCreditsService;
-    private BotConfig botConfig;
 
-    @Autowired(required = false)
-    private DailyListener(final DailyService dailyService, final UserCreditsService userCreditsService) {
-        this.dailyService = dailyService;
-        this.userCreditsService = userCreditsService;
-    }
-
-    @Autowired(required = false)
     public DailyListener(
+            final BotConfig botConfig,
             final DailyService dailyService,
-            final UserCreditsService userCreditsService,
-            final BotConfig botConfig
+            final UserCreditsService userCreditsService
     ) {
+        this.botConfig = botConfig;
         this.dailyService = dailyService;
         this.userCreditsService = userCreditsService;
-        this.botConfig = botConfig;
     }
 
     @Override
@@ -57,7 +49,7 @@ public class DailyListener implements MessageCreateListener {
         final var userCredit = userCreditsService.getOrCreateUserCredit(messageAuthor);
         if (claimedCredits > 0L) {
             embedBuilder
-                    .setColor(Color.ORANGE)
+                    .setColor(botConfig.getEmbedColour())
                     .addField("New credits", "" + claimedCredits);
         } else {
             embedBuilder

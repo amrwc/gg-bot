@@ -42,6 +42,3 @@ out/
 ### The application's output ###
 log/
 tmp/
-
-### Secrets ###
-**/bot-config.yml
