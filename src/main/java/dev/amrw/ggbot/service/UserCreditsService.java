@@ -57,4 +57,11 @@ public class UserCreditsService {
     public Long getCurrentBalance(final MessageAuthor messageAuthor) {
         return getOrCreateUserCredit(messageAuthor).getCredits();
     }
+
+    @Transactional
+    public Long addCredit(final MessageAuthor messageAuthor, final long credits) {
+        final var userCredit = getOrCreateUserCredit(messageAuthor);
+        userCredit.setCredits(Math.max(0L, userCredit.getCredits() + credits));
+        return userCredit.getCredits();
+    }
 }

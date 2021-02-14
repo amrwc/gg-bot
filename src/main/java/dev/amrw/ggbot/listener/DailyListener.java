@@ -3,7 +3,7 @@ package dev.amrw.ggbot.listener;
 import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.service.DailyService;
 import dev.amrw.ggbot.service.UserCreditsService;
-import dev.amrw.ggbot.util.MessageAuthorUtil;
+import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -44,7 +44,7 @@ public class DailyListener implements MessageCreateListener {
         final var messageAuthor = event.getMessage().getAuthor();
         final var embedBuilder = new EmbedBuilder()
                 .setTitle("Daily Credits")
-                .addField("User", MessageAuthorUtil.getMentionTagOrDisplayName(messageAuthor));
+                .addField("User", DiscordMessageUtil.getMentionTagOrDisplayName(messageAuthor));
         final var claimedCredits = dailyService.claimDailyCredits(messageAuthor);
         final var userCredit = userCreditsService.getOrCreateUserCredit(messageAuthor);
         if (claimedCredits > 0L) {

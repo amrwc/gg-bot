@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MessageAuthorUtilTest {
+class DiscordMessageUtilTest {
 
     @Mock
     private MessageAuthor messageAuthor;
@@ -28,7 +28,7 @@ class MessageAuthorUtilTest {
         final var mentionTag = randomAlphanumeric(16);
         when(messageAuthor.asUser()).thenReturn(Optional.of(user));
         when(user.getMentionTag()).thenReturn(mentionTag);
-        assertThat(MessageAuthorUtil.getMentionTagOrDisplayName(messageAuthor)).isEqualTo(mentionTag);
+        assertThat(DiscordMessageUtil.getMentionTagOrDisplayName(messageAuthor)).isEqualTo(mentionTag);
     }
 
     @Test
@@ -37,6 +37,6 @@ class MessageAuthorUtilTest {
         final var displayName = randomAlphanumeric(16);
         when(messageAuthor.asUser()).thenReturn(Optional.empty());
         when(messageAuthor.getDisplayName()).thenReturn(displayName);
-        assertThat(MessageAuthorUtil.getMentionTagOrDisplayName(messageAuthor)).isEqualTo(displayName);
+        assertThat(DiscordMessageUtil.getMentionTagOrDisplayName(messageAuthor)).isEqualTo(displayName);
     }
 }

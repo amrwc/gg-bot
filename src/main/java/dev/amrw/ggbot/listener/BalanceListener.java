@@ -2,8 +2,7 @@ package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.service.UserCreditsService;
-import dev.amrw.ggbot.util.MessageAuthorUtil;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.stereotype.Component;
@@ -18,10 +17,16 @@ public class BalanceListener implements MessageCreateListener {
 
     private final BotConfig botConfig;
     private final UserCreditsService userCreditsService;
+    private final DiscordMessageUtil messageUtil;
 
-    public BalanceListener(final BotConfig botConfig, final UserCreditsService userCreditsService) {
+    public BalanceListener(
+            final BotConfig botConfig,
+            final UserCreditsService userCreditsService,
+            final DiscordMessageUtil messageUtil
+    ) {
         this.botConfig = botConfig;
         this.userCreditsService = userCreditsService;
+        this.messageUtil = messageUtil;
     }
 
     @Override
@@ -34,11 +39,8 @@ public class BalanceListener implements MessageCreateListener {
 
         final var messageAuthor = event.getMessage().getAuthor();
         final var userCredit = userCreditsService.getOrCreateUserCredit(messageAuthor);
-        final var embedBuilder = new EmbedBuilder()
-                .setColor(botConfig.getEmbedColour())
-                .setTitle("Credit Balance")
-                .addField("User", MessageAuthorUtil.getMentionTagOrDisplayName(messageAuthor))
-                .addField("Current balance", "" + userCredit.getCredits());
+        final var embedBuilder = messageUtil.buildInfoEmbed(messageAuthor, "Credits Balance")
+                .setDescription(userCredit.getCredits().toString());
         event.getChannel().sendMessage(embedBuilder);
     }
 }

@@ -1,5 +1,7 @@
 package dev.amrw.ggbot.service;
 
+import dev.amrw.ggbot.dto.Error;
+import dev.amrw.ggbot.dto.PlayRequest;
 import dev.amrw.ggbot.dto.SlotResult;
 import dev.amrw.ggbot.util.EmojiUtil;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,7 @@ import java.util.Map;
 @Service
 public class SlotService {
 
-    private static final List<String> SYMBOLS = List.of("🥇", "💎", "💯", "💵", "💰");
+    static final List<String> SYMBOLS = List.of("🥇", "💎", "💯", "💵", "💰");
     private static final Map<String, Double> PAYLINE_MULTIPLIERS = Map.of(
             "🥇🥇🥇", 2.5,
             "🥇🥇", 0.5,
@@ -30,9 +32,11 @@ public class SlotService {
             "💰💰", 7.0
     );
 
+    private final UserCreditsService userCreditsService;
     private final SecureRandom random;
 
-    public SlotService() {
+    public SlotService(final UserCreditsService userCreditsService) {
+        this.userCreditsService = userCreditsService;
         this.random = new SecureRandom();
     }
 
@@ -41,9 +45,22 @@ public class SlotService {
      * @param bet number of credits on the line
      * @return result of the game
      */
-    public SlotResult play(final long bet) {
+    public SlotResult play(final PlayRequest playRequest) {
+        final var currentBalance = userCreditsService.getCurrentBalance(playRequest.getMessageAuthor());
+        if (playRequest.getBet() > currentBalance) {
+            final var betResult = new SlotResult();
+            betResult.setBet(playRequest.getBet());
+            betResult.setHasPlayed(false);
+            betResult.setCurrentBalance(currentBalance);
+            betResult.setError(Error.INSUFFICIENT_CREDITS);
+            return betResult;
+        }
+
         final var payline = spin();
-        return new SlotResult(bet, calculateWinnings(bet, payline), payline);
+        final var winnings = calculateWinnings(playRequest.getBet(), payline);
+        final var newBalance = userCreditsService.addCredit(
+                playRequest.getMessageAuthor(), winnings - playRequest.getBet());
+        return new SlotResult(playRequest.getBet(), true, winnings, payline, newBalance, null);
     }
 
     protected String spin() {
