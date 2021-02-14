@@ -5,7 +5,7 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -20,20 +20,26 @@ public class SlotListenerHelper {
      * column has been revealed.
      * @param event current {@link MessageCreateEvent}
      * @param result {@link SlotResult}
+     * @param embedColour {@link Color} of the message embeds
      */
-    public void displayResultSuspensefully(final MessageCreateEvent event, final SlotResult result) {
+    public void displayResultSuspensefully(
+            final MessageCreateEvent event,
+            final SlotResult result,
+            final Color embedColour
+    ) {
         final var paylineFormat = "**------------------**\n**| %s | %s | %s |**\n**------------------**";
         final var columns = new String[] {
                 result.getPayline().substring(0, 2),
                 result.getPayline().substring(2, 4),
                 result.getPayline().substring(4)
         };
-        var future = event.getChannel().sendMessage(getEmbedBuilder(String.format(paylineFormat, "❔", "❔", "❔")));
+        var future = event.getChannel().sendMessage(
+                getEmbedBuilder(String.format(paylineFormat, "❔", "❔", "❔"), embedColour));
         final var edits = new EmbedBuilder[] {
-                getEmbedBuilder(String.format(paylineFormat, columns[0], "❔", "❔")),
-                getEmbedBuilder(String.format(paylineFormat, columns[0], columns[1], "❔")),
+                getEmbedBuilder(String.format(paylineFormat, columns[0], "❔", "❔"), embedColour),
+                getEmbedBuilder(String.format(paylineFormat, columns[0], columns[1], "❔"), embedColour),
                 getEmbedBuilder(String.format(paylineFormat + "\n**-- YOU %s --**",
-                        columns[0], columns[1], columns[2], result.getCreditsWon() > 0L ? "WON" : "LOST"))
+                        columns[0], columns[1], columns[2], result.getCreditsWon() > 0L ? "WON" : "LOST"), embedColour)
                         .addField("Credits won", String.valueOf(result.getCreditsWon()))
         };
         for (final EmbedBuilder edit : edits) {
@@ -44,9 +50,9 @@ public class SlotListenerHelper {
         }
     }
 
-    private EmbedBuilder getEmbedBuilder(final String resultContent) {
+    private EmbedBuilder getEmbedBuilder(final String resultContent, final Color embedColour) {
         return new EmbedBuilder()
-                .setColor(Color.ORANGE)
+                .setColor(embedColour)
                 .setTitle("Slot Machine")
                 .addField("Result", resultContent);
     }

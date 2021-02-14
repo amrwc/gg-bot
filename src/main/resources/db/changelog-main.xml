@@ -7,4 +7,6 @@
     <include relativeToChangelogFile="true" file="changelog/20210202-01--create-uuid-ossp-extension.sql"/>
     <include relativeToChangelogFile="true" file="changelog/20210202-02--create-users-table.sql"/>
     <include relativeToChangelogFile="true" file="changelog/20210202-03--create-user_credits-table.sql"/>
+    <include relativeToChangelogFile="true" file="changelog/20210213-01--create-config-table.sql"/>
+    <include relativeToChangelogFile="true" file="changelog/20210213-02--add-initial-config.sql"/>
 </databaseChangeLog>

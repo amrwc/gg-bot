@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.awt.Color;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
@@ -43,7 +44,7 @@ class SlotListenerHelperTest {
         when(channel.sendMessage(any(EmbedBuilder.class))).thenReturn(future);
         when(future.whenCompleteAsync(any(BiConsumer.class), any(Executor.class))).thenReturn(future);
 
-        helper.displayResultSuspensefully(event, slotResult);
+        helper.displayResultSuspensefully(event, slotResult, Color.ORANGE);
 
         verify(future, times(3)).whenCompleteAsync(any(BiConsumer.class), any(Executor.class));
     }

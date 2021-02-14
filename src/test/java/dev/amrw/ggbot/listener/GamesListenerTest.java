@@ -1,6 +1,6 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.resource.BotConfig;
+import dev.amrw.ggbot.config.BotConfig;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.awt.Color;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
@@ -54,6 +56,7 @@ class GamesListenerTest {
     @DisplayName("Should have displayed currently available games")
     void shouldHaveDisplayedAvailableGames() {
         when(message.getContent()).thenReturn(prefix);
+        when(botConfig.getEmbedColour()).thenReturn(Color.ORANGE);
         when(event.getChannel()).thenReturn(channel);
         listener.onMessageCreate(event);
         verify(channel).sendMessage(any(EmbedBuilder.class));
