@@ -25,8 +25,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.awt.Color;
-
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,7 +88,7 @@ class SlotListenerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"-1", "-123", "abcd", "💯💯💯"})
+    @ValueSource(strings = {"0", "-1", "-123", "abcd", "💯💯💯"})
     @DisplayName("Should have sent an error message in case of an invalid bet")
     void shouldHaveSentErrorMessageOnInvalidBet(final String bet) {
         when(message.getContent()).thenReturn(prefix + " " + bet);
@@ -137,11 +135,10 @@ class SlotListenerTest {
         when(event.getMessageAuthor()).thenReturn(messageAuthor);
         when(service.play(any(PlayRequest.class))).thenReturn(slotResult);
         when(slotResult.hasPlayed()).thenReturn(true);
-        when(botConfig.getEmbedColour()).thenReturn(Color.ORANGE);
 
         listener.onMessageCreate(event);
 
-        verify(helper).displayResultSuspensefully(event, slotResult, Color.ORANGE);
+        verify(helper).displayResultSuspensefully(event, slotResult);
         verifyNoMoreInteractions(service, helper);
     }
 }

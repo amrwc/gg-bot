@@ -48,7 +48,7 @@ public class SlotListener implements MessageCreateListener {
             return;
         }
 
-        final var messageParts = messageContent.split(" ");
+        final var messageParts = messageContent.split("\\s+");
         if (needsHelp(messageParts)) {
             sendHelpMessage(event);
             return;
@@ -68,7 +68,7 @@ public class SlotListener implements MessageCreateListener {
             return;
         }
 
-        helper.displayResultSuspensefully(event, slotResult, botConfig.getEmbedColour());
+        helper.displayResultSuspensefully(event, slotResult);
     }
 
     /**
@@ -127,7 +127,7 @@ public class SlotListener implements MessageCreateListener {
                     "'%s' is an invalid bet. You can view the instructions with `%s slot help`",
                     betString,
                     botConfig.getTrigger())));
-        } else if (playRequest.getBet() < 0L) {
+        } else if (playRequest.getBet() <= 0L) {
             event.getChannel().sendMessage(
                     messageUtil.buildErrorEmbed(messageAuthor, Error.NEGATIVE_BET.getMessage()));
         }

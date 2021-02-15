@@ -19,7 +19,7 @@ class SlotResultTest {
     @DisplayName("Should have calculated net profit")
     void shouldHaveCalculatedNetProfit() {
         slotResult.setBet(50L);
-        slotResult.setCreditsWon(200);
+        slotResult.setCreditsWon(200L);
         assertThat(slotResult.getNetProfit()).isEqualTo(150L);
     }
 }
