@@ -3,6 +3,7 @@ package dev.amrw.ggbot.service;
 import dev.amrw.ggbot.model.User;
 import dev.amrw.ggbot.repository.UsersRepository;
 import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,8 @@ class UsersServiceTest {
     private UsersService service;
 
     @Mock
+    private MessageCreateEvent event;
+    @Mock
     private MessageAuthor messageAuthor;
     @Mock
     private User user;
@@ -36,6 +39,7 @@ class UsersServiceTest {
     @BeforeEach
     void beforeEach() {
         discordUserId = randomAlphanumeric(16);
+        when(event.getMessageAuthor()).thenReturn(messageAuthor);
         when(messageAuthor.getIdAsString()).thenReturn(discordUserId);
     }
 
@@ -43,7 +47,7 @@ class UsersServiceTest {
     @DisplayName("Should have fetched an existing user")
     void shouldHaveFetchedExistingUser() {
         when(repository.findByDiscordUserId(discordUserId)).thenReturn(Optional.of(user));
-        assertThat(service.getOrCreateUser(messageAuthor)).isEqualTo(user);
+        assertThat(service.getOrCreateUser(event)).isEqualTo(user);
         verifyNoMoreInteractions(repository);
     }
 
@@ -55,7 +59,7 @@ class UsersServiceTest {
         when(messageAuthor.getName()).thenReturn(discordUsername);
         when(repository.save(any(User.class))).thenReturn(user);
 
-        assertThat(service.getOrCreateUser(messageAuthor)).isEqualTo(user);
+        assertThat(service.getOrCreateUser(event)).isEqualTo(user);
 
         final var userCaptor = ArgumentCaptor.forClass(User.class);
         verify(repository).save(userCaptor.capture());

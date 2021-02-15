@@ -1,6 +1,7 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
+import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -22,6 +23,8 @@ class PingPongListenerTest {
 
     @Mock
     private BotConfig botConfig;
+    @Mock
+    private DiscordMessageUtil messageUtil;
     @InjectMocks
     private PingPongListener listener;
 
@@ -29,9 +32,12 @@ class PingPongListenerTest {
     private MessageCreateEvent event;
     @Mock
     private Message message;
-    private String prefix;
     @Mock
     private TextChannel channel;
+    @Mock
+    private EmbedBuilder embedBuilder;
+
+    private String prefix;
 
     @BeforeEach
     void beforeEach() {
@@ -45,7 +51,9 @@ class PingPongListenerTest {
     @DisplayName("Should not have handled a message with wrong prefix")
     void shouldNotHaveHandledMessageWithWrongPrefix() {
         when(message.getContent()).thenReturn(randomAlphanumeric(16));
+
         listener.onMessageCreate(event);
+
         verifyNoMoreInteractions(event, message);
     }
 
@@ -54,8 +62,12 @@ class PingPongListenerTest {
     void shouldHaveHandledMessage() {
         when(message.getContent()).thenReturn(prefix);
         when(event.getChannel()).thenReturn(channel);
+        when(messageUtil.buildEmbedInfo(event, "Ping?")).thenReturn(embedBuilder);
+        when(embedBuilder.setDescription("pong!")).thenReturn(embedBuilder);
+
         listener.onMessageCreate(event);
+
         verify(message).addReaction("🏓");
-        verify(channel).sendMessage(any(EmbedBuilder.class));
+        verify(channel).sendMessage(embedBuilder);
     }
 }

@@ -1,8 +1,8 @@
 package dev.amrw.ggbot.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.Optional;
 
 /**
  * Outcome of a game of slots.
@@ -12,11 +12,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SlotResult {
 
-    private long bet;
-    private long creditsWon;
-    private String payline;
+    private long bet = 0L;
+    /** The game is only played when the user has sufficient credits. */
+    @Getter(AccessLevel.NONE)
+    private Boolean hasPlayed = false;
+    private Long creditsWon = 0L;
+    private String payline = "";
+    private Long currentBalance = 0L;
+    @Getter(AccessLevel.NONE)
+    private Error error = null;
 
-    public long getNetProfit() {
+    public Long getNetProfit() {
         return this.creditsWon - this.bet;
+    }
+
+    public Boolean hasPlayed() {
+        return hasPlayed;
+    }
+
+    public Optional<Error> getError() {
+        return Optional.ofNullable(error);
     }
 }

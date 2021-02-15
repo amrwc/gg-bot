@@ -1,6 +1,7 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
+import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -13,8 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.awt.Color;
-
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.mockito.Mockito.*;
@@ -24,6 +23,8 @@ class GamesListenerTest {
 
     @Mock
     private BotConfig botConfig;
+    @Mock
+    private DiscordMessageUtil messageUtil;
     @InjectMocks
     private GamesListener listener;
 
@@ -31,9 +32,12 @@ class GamesListenerTest {
     private MessageCreateEvent event;
     @Mock
     private Message message;
-    private String prefix;
     @Mock
     private TextChannel channel;
+    @Mock
+    private EmbedBuilder embedBuilder;
+
+    private String prefix;
 
     @BeforeEach
     void beforeEach() {
@@ -47,7 +51,9 @@ class GamesListenerTest {
     @DisplayName("Should not have handled a message with wrong prefix")
     void shouldNotHaveHandledMessageWithWrongPrefix() {
         when(message.getContent()).thenReturn(randomAlphanumeric(16));
+
         listener.onMessageCreate(event);
+
         verifyNoMoreInteractions(event, message);
         verifyNoInteractions(channel);
     }
@@ -56,10 +62,13 @@ class GamesListenerTest {
     @DisplayName("Should have displayed currently available games")
     void shouldHaveDisplayedAvailableGames() {
         when(message.getContent()).thenReturn(prefix);
-        when(botConfig.getEmbedColour()).thenReturn(Color.ORANGE);
         when(event.getChannel()).thenReturn(channel);
+        when(messageUtil.buildEmbedInfo(event, "Available Games")).thenReturn(embedBuilder);
+        when(embedBuilder.setDescription(anyString())).thenReturn(embedBuilder);
+
         listener.onMessageCreate(event);
-        verify(channel).sendMessage(any(EmbedBuilder.class));
+
+        verify(channel).sendMessage(embedBuilder);
         verifyNoMoreInteractions(event, message, channel);
     }
 }

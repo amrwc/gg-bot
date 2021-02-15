@@ -1,7 +1,7 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.stereotype.Component;
@@ -15,9 +15,11 @@ public class GamesListener implements MessageCreateListener {
     static final String KEYWORD = "games";
 
     private final BotConfig botConfig;
+    private final DiscordMessageUtil messageUtil;
 
-    public GamesListener(final BotConfig botConfig) {
+    public GamesListener(final BotConfig botConfig, final DiscordMessageUtil messageUtil) {
         this.botConfig = botConfig;
+        this.messageUtil = messageUtil;
     }
 
     @Override
@@ -28,9 +30,7 @@ public class GamesListener implements MessageCreateListener {
             return;
         }
 
-        final var embedBuilder = new EmbedBuilder()
-                .setColor(botConfig.getEmbedColour())
-                .setTitle("Currently available games")
+        final var embedBuilder = messageUtil.buildEmbedInfo(event, "Available Games")
                 .setDescription("- Slot Machine (`slot`)");
         event.getChannel().sendMessage(embedBuilder);
     }
