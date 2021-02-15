@@ -1,27 +1,30 @@
 package dev.amrw.ggbot.listener;
 
+import dev.amrw.ggbot.config.BotConfig;
+import dev.amrw.ggbot.dto.Error;
+import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.dto.SlotResult;
 import dev.amrw.ggbot.helper.SlotListenerHelper;
-import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.service.SlotService;
+import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.awt.Color;
 import java.util.Optional;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -33,15 +36,17 @@ import static org.mockito.Mockito.*;
 class SlotListenerTest {
 
     @Mock
+    private BotConfig botConfig;
+    @Mock
     private SlotService service;
     @Mock
-    private SlotListenerHelper helper;
+    private DiscordMessageUtil messageUtil;
     @Mock
-    private BotConfig botConfig;
+    private SlotListenerHelper helper;
+    @Spy
     @InjectMocks
     private SlotListener listener;
 
-    private String prefix;
     @Mock
     private MessageCreateEvent event;
     @Mock
@@ -49,7 +54,13 @@ class SlotListenerTest {
     @Mock
     private TextChannel channel;
     @Mock
+    private MessageAuthor messageAuthor;
+    @Mock
     private SlotResult slotResult;
+    @Mock
+    private EmbedBuilder embedBuilder;
+
+    private String prefix;
 
     @BeforeEach
     void beforeEach() {
@@ -65,6 +76,7 @@ class SlotListenerTest {
         when(message.getContent()).thenReturn(randomAlphanumeric(16));
         listener.onMessageCreate(event);
         verifyNoMoreInteractions(event, message);
+        verifyNoInteractions(messageUtil, service, helper);
     }
 
     @ParameterizedTest
@@ -72,40 +84,68 @@ class SlotListenerTest {
     @DisplayName("Should have sent help message")
     void shouldHaveSentHelpMessage(final String messageContent) {
         when(message.getContent()).thenReturn(prefix + messageContent);
+        when(messageUtil.buildEmbedInfo(event, "Slot Machine")).thenReturn(embedBuilder);
+        when(embedBuilder.addField(eq("Rules"), anyString())).thenReturn(embedBuilder);
+        when(embedBuilder.addField(eq("Usage"), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
+
         listener.onMessageCreate(event);
-        verify(channel).sendMessage(any(EmbedBuilder.class));
+
+        verify(channel).sendMessage(embedBuilder);
+        verifyNoMoreInteractions(messageUtil, channel);
+        verifyNoInteractions(service, helper);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"-1", "-123", "abcd", "💯💯💯"})
-    @DisplayName("Should have played a game of slots and displayed the result")
-    void shouldNotHavePlayedWithInvalidBet(final String bet) {
-        final var messageAuthor = mock(MessageAuthor.class);
-        final var user = mock(User.class);
-        final var mentionTag = randomAlphanumeric(16);
-        when(message.getAuthor()).thenReturn(messageAuthor);
-        when(messageAuthor.asUser()).thenReturn(Optional.of(user));
-        when(user.getMentionTag()).thenReturn(mentionTag);
+    @ValueSource(strings = {"0", "-1", "-123", "abcd", "💯💯💯"})
+    @DisplayName("Should have sent an error message in case of an invalid bet")
+    void shouldHaveSentErrorMessageOnInvalidBet(final String bet) {
         when(message.getContent()).thenReturn(prefix + " " + bet);
+        when(event.getMessageAuthor()).thenReturn(messageAuthor);
+        when(messageUtil.buildEmbedError(eq(event), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
 
         listener.onMessageCreate(event);
 
-        verifyNoInteractions(service);
         final var stringCaptor = ArgumentCaptor.forClass(String.class);
-        verify(channel).sendMessage(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).contains(mentionTag).contains("invalid bet");
+        verify(messageUtil).buildEmbedError(eq(event), stringCaptor.capture());
+        assertThat(stringCaptor.getValue()).containsPattern(
+                String.format("(invalid bet|%s)", Error.NEGATIVE_BET.getMessage()));
+        verify(channel).sendMessage(embedBuilder);
+        verifyNoInteractions(service, helper);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"INSUFFICIENT_CREDITS", "UNKNOWN_ERROR"})
+    @DisplayName("Should have sent an error message when the game has not been played")
+    void shouldHaveSentErrorMessageWhenHasNotPlayed(final Error error) {
+        when(message.getContent()).thenReturn(prefix + " " + 100);
+        when(service.play(any(GameRequest.class))).thenReturn(slotResult);
+        when(slotResult.hasPlayed()).thenReturn(false);
+        when(slotResult.getError()).thenReturn(Optional.of(error));
+        when(event.getChannel()).thenReturn(channel);
+        when(messageUtil.buildEmbedError(eq(event), anyString())).thenReturn(embedBuilder);
+
+        listener.onMessageCreate(event);
+
+        final var stringCaptor = ArgumentCaptor.forClass(String.class);
+        verify(messageUtil).buildEmbedError(eq(event), stringCaptor.capture());
+        assertThat(stringCaptor.getValue()).isEqualTo(error.getMessage());
+        verify(channel).sendMessage(embedBuilder);
+        verifyNoMoreInteractions(service);
+        verifyNoInteractions(helper);
     }
 
     @Test
     @DisplayName("Should have played a game of slots and displayed the result")
     void shouldHavePlayedAndDisplayedResult() {
-        final var bet = 100L;
-        when(message.getContent()).thenReturn(prefix + " " + bet);
-        when(service.play(bet)).thenReturn(slotResult);
-        when(botConfig.getEmbedColour()).thenReturn(Color.ORANGE);
+        when(message.getContent()).thenReturn(prefix + " " + 100);
+        when(service.play(any(GameRequest.class))).thenReturn(slotResult);
+        when(slotResult.hasPlayed()).thenReturn(true);
+
         listener.onMessageCreate(event);
-        verify(helper).displayResultSuspensefully(event, slotResult, Color.ORANGE);
+
+        verify(helper).displayResultSuspensefully(event, slotResult);
+        verifyNoMoreInteractions(service, helper);
     }
 }

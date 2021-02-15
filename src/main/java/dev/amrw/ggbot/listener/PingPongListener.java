@@ -1,7 +1,7 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
+import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.stereotype.Component;
@@ -15,9 +15,11 @@ public class PingPongListener implements MessageCreateListener {
     static final String KEYWORD = "ping";
 
     private final BotConfig botConfig;
+    private final DiscordMessageUtil messageUtil;
 
-    public PingPongListener(final BotConfig botConfig) {
+    public PingPongListener(final BotConfig botConfig, final DiscordMessageUtil messageUtil) {
         this.botConfig = botConfig;
+        this.messageUtil = messageUtil;
     }
 
     @Override
@@ -29,9 +31,6 @@ public class PingPongListener implements MessageCreateListener {
         }
 
         event.getMessage().addReaction("🏓");
-        final var embedBuilder = new EmbedBuilder()
-                .setColor(botConfig.getEmbedColour())
-                .setDescription("pong!");
-        event.getChannel().sendMessage(embedBuilder);
+        event.getChannel().sendMessage(messageUtil.buildEmbedInfo(event, "Ping?").setDescription("pong!"));
     }
 }

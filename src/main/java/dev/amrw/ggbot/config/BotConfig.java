@@ -6,7 +6,7 @@ import lombok.Data;
 import java.awt.Color;
 
 /**
- * POJO holding bot configuration as a singleton.
+ * Bot configuration.
  */
 @Data
 @AllArgsConstructor

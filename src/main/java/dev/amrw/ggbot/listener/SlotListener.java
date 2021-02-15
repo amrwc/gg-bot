@@ -1,15 +1,17 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
+import dev.amrw.ggbot.dto.Error;
+import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.service.SlotService;
+import dev.amrw.ggbot.util.DiscordMessageUtil;
 import lombok.extern.log4j.Log4j2;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Listener that enables the users to play slots.
@@ -22,11 +24,18 @@ public class SlotListener implements MessageCreateListener {
 
     private final BotConfig botConfig;
     private final SlotService service;
+    private final DiscordMessageUtil messageUtil;
     private final SlotListenerHelper helper;
 
-    public SlotListener(final BotConfig botConfig, final SlotService service, final SlotListenerHelper helper) {
+    public SlotListener(
+            final BotConfig botConfig,
+            final SlotService service,
+            final DiscordMessageUtil messageUtil,
+            final SlotListenerHelper helper
+    ) {
         this.botConfig = botConfig;
         this.service = service;
+        this.messageUtil = messageUtil;
         this.helper = helper;
     }
 
@@ -38,18 +47,27 @@ public class SlotListener implements MessageCreateListener {
             return;
         }
 
-        final var messageParts = messageContent.split(" ");
+        final var messageParts = messageContent.split("\\s+");
         if (needsHelp(messageParts)) {
             sendHelpMessage(event);
             return;
         }
 
-        final var bet = parseBet(event, messageParts);
-        if (bet < 0) {
+        final var playRequest = parseBet(event, messageParts);
+        if (playRequest.getBet() <= 0) {
             return;
         }
 
-        helper.displayResultSuspensefully(event, service.play(bet), botConfig.getEmbedColour());
+        final var slotResult = service.play(playRequest);
+        if (!slotResult.hasPlayed()) {
+            event.getChannel().sendMessage(messageUtil.buildEmbedError(
+                    event,
+                    (slotResult.getError().isEmpty() ? Error.UNKNOWN_ERROR : slotResult.getError().get()).getMessage()
+            ));
+            return;
+        }
+
+        helper.displayResultSuspensefully(event, slotResult);
     }
 
     /**
@@ -62,13 +80,11 @@ public class SlotListener implements MessageCreateListener {
      * @return whether the user needs to see the help message
      */
     private boolean needsHelp(final String[] message) {
-        return 2 == message.length || Arrays.asList(message).contains("help");
+        return 2 == message.length || Set.of(message).contains("help");
     }
 
     private void sendHelpMessage(final MessageCreateEvent event) {
-        final var embedBuilder = new EmbedBuilder()
-                .setColor(botConfig.getEmbedColour())
-                .setTitle("Slot Machine")
+        final var embedBuilder = messageUtil.buildEmbedInfo(event, "Slot Machine")
                 .addField("Rules", "🥇🥇❔ – **0.5x**\n" +
                         "💎💎❔ – **2x**\n" +
                         "💯💯❔ – **2x**\n" +
@@ -83,28 +99,36 @@ public class SlotListener implements MessageCreateListener {
         event.getChannel().sendMessage(embedBuilder);
     }
 
-    private long parseBet(final MessageCreateEvent event, final String[] messageParts) {
+    private GameRequest parseBet(final MessageCreateEvent event, final String[] messageParts) {
         final var betString = messageParts[2];
-        var bet = 0L;
+        final var messageAuthor = event.getMessageAuthor();
+        final var gameRequest = new GameRequest();
+        gameRequest.setEvent(event);
+        var invalidBet = false;
+
         try {
-            bet = Long.parseLong(betString);
+            gameRequest.setBet(Long.parseLong(betString));
         } catch (final NumberFormatException exception) {
             log.debug(
                     "User '{} ({})' placed an invalid bet: '{}'",
-                    event.getMessage().getAuthor().getDisplayName(),
-                    event.getMessage().getAuthor().getId(),
-                    betString
-            );
-            bet = -1L;
-        }
-        if (bet < 0) {
-            event.getChannel().sendMessage(String.format(
-                    "%s'%s' is an invalid bet. You can view the instructions with `%s slot help`",
-                    event.getMessage().getAuthor().asUser().map(u -> u.getMentionTag() + ", ").orElse(""),
+                    messageAuthor.getDisplayName(),
+                    messageAuthor.getId(),
                     betString,
-                    botConfig.getTrigger()
-            ));
+                    exception
+            );
+            invalidBet = true;
         }
-        return bet;
+
+        if (invalidBet) {
+            event.getChannel().sendMessage(messageUtil.buildEmbedError(event, String.format(
+                    "'%s' is an invalid bet. You can view the instructions with `%s slot help`",
+                    betString,
+                    botConfig.getTrigger())
+            ));
+        } else if (gameRequest.getBet() <= 0L) {
+            event.getChannel().sendMessage(messageUtil.buildEmbedError(event, Error.NEGATIVE_BET.getMessage()));
+        }
+
+        return gameRequest;
     }
 }
