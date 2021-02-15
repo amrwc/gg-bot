@@ -7,7 +7,6 @@ import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.service.SlotService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import lombok.extern.log4j.Log4j2;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.stereotype.Component;
@@ -85,9 +84,7 @@ public class SlotListener implements MessageCreateListener {
     }
 
     private void sendHelpMessage(final MessageCreateEvent event) {
-        final var embedBuilder = new EmbedBuilder()
-                .setColor(botConfig.getEmbedColour())
-                .setTitle("Slot Machine")
+        final var embedBuilder = messageUtil.buildEmbedInfo(event, "Slot Machine")
                 .addField("Rules", "🥇🥇❔ – **0.5x**\n" +
                         "💎💎❔ – **2x**\n" +
                         "💯💯❔ – **2x**\n" +

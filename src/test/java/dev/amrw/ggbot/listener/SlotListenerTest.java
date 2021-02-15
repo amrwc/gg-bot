@@ -47,7 +47,6 @@ class SlotListenerTest {
     @InjectMocks
     private SlotListener listener;
 
-    private String prefix;
     @Mock
     private MessageCreateEvent event;
     @Mock
@@ -60,6 +59,8 @@ class SlotListenerTest {
     private SlotResult slotResult;
     @Mock
     private EmbedBuilder embedBuilder;
+
+    private String prefix;
 
     @BeforeEach
     void beforeEach() {
@@ -83,10 +84,16 @@ class SlotListenerTest {
     @DisplayName("Should have sent help message")
     void shouldHaveSentHelpMessage(final String messageContent) {
         when(message.getContent()).thenReturn(prefix + messageContent);
+        when(messageUtil.buildEmbedInfo(event, "Slot Machine")).thenReturn(embedBuilder);
+        when(embedBuilder.addField(eq("Rules"), anyString())).thenReturn(embedBuilder);
+        when(embedBuilder.addField(eq("Usage"), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
+
         listener.onMessageCreate(event);
-        verify(channel).sendMessage(any(EmbedBuilder.class));
-        verifyNoInteractions(messageUtil, service, helper);
+
+        verify(channel).sendMessage(embedBuilder);
+        verifyNoMoreInteractions(messageUtil, channel);
+        verifyNoInteractions(service, helper);
     }
 
     @ParameterizedTest
