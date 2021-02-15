@@ -1,12 +1,11 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.model.UserCredit;
 import dev.amrw.ggbot.config.BotConfig;
+import dev.amrw.ggbot.model.UserCredit;
 import dev.amrw.ggbot.service.UserCreditsService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,8 +39,6 @@ class BalanceListenerTest {
     private Message message;
     private String prefix;
     @Mock
-    private MessageAuthor messageAuthor;
-    @Mock
     private UserCredit userCredit;
     @Mock
     private EmbedBuilder embedBuilder;
@@ -70,8 +67,7 @@ class BalanceListenerTest {
         final Long credits = nextLong();
         when(message.getContent()).thenReturn(prefix);
         when(event.getChannel()).thenReturn(channel);
-        when(event.getMessageAuthor()).thenReturn(messageAuthor);
-        when(userCreditsService.getOrCreateUserCredit(messageAuthor)).thenReturn(userCredit);
+        when(userCreditsService.getOrCreateUserCredit(event)).thenReturn(userCredit);
         when(messageUtil.buildEmbedInfo(event, "Credits Balance")).thenReturn(embedBuilder);
         when(userCredit.getCredits()).thenReturn(credits);
         when(embedBuilder.setDescription(credits.toString())).thenReturn(embedBuilder);

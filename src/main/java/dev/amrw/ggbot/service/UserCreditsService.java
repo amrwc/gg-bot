@@ -4,7 +4,7 @@ import dev.amrw.ggbot.model.User;
 import dev.amrw.ggbot.model.UserCredit;
 import dev.amrw.ggbot.repository.UserCreditsRepository;
 import lombok.extern.log4j.Log4j2;
-import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -26,11 +26,11 @@ public class UserCreditsService {
 
     /**
      * Attempts to find an existing {@link UserCredit} of the given {@link User}, or creates new one if not found.
-     * @param messageAuthor author of the message
+     * @param event {@link MessageCreateEvent}
      * @return existing or new {@link UserCredit}
      */
-    public UserCredit getOrCreateUserCredit(final MessageAuthor messageAuthor) {
-        final var user = usersService.getOrCreateUser(messageAuthor);
+    public UserCredit getOrCreateUserCredit(final MessageCreateEvent event) {
+        final var user = usersService.getOrCreateUser(event);
         return getOrCreateUserCredit(user);
     }
 
@@ -51,17 +51,31 @@ public class UserCreditsService {
 
     /**
      * Retrieves the given user their current credits balance.
-     * @param messageAuthor author of the message
+     * @param event {@link MessageCreateEvent}
      * @return current credits balance
      */
-    public Long getCurrentBalance(final MessageAuthor messageAuthor) {
-        return getOrCreateUserCredit(messageAuthor).getCredits();
+    public Long getCurrentBalance(final MessageCreateEvent event) {
+        return getOrCreateUserCredit(event).getCredits();
     }
 
+    /**
+     * Adds new credits to the current balance.
+     * @param event {@link MessageCreateEvent}
+     * @param credits credits to add to the current balance
+     * @return new credits balance
+     */
     @Transactional
-    public Long addCredit(final MessageAuthor messageAuthor, final long credits) {
-        final var userCredit = getOrCreateUserCredit(messageAuthor);
-        userCredit.setCredits(Math.max(0L, userCredit.getCredits() + credits));
+    public Long addCredits(final MessageCreateEvent event, final long credits) {
+        final var userCredit = getOrCreateUserCredit(event);
+        final var currentCredits = userCredit.getCredits();
+        long newCredits;
+        try {
+            newCredits = Math.addExact(currentCredits, credits);
+        } catch (final ArithmeticException exception) {
+            log.error("Error adding {} credits to user {}", credits, userCredit.getUser(), exception);
+            newCredits = currentCredits;
+        }
+        userCredit.setCredits(Math.max(newCredits, 0L));
         return userCredit.getCredits();
     }
 }

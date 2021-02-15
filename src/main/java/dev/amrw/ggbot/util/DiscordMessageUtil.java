@@ -2,7 +2,6 @@ package dev.amrw.ggbot.util;
 
 import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.dto.Error;
-import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.awt.Color;
 
 /**
- * Utility class for handling {@link MessageAuthor}.
+ * Utility class for handling and building Discord messages.
  */
 @Component
 public class DiscordMessageUtil {
@@ -23,7 +22,7 @@ public class DiscordMessageUtil {
 
     /**
      * Prepares an info {@link EmbedBuilder}.
-     * @param messageAuthor Discord user the info relates to
+     * @param event Discord event the info relates to
      * @param title embed title
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
@@ -36,7 +35,7 @@ public class DiscordMessageUtil {
 
     /**
      * Prepares an error {@link EmbedBuilder}.
-     * @param messageAuthor Discord user the error relates to
+     * @param event Discord event the error relates to
      * @param error {@link Error} to use as an embed description/error message
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
@@ -46,7 +45,7 @@ public class DiscordMessageUtil {
 
     /**
      * Prepares an error {@link EmbedBuilder}.
-     * @param messageAuthor Discord user the error relates to
+     * @param event Discord event the error relates to
      * @param description embed description; error message
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */

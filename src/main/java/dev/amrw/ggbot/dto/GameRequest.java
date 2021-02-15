@@ -3,10 +3,10 @@ package dev.amrw.ggbot.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.event.message.MessageCreateEvent;
 
 /**
- * Play request for an arbitrary game.
+ * Game request for an arbitrary game.
  */
 @Data
 @NoArgsConstructor
@@ -14,5 +14,5 @@ import org.javacord.api.entity.message.MessageAuthor;
 public class GameRequest {
 
     private long bet;
-    private MessageAuthor messageAuthor;
+    private MessageCreateEvent event;
 }

@@ -8,7 +8,6 @@ import dev.amrw.ggbot.service.DailyService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,8 +39,6 @@ class DailyListenerTest {
     private MessageCreateEvent event;
     @Mock
     private Message message;
-    @Mock
-    private MessageAuthor messageAuthor;
     @Mock
     private UserCredit userCredit;
     @Mock
@@ -106,8 +103,7 @@ class DailyListenerTest {
 
     private void addCommonStubbings(final DailyCreditsResult dailyCreditsResult) {
         when(message.getContent()).thenReturn(prefix);
-        when(event.getMessageAuthor()).thenReturn(messageAuthor);
-        when(dailyService.claimDailyCredits(messageAuthor)).thenReturn(dailyCreditsResult);
+        when(dailyService.claimDailyCredits(event)).thenReturn(dailyCreditsResult);
 
         when(userCredit.getCredits()).thenReturn(credits);
         when(event.getChannel()).thenReturn(channel);

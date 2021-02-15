@@ -3,7 +3,7 @@ package dev.amrw.ggbot.service;
 import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.dto.SlotResult;
-import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,16 +33,16 @@ class SlotServiceTest {
     private SlotService service;
 
     @Mock
-    private MessageAuthor messageAuthor;
+    private MessageCreateEvent event;
 
     @Test
     @DisplayName("Should not have played a game of slots with insufficient credits")
     void shouldNotHavePlayed() {
         final var bet = nextLong();
         final var currentBalance = bet / 2;
-        when(userCreditsService.getCurrentBalance(messageAuthor)).thenReturn(currentBalance);
+        when(userCreditsService.getCurrentBalance(event)).thenReturn(currentBalance);
 
-        final var result = service.play(new GameRequest(bet, messageAuthor));
+        final var result = service.play(new GameRequest(bet, event));
 
         assertThat(result)
                 .usingRecursiveComparison()
@@ -56,10 +56,10 @@ class SlotServiceTest {
         final var bet = nextInt();
         final var currentBalance = nextLong(bet, Long.MAX_VALUE);
         final var newBalance = nextLong();
-        when(userCreditsService.getCurrentBalance(messageAuthor)).thenReturn(currentBalance);
-        when(userCreditsService.addCredit(eq(messageAuthor), anyLong())).thenReturn(newBalance);
+        when(userCreditsService.getCurrentBalance(event)).thenReturn(currentBalance);
+        when(userCreditsService.addCredits(eq(event), anyLong())).thenReturn(newBalance);
 
-        final var result = service.play(new GameRequest(bet, messageAuthor));
+        final var result = service.play(new GameRequest(bet, event));
 
         assertThat(result)
                 .usingRecursiveComparison()
@@ -78,12 +78,12 @@ class SlotServiceTest {
         final var payline = randomAlphanumeric(3);
         final var winnings = nextLong();
         final var newBalance = nextLong();
-        when(userCreditsService.getCurrentBalance(messageAuthor)).thenReturn(currentBalance);
+        when(userCreditsService.getCurrentBalance(event)).thenReturn(currentBalance);
         when(service.spin()).thenReturn(payline);
         when(service.calculateWinnings(bet, payline)).thenReturn(winnings);
-        when(userCreditsService.addCredit(messageAuthor, winnings - bet)).thenReturn(newBalance);
+        when(userCreditsService.addCredits(event, winnings - bet)).thenReturn(newBalance);
 
-        final var result = service.play(new GameRequest(bet, messageAuthor));
+        final var result = service.play(new GameRequest(bet, event));
 
         assertThat(result)
                 .usingRecursiveComparison()

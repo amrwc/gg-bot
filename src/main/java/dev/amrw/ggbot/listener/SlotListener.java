@@ -106,7 +106,7 @@ public class SlotListener implements MessageCreateListener {
         final var betString = messageParts[2];
         final var messageAuthor = event.getMessageAuthor();
         final var gameRequest = new GameRequest();
-        gameRequest.setMessageAuthor(messageAuthor);
+        gameRequest.setEvent(event);
         var invalidBet = false;
 
         try {

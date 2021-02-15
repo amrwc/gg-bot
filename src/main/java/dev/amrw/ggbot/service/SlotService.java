@@ -42,11 +42,11 @@ public class SlotService {
 
     /**
      * Play a game of slots with the given bet.
-     * @param bet number of credits on the line
+     * @param gameRequest slot game request
      * @return result of the game
      */
     public SlotResult play(final GameRequest gameRequest) {
-        final var currentBalance = userCreditsService.getCurrentBalance(gameRequest.getMessageAuthor());
+        final var currentBalance = userCreditsService.getCurrentBalance(gameRequest.getEvent());
         if (gameRequest.getBet() > currentBalance) {
             final var betResult = new SlotResult();
             betResult.setBet(gameRequest.getBet());
@@ -58,8 +58,7 @@ public class SlotService {
 
         final var payline = spin();
         final var winnings = calculateWinnings(gameRequest.getBet(), payline);
-        final var newBalance = userCreditsService.addCredit(
-                gameRequest.getMessageAuthor(), winnings - gameRequest.getBet());
+        final var newBalance = userCreditsService.addCredits(gameRequest.getEvent(), winnings - gameRequest.getBet());
         return new SlotResult(gameRequest.getBet(), true, winnings, payline, newBalance, null);
     }
 

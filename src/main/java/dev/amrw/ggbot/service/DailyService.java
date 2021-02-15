@@ -2,7 +2,7 @@ package dev.amrw.ggbot.service;
 
 import dev.amrw.ggbot.dto.DailyCreditsResult;
 import dev.amrw.ggbot.dto.Error;
-import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -29,12 +29,12 @@ public class DailyService {
 
     /**
      * Adds credit to the user's account if they claim it after the configured time has elapsed.
-     * @param messageAuthor author of the Discord message
+     * @param event {@link MessageCreateEvent}
      * @return number of credits that have been added; <code>0L</code> if the user cannot yet claim the daily credits
      */
     @Transactional
-    public DailyCreditsResult claimDailyCredits(final MessageAuthor messageAuthor) {
-        final var user = usersService.getOrCreateUser(messageAuthor);
+    public DailyCreditsResult claimDailyCredits(final MessageCreateEvent event) {
+        final var user = usersService.getOrCreateUser(event);
         return Optional.ofNullable(user.getUserCredit()).map(userCredit -> {
             if (!userCredit.canClaimDailyCredits()) {
                 return new DailyCreditsResult(0L, userCredit, Error.ALREADY_COLLECTED_DAILY);
