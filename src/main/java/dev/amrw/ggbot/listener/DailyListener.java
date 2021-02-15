@@ -37,11 +37,10 @@ public class DailyListener implements MessageCreateListener {
             return;
         }
 
-        final var messageAuthor = event.getMessageAuthor();
-        final var dailyCreditsResult = dailyService.claimDailyCredits(messageAuthor);
+        final var dailyCreditsResult = dailyService.claimDailyCredits(event.getMessageAuthor());
         final var userCredit = dailyCreditsResult.getUserCredit();
         final var embedBuilder = dailyCreditsResult.getError()
-                .map(error -> messageUtil.buildEmbedError(messageAuthor, error)
+                .map(error -> messageUtil.buildEmbedError(event, error)
                         .addField("Next daily in", userCredit.getTimeLeftUntilNextDaily()))
                 .orElseGet(() -> messageUtil.buildEmbedInfo(event, "Daily Credits")
                         .addField("New credits", dailyCreditsResult.getClaimedCredits().toString()));

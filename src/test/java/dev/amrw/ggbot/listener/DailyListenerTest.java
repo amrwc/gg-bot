@@ -77,7 +77,7 @@ class DailyListenerTest {
         final var dailyCreditsResult = new DailyCreditsResult(0L, userCredit, error);
         final var nextDailyIn = randomAlphanumeric(16);
 
-        when(messageUtil.buildEmbedError(messageAuthor, error)).thenReturn(embedBuilder);
+        when(messageUtil.buildEmbedError(event, error)).thenReturn(embedBuilder);
         when(userCredit.getTimeLeftUntilNextDaily()).thenReturn(nextDailyIn);
         when(embedBuilder.addField("Next daily in", nextDailyIn)).thenReturn(embedBuilder);
         addCommonStubbings(dailyCreditsResult);

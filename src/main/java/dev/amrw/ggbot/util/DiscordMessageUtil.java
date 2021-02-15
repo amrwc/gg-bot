@@ -40,8 +40,8 @@ public class DiscordMessageUtil {
      * @param error {@link Error} to use as an embed description/error message
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
-    public EmbedBuilder buildEmbedError(final MessageAuthor messageAuthor, final Error error) {
-        return buildEmbedError(messageAuthor, error.getMessage());
+    public EmbedBuilder buildEmbedError(final MessageCreateEvent event, final Error error) {
+        return buildEmbedError(event.getMessageAuthor(), error.getMessage());
     }
 
     /**
