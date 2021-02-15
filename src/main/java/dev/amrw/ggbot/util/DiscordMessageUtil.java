@@ -41,7 +41,7 @@ public class DiscordMessageUtil {
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
     public EmbedBuilder buildEmbedError(final MessageCreateEvent event, final Error error) {
-        return buildEmbedError(event.getMessageAuthor(), error.getMessage());
+        return buildEmbedError(event, error.getMessage());
     }
 
     /**
@@ -50,10 +50,10 @@ public class DiscordMessageUtil {
      * @param description embed description; error message
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
-    public EmbedBuilder buildEmbedError(final MessageAuthor messageAuthor, final String description) {
+    public EmbedBuilder buildEmbedError(final MessageCreateEvent event, final String description) {
         return new EmbedBuilder()
                 .setColor(Color.RED)
-                .setAuthor(messageAuthor)
+                .setAuthor(event.getMessageAuthor())
                 .setTitle("Error")
                 .setDescription(description);
     }

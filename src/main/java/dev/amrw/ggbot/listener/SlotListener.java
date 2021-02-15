@@ -62,7 +62,7 @@ public class SlotListener implements MessageCreateListener {
         final var slotResult = service.play(playRequest);
         if (!slotResult.hasPlayed()) {
             event.getChannel().sendMessage(messageUtil.buildEmbedError(
-                    event.getMessageAuthor(),
+                    event,
                     (slotResult.getError().isEmpty() ? Error.UNKNOWN_ERROR : slotResult.getError().get()).getMessage()
             ));
             return;
@@ -123,13 +123,13 @@ public class SlotListener implements MessageCreateListener {
         }
 
         if (invalidBet) {
-            event.getChannel().sendMessage(messageUtil.buildEmbedError(messageAuthor, String.format(
+            event.getChannel().sendMessage(messageUtil.buildEmbedError(event, String.format(
                     "'%s' is an invalid bet. You can view the instructions with `%s slot help`",
                     betString,
                     botConfig.getTrigger())));
         } else if (playRequest.getBet() <= 0L) {
             event.getChannel().sendMessage(
-                    messageUtil.buildEmbedError(messageAuthor, Error.NEGATIVE_BET.getMessage()));
+                    messageUtil.buildEmbedError(event, Error.NEGATIVE_BET.getMessage()));
         }
 
         return playRequest;
