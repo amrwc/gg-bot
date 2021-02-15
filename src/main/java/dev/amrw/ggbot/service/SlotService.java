@@ -1,7 +1,7 @@
 package dev.amrw.ggbot.service;
 
 import dev.amrw.ggbot.dto.Error;
-import dev.amrw.ggbot.dto.PlayRequest;
+import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.dto.SlotResult;
 import dev.amrw.ggbot.util.EmojiUtil;
 import org.springframework.stereotype.Service;
@@ -45,11 +45,11 @@ public class SlotService {
      * @param bet number of credits on the line
      * @return result of the game
      */
-    public SlotResult play(final PlayRequest playRequest) {
-        final var currentBalance = userCreditsService.getCurrentBalance(playRequest.getMessageAuthor());
-        if (playRequest.getBet() > currentBalance) {
+    public SlotResult play(final GameRequest gameRequest) {
+        final var currentBalance = userCreditsService.getCurrentBalance(gameRequest.getMessageAuthor());
+        if (gameRequest.getBet() > currentBalance) {
             final var betResult = new SlotResult();
-            betResult.setBet(playRequest.getBet());
+            betResult.setBet(gameRequest.getBet());
             betResult.setHasPlayed(false);
             betResult.setCurrentBalance(currentBalance);
             betResult.setError(Error.INSUFFICIENT_CREDITS);
@@ -57,10 +57,10 @@ public class SlotService {
         }
 
         final var payline = spin();
-        final var winnings = calculateWinnings(playRequest.getBet(), payline);
+        final var winnings = calculateWinnings(gameRequest.getBet(), payline);
         final var newBalance = userCreditsService.addCredit(
-                playRequest.getMessageAuthor(), winnings - playRequest.getBet());
-        return new SlotResult(playRequest.getBet(), true, winnings, payline, newBalance, null);
+                gameRequest.getMessageAuthor(), winnings - gameRequest.getBet());
+        return new SlotResult(gameRequest.getBet(), true, winnings, payline, newBalance, null);
     }
 
     protected String spin() {

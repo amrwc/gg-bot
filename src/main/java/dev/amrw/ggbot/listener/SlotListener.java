@@ -2,7 +2,7 @@ package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.dto.Error;
-import dev.amrw.ggbot.dto.PlayRequest;
+import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.service.SlotService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
@@ -102,15 +102,15 @@ public class SlotListener implements MessageCreateListener {
         event.getChannel().sendMessage(embedBuilder);
     }
 
-    private PlayRequest parseBet(final MessageCreateEvent event, final String[] messageParts) {
+    private GameRequest parseBet(final MessageCreateEvent event, final String[] messageParts) {
         final var betString = messageParts[2];
         final var messageAuthor = event.getMessageAuthor();
-        final var playRequest = new PlayRequest();
-        playRequest.setMessageAuthor(messageAuthor);
+        final var gameRequest = new GameRequest();
+        gameRequest.setMessageAuthor(messageAuthor);
         var invalidBet = false;
 
         try {
-            playRequest.setBet(Long.parseLong(betString));
+            gameRequest.setBet(Long.parseLong(betString));
         } catch (final NumberFormatException exception) {
             log.debug(
                     "User '{} ({})' placed an invalid bet: '{}'",
@@ -126,12 +126,12 @@ public class SlotListener implements MessageCreateListener {
             event.getChannel().sendMessage(messageUtil.buildEmbedError(event, String.format(
                     "'%s' is an invalid bet. You can view the instructions with `%s slot help`",
                     betString,
-                    botConfig.getTrigger())));
-        } else if (playRequest.getBet() <= 0L) {
-            event.getChannel().sendMessage(
-                    messageUtil.buildEmbedError(event, Error.NEGATIVE_BET.getMessage()));
+                    botConfig.getTrigger())
+            ));
+        } else if (gameRequest.getBet() <= 0L) {
+            event.getChannel().sendMessage(messageUtil.buildEmbedError(event, Error.NEGATIVE_BET.getMessage()));
         }
 
-        return playRequest;
+        return gameRequest;
     }
 }

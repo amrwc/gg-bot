@@ -2,7 +2,7 @@ package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.dto.Error;
-import dev.amrw.ggbot.dto.PlayRequest;
+import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.dto.SlotResult;
 import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.service.SlotService;
@@ -113,7 +113,7 @@ class SlotListenerTest {
     @DisplayName("Should have sent an error message when the game has not been played")
     void shouldHaveSentErrorMessageWhenHasNotPlayed(final Error error) {
         when(message.getContent()).thenReturn(prefix + " " + 100);
-        when(service.play(any(PlayRequest.class))).thenReturn(slotResult);
+        when(service.play(any(GameRequest.class))).thenReturn(slotResult);
         when(slotResult.hasPlayed()).thenReturn(false);
         when(slotResult.getError()).thenReturn(Optional.of(error));
         when(event.getChannel()).thenReturn(channel);
@@ -133,7 +133,7 @@ class SlotListenerTest {
     @DisplayName("Should have played a game of slots and displayed the result")
     void shouldHavePlayedAndDisplayedResult() {
         when(message.getContent()).thenReturn(prefix + " " + 100);
-        when(service.play(any(PlayRequest.class))).thenReturn(slotResult);
+        when(service.play(any(GameRequest.class))).thenReturn(slotResult);
         when(slotResult.hasPlayed()).thenReturn(true);
 
         listener.onMessageCreate(event);

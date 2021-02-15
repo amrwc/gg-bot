@@ -11,7 +11,7 @@ import org.javacord.api.entity.message.MessageAuthor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlayRequest {
+public class GameRequest {
 
     private long bet;
     private MessageAuthor messageAuthor;

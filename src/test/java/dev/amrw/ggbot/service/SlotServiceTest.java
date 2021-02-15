@@ -1,7 +1,7 @@
 package dev.amrw.ggbot.service;
 
 import dev.amrw.ggbot.dto.Error;
-import dev.amrw.ggbot.dto.PlayRequest;
+import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.dto.SlotResult;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +42,7 @@ class SlotServiceTest {
         final var currentBalance = bet / 2;
         when(userCreditsService.getCurrentBalance(messageAuthor)).thenReturn(currentBalance);
 
-        final var result = service.play(new PlayRequest(bet, messageAuthor));
+        final var result = service.play(new GameRequest(bet, messageAuthor));
 
         assertThat(result)
                 .usingRecursiveComparison()
@@ -59,7 +59,7 @@ class SlotServiceTest {
         when(userCreditsService.getCurrentBalance(messageAuthor)).thenReturn(currentBalance);
         when(userCreditsService.addCredit(eq(messageAuthor), anyLong())).thenReturn(newBalance);
 
-        final var result = service.play(new PlayRequest(bet, messageAuthor));
+        final var result = service.play(new GameRequest(bet, messageAuthor));
 
         assertThat(result)
                 .usingRecursiveComparison()
@@ -83,7 +83,7 @@ class SlotServiceTest {
         when(service.calculateWinnings(bet, payline)).thenReturn(winnings);
         when(userCreditsService.addCredit(messageAuthor, winnings - bet)).thenReturn(newBalance);
 
-        final var result = service.play(new PlayRequest(bet, messageAuthor));
+        final var result = service.play(new GameRequest(bet, messageAuthor));
 
         assertThat(result)
                 .usingRecursiveComparison()
