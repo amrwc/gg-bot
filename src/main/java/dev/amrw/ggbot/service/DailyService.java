@@ -1,5 +1,7 @@
 package dev.amrw.ggbot.service;
 
+import dev.amrw.ggbot.dto.DailyCreditsResult;
+import dev.amrw.ggbot.dto.Error;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.springframework.stereotype.Service;
 
@@ -31,21 +33,21 @@ public class DailyService {
      * @return number of credits that have been added; <code>0L</code> if the user cannot yet claim the daily credits
      */
     @Transactional
-    public long claimDailyCredits(final MessageAuthor messageAuthor) {
+    public DailyCreditsResult claimDailyCredits(final MessageAuthor messageAuthor) {
         final var user = usersService.getOrCreateUser(messageAuthor);
         return Optional.ofNullable(user.getUserCredit()).map(userCredit -> {
             if (!userCredit.canClaimDailyCredits()) {
-                return 0L;
+                return new DailyCreditsResult(0L, userCredit, Error.ALREADY_COLLECTED_DAILY);
             }
             userCredit.setCredits(DEFAULT_DAILY_CREDITS + userCredit.getCredits());
             userCredit.setLastDaily(new Date());
-            return DEFAULT_DAILY_CREDITS;
+            return new DailyCreditsResult(DEFAULT_DAILY_CREDITS, userCredit, null);
         }).orElseGet(() -> {
             final var userCredit = userCreditsService.getOrCreateUserCredit(user);
             userCredit.setCredits(DEFAULT_DAILY_CREDITS);
             userCredit.setLastDaily(new Date());
             user.setUserCredit(userCredit);
-            return DEFAULT_DAILY_CREDITS;
+            return new DailyCreditsResult(DEFAULT_DAILY_CREDITS, userCredit, null);
         });
     }
 }

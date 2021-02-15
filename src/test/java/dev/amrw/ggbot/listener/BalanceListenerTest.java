@@ -72,7 +72,7 @@ class BalanceListenerTest {
         when(event.getChannel()).thenReturn(channel);
         when(message.getAuthor()).thenReturn(messageAuthor);
         when(userCreditsService.getOrCreateUserCredit(messageAuthor)).thenReturn(userCredit);
-        when(messageUtil.buildInfoEmbed(messageAuthor, "Credits Balance")).thenReturn(embedBuilder);
+        when(messageUtil.buildEmbedInfo(messageAuthor, "Credits Balance")).thenReturn(embedBuilder);
         when(userCredit.getCredits()).thenReturn(credits);
         when(embedBuilder.setDescription(credits.toString())).thenReturn(embedBuilder);
 

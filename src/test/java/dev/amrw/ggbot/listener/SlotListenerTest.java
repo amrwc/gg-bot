@@ -93,13 +93,13 @@ class SlotListenerTest {
     void shouldHaveSentErrorMessageOnInvalidBet(final String bet) {
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(event.getMessageAuthor()).thenReturn(messageAuthor);
-        when(messageUtil.buildErrorEmbed(eq(messageAuthor), anyString())).thenReturn(embedBuilder);
+        when(messageUtil.buildEmbedError(eq(messageAuthor), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
 
         listener.onMessageCreate(event);
 
         final var stringCaptor = ArgumentCaptor.forClass(String.class);
-        verify(messageUtil).buildErrorEmbed(eq(messageAuthor), stringCaptor.capture());
+        verify(messageUtil).buildEmbedError(eq(messageAuthor), stringCaptor.capture());
         assertThat(stringCaptor.getValue()).containsPattern(
                 String.format("(invalid bet|%s)", Error.NEGATIVE_BET.getMessage()));
         verify(channel).sendMessage(embedBuilder);
@@ -116,12 +116,12 @@ class SlotListenerTest {
         when(slotResult.hasPlayed()).thenReturn(false);
         when(slotResult.getError()).thenReturn(error);
         when(event.getChannel()).thenReturn(channel);
-        when(messageUtil.buildErrorEmbed(eq(messageAuthor), anyString())).thenReturn(embedBuilder);
+        when(messageUtil.buildEmbedError(eq(messageAuthor), anyString())).thenReturn(embedBuilder);
 
         listener.onMessageCreate(event);
 
         final var stringCaptor = ArgumentCaptor.forClass(String.class);
-        verify(messageUtil).buildErrorEmbed(eq(messageAuthor), stringCaptor.capture());
+        verify(messageUtil).buildEmbedError(eq(messageAuthor), stringCaptor.capture());
         assertThat(stringCaptor.getValue()).isEqualTo(error.getMessage());
         verify(channel).sendMessage(embedBuilder);
         verifyNoMoreInteractions(service);

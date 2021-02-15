@@ -1,5 +1,7 @@
 package dev.amrw.ggbot.service;
 
+import dev.amrw.ggbot.dto.DailyCreditsResult;
+import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.model.User;
 import dev.amrw.ggbot.model.UserCredit;
 import org.javacord.api.entity.message.MessageAuthor;
@@ -41,7 +43,8 @@ class DailyServiceTest {
         when(user.getUserCredit()).thenReturn(null);
         when(userCreditsService.getOrCreateUserCredit(user)).thenReturn(userCredit);
 
-        assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(DailyService.DEFAULT_DAILY_CREDITS);
+        assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(
+                new DailyCreditsResult(DailyService.DEFAULT_DAILY_CREDITS, userCredit, null));
 
         verify(userCredit).setCredits(DailyService.DEFAULT_DAILY_CREDITS);
         verify(userCredit).setLastDaily(any(Date.class));
@@ -55,7 +58,8 @@ class DailyServiceTest {
         when(user.getUserCredit()).thenReturn(userCredit);
         when(userCredit.canClaimDailyCredits()).thenReturn(false);
 
-        assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(0L);
+        assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(
+                new DailyCreditsResult(0L, userCredit, Error.ALREADY_COLLECTED_DAILY));
 
         verifyNoMoreInteractions(userCredit);
     }
@@ -69,7 +73,8 @@ class DailyServiceTest {
         when(userCredit.canClaimDailyCredits()).thenReturn(true);
         when(userCredit.getCredits()).thenReturn(currentCredits);
 
-        assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(DailyService.DEFAULT_DAILY_CREDITS);
+        assertThat(service.claimDailyCredits(messageAuthor)).isEqualTo(
+                new DailyCreditsResult(DailyService.DEFAULT_DAILY_CREDITS, userCredit, null));
 
         verify(userCredit).setCredits(DailyService.DEFAULT_DAILY_CREDITS + currentCredits);
         verify(userCredit).setLastDaily(any(Date.class));
