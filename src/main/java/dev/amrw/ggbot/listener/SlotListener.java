@@ -63,7 +63,7 @@ public class SlotListener implements MessageCreateListener {
         if (!slotResult.hasPlayed()) {
             event.getChannel().sendMessage(messageUtil.buildEmbedError(
                     event.getMessageAuthor(),
-                    (null == slotResult.getError() ? Error.UNKNOWN_ERROR : slotResult.getError()).getMessage()
+                    (slotResult.getError().isEmpty() ? Error.UNKNOWN_ERROR : slotResult.getError().get()).getMessage()
             ));
             return;
         }

@@ -25,6 +25,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -114,7 +116,7 @@ class SlotListenerTest {
         when(event.getMessageAuthor()).thenReturn(messageAuthor);
         when(service.play(any(PlayRequest.class))).thenReturn(slotResult);
         when(slotResult.hasPlayed()).thenReturn(false);
-        when(slotResult.getError()).thenReturn(error);
+        when(slotResult.getError()).thenReturn(Optional.of(error));
         when(event.getChannel()).thenReturn(channel);
         when(messageUtil.buildEmbedError(eq(messageAuthor), anyString())).thenReturn(embedBuilder);
 

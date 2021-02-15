@@ -2,6 +2,8 @@ package dev.amrw.ggbot.dto;
 
 import lombok.*;
 
+import java.util.Optional;
+
 /**
  * Outcome of a game of slots.
  */
@@ -17,7 +19,8 @@ public class SlotResult {
     private Long creditsWon = 0L;
     private String payline = "";
     private Long currentBalance = 0L;
-    private Error error;
+    @Getter(AccessLevel.NONE)
+    private Error error = null;
 
     public Long getNetProfit() {
         return this.creditsWon - this.bet;
@@ -25,5 +28,9 @@ public class SlotResult {
 
     public Boolean hasPlayed() {
         return hasPlayed;
+    }
+
+    public Optional<Error> getError() {
+        return Optional.ofNullable(error);
     }
 }
