@@ -46,7 +46,9 @@ class SlotListenerHelperTest {
     @SuppressWarnings("unchecked") // For `Predicate.class`, `Consumer.class`, and `BiConsumer.class`
     @DisplayName("Should have suspensefully displayed the result message")
     void shouldHaveDisplayedResultSuspensefully() {
+        final Long creditsWon = nextLong();
         final Long netProfit = nextLong();
+        final Long currentBalance = nextLong();
 
         when(slotResult.getPayline()).thenReturn("💯💯💯");
 
@@ -56,8 +58,12 @@ class SlotListenerHelperTest {
         when(channel.sendMessage(embedBuilder)).thenReturn(future);
 
         when(embedBuilder.updateFields(any(Predicate.class), any(Consumer.class))).thenReturn(embedBuilder);
+        when(slotResult.getCreditsWon()).thenReturn(creditsWon);
+        when(embedBuilder.addInlineField("Credits won", creditsWon.toString())).thenReturn(embedBuilder);
         when(slotResult.getNetProfit()).thenReturn(netProfit);
-        when(embedBuilder.addField("Net profit", netProfit.toString())).thenReturn(embedBuilder);
+        when(embedBuilder.addInlineField("Net profit", netProfit.toString())).thenReturn(embedBuilder);
+        when(slotResult.getCurrentBalance()).thenReturn(currentBalance);
+        when(embedBuilder.addInlineField("Current balance", currentBalance.toString())).thenReturn(embedBuilder);
 
         when(future.whenCompleteAsync(any(BiConsumer.class), any(Executor.class))).thenReturn(future);
 

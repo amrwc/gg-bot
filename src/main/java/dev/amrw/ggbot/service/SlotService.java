@@ -18,18 +18,25 @@ import java.util.Map;
 @Service
 public class SlotService {
 
-    static final List<String> SYMBOLS = List.of("🥇", "💎", "💯", "💵", "💰");
+    /** Bag of symbols that will be selected randomly. The more of them there is, the more common they are. */
+    static final List<String> SYMBOLS = List.of(
+            "🥇", "🥇", "🥇", "🥇", "🥇", "🥇", "🥇", "🥇", "🥇",
+            "💎", "💎", "💎", "💎", "💎", "💎",
+            "💯", "💯", "💯", "💯",
+            "💵", "💵",
+            "💰"
+    );
     private static final Map<String, Double> PAYLINE_MULTIPLIERS = Map.of(
-            "🥇🥇🥇", 2.5,
             "🥇🥇", 0.5,
-            "💎💎💎", 3.0,
             "💎💎", 2.0,
-            "💯💯💯", 4.0,
             "💯💯", 2.0,
-            "💵💵💵", 7.0,
+            "🥇🥇🥇", 2.5,
+            "💎💎💎", 3.0,
             "💵💵", 3.5,
-            "💰💰💰", 15.0,
-            "💰💰", 7.0
+            "💯💯💯", 4.0,
+            "💵💵💵", 7.0,
+            "💰💰", 7.0,
+            "💰💰💰", 15.0
     );
 
     private final UserCreditsService userCreditsService;

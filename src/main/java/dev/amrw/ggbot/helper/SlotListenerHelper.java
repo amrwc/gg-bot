@@ -43,7 +43,9 @@ public class SlotListenerHelper {
                         .updateFields(
                                 field -> "Result".equals(field.getName()),
                                 field -> field.setValue(field.getValue() + "\n" + getOutcomeMessage(result)))
-                        .addField("Net profit", result.getNetProfit().toString()),
+                        .addInlineField("Credits won", result.getCreditsWon().toString())
+                        .addInlineField("Net profit", result.getNetProfit().toString())
+                        .addInlineField("Current balance", result.getCurrentBalance().toString()),
         };
         for (final EmbedBuilder edit : edits) {
             future = future.whenCompleteAsync(
