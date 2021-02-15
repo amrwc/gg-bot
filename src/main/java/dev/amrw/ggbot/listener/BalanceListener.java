@@ -37,9 +37,8 @@ public class BalanceListener implements MessageCreateListener {
             return;
         }
 
-        final var messageAuthor = event.getMessage().getAuthor();
-        final var userCredit = userCreditsService.getOrCreateUserCredit(messageAuthor);
-        final var embedBuilder = messageUtil.buildEmbedInfo(messageAuthor, "Credits Balance")
+        final var userCredit = userCreditsService.getOrCreateUserCredit(event.getMessageAuthor());
+        final var embedBuilder = messageUtil.buildEmbedInfo(event, "Credits Balance")
                 .setDescription(userCredit.getCredits().toString());
         event.getChannel().sendMessage(embedBuilder);
     }

@@ -4,7 +4,6 @@ import dev.amrw.ggbot.dto.SlotResult;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.DisplayName;
@@ -39,8 +38,6 @@ class SlotListenerHelperTest {
     @Mock
     private TextChannel channel;
     @Mock
-    private MessageAuthor messageAuthor;
-    @Mock
     private EmbedBuilder embedBuilder;
     @Mock
     private CompletableFuture<Message> future;
@@ -53,8 +50,7 @@ class SlotListenerHelperTest {
 
         when(slotResult.getPayline()).thenReturn("💯💯💯");
 
-        when(event.getMessageAuthor()).thenReturn(messageAuthor);
-        when(messageUtil.buildEmbedInfo(messageAuthor, "Slot Machine")).thenReturn(embedBuilder);
+        when(messageUtil.buildEmbedInfo(event, "Slot Machine")).thenReturn(embedBuilder);
         when(embedBuilder.addField(eq("Result"), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
         when(channel.sendMessage(embedBuilder)).thenReturn(future);

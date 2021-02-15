@@ -70,9 +70,9 @@ class BalanceListenerTest {
         final Long credits = nextLong();
         when(message.getContent()).thenReturn(prefix);
         when(event.getChannel()).thenReturn(channel);
-        when(message.getAuthor()).thenReturn(messageAuthor);
+        when(event.getMessageAuthor()).thenReturn(messageAuthor);
         when(userCreditsService.getOrCreateUserCredit(messageAuthor)).thenReturn(userCredit);
-        when(messageUtil.buildEmbedInfo(messageAuthor, "Credits Balance")).thenReturn(embedBuilder);
+        when(messageUtil.buildEmbedInfo(event, "Credits Balance")).thenReturn(embedBuilder);
         when(userCredit.getCredits()).thenReturn(credits);
         when(embedBuilder.setDescription(credits.toString())).thenReturn(embedBuilder);
 

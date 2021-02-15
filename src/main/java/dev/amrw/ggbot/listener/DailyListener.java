@@ -43,7 +43,7 @@ public class DailyListener implements MessageCreateListener {
         final var embedBuilder = dailyCreditsResult.getError()
                 .map(error -> messageUtil.buildEmbedError(messageAuthor, error)
                         .addField("Next daily in", userCredit.getTimeLeftUntilNextDaily()))
-                .orElseGet(() -> messageUtil.buildEmbedInfo(messageAuthor, "Daily Credits")
+                .orElseGet(() -> messageUtil.buildEmbedInfo(event, "Daily Credits")
                         .addField("New credits", dailyCreditsResult.getClaimedCredits().toString()));
         embedBuilder.addField("Current balance", userCredit.getCredits().toString());
         event.getChannel().sendMessage(embedBuilder);

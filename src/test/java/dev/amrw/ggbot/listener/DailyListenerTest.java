@@ -94,7 +94,7 @@ class DailyListenerTest {
         final Long claimedCredits = nextLong();
         final var dailyCreditsResult = new DailyCreditsResult(claimedCredits, userCredit, null);
 
-        when(messageUtil.buildEmbedInfo(messageAuthor, "Daily Credits")).thenReturn(embedBuilder);
+        when(messageUtil.buildEmbedInfo(event, "Daily Credits")).thenReturn(embedBuilder);
         when(embedBuilder.addField("New credits", claimedCredits.toString())).thenReturn(embedBuilder);
         addCommonStubbings(dailyCreditsResult);
 

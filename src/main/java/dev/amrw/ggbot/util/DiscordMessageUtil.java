@@ -4,6 +4,7 @@ import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.dto.Error;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
 
 import java.awt.Color;
@@ -26,10 +27,10 @@ public class DiscordMessageUtil {
      * @param title embed title
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
-    public EmbedBuilder buildEmbedInfo(final MessageAuthor messageAuthor, final String title) {
+    public EmbedBuilder buildEmbedInfo(final MessageCreateEvent event, final String title) {
         return new EmbedBuilder()
                 .setColor(botConfig.getEmbedColour())
-                .setAuthor(messageAuthor)
+                .setAuthor(event.getMessageAuthor())
                 .setTitle(title);
     }
 
