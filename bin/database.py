@@ -65,6 +65,9 @@ REQUIRED_ENVARS = [
     'POSTGRES_PASSWORD',
 ]
 
+# Default Postgres port, normally used inside the container and mapped to any port on host machine
+DEFAULT_POSTGRES_PORT = '5432'
+
 DRIVER_URL = 'https://jdbc.postgresql.org/download/postgresql-42.2.18.jar'
 SHA256_DRIVER = '0c891979f1eb2fe44432da114d09760b5063dad9e669ac0ac6b0b6bfb91bb3ba'
 DRIVER_PATH = os.path.join('tmp', 'db-driver', 'postgresql.jar')
@@ -110,12 +113,19 @@ def _start(container_name: str, args: dict) -> None:
         )
 
 
-def start(container: str = None, network: str = None, migrations: bool = False, start_db: bool = False) -> None:
+def start(
+        container: str = None,
+        network: str = None,
+        port: str = None,
+        migrations: bool = False,
+        start_db: bool = False
+) -> None:
     """Starts the database container.
 
     Args:
         container (str): Optional; The database container's name. Defaults to the config value.
         network (str): Optional; Name of the network to operate within. Defaults to the config value.
+        port (str): Optional; Host port at which the database will be listening on. Defaults to the config value.
         migrations (bool): Optional; Whether to apply the migrations. Includes `start_db`.
         start_db (bool): Optional; Whether to start the database container.
     """
@@ -123,23 +133,24 @@ def start(container: str = None, network: str = None, migrations: bool = False, 
 
     container_name = container if container else CONFIG['DATABASE']['database_container']
     network_name = network if network else CONFIG['DOCKER']['network']
+    port = port if port else CONFIG['DATABASE']['port']
 
     if migrations or start_db:
-        run_db_container(container_name, network_name)
+        run_db_container(container_name, network_name, port)
         if migrations:
             time.sleep(3)  # Wait for the database to come up
             apply_migrations()
 
 
-def run_db_container(container_name: str, network: str) -> None:
+def run_db_container(container_name: str, network: str, port: str) -> None:
     """Runs the database Docker container.
 
     Args:
         container_name (str): Name to use for the database container.
         network (str): Name of a Docker network to plug the database into.
+        port (str): Host port at which the database will be listening on.
     """
     docker_image = CONFIG['DATABASE']['docker_image']
-    port = CONFIG['DATABASE']['port']
 
     if docker_utils.item_exists('container', container_name):
         utils.log(f"Container '{container_name}' already exists, not running '{docker_image}' image")
@@ -155,7 +166,7 @@ def run_db_container(container_name: str, network: str) -> None:
         '--name',
         container_name,
         '--publish',
-        f"{port}:{port}",
+        f"{port}:{DEFAULT_POSTGRES_PORT}",  # <host_port>:<container_port>
         '--network',
         network,
         '--env',
