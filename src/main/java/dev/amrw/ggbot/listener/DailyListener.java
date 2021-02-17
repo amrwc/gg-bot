@@ -1,42 +1,33 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.service.DailyService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.event.message.MessageCreateEvent;
-import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.stereotype.Component;
 
 /**
  * Listener that gives the user daily credits.
  */
 @Component
-public class DailyListener implements MessageCreateListener {
+public class DailyListener extends MessageListenerBase {
 
     static final String KEYWORD = "daily";
 
-    private final BotConfig botConfig;
     private final DailyService dailyService;
     private final DiscordMessageUtil messageUtil;
 
-    public DailyListener(
-            final BotConfig botConfig,
-            final DailyService dailyService,
-            final DiscordMessageUtil messageUtil
-    ) {
-        this.botConfig = botConfig;
+    public DailyListener(final DailyService dailyService, final DiscordMessageUtil messageUtil) {
         this.dailyService = dailyService;
         this.messageUtil = messageUtil;
     }
 
     @Override
-    public void onMessageCreate(final MessageCreateEvent event) {
-        final var messageContent = event.getMessage().getContent().toLowerCase();
-        final var prefix = (botConfig.getTrigger() + " " + KEYWORD).toLowerCase();
-        if (!messageContent.startsWith(prefix)) {
-            return;
-        }
+    public String getKeyword() {
+        return KEYWORD;
+    }
 
+    @Override
+    public void process(final MessageCreateEvent event) {
         final var dailyCreditsResult = dailyService.claimDailyCredits(event);
         final var userCredit = dailyCreditsResult.getUserCredit();
         final var embedBuilder = dailyCreditsResult.getError()

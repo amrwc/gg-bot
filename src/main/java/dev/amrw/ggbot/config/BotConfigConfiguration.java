@@ -53,7 +53,7 @@ public class BotConfigConfiguration {
         try {
             final var field = Color.class.getField(colour);
             return (Color) field.get(null);
-        } catch (final NoSuchFieldException | IllegalAccessException exception) {
+        } catch (final Exception exception) {
             log.error("Error when parsing colour: {}", colour, exception);
             return DEFAULT_EMBED_COLOUR;
         }

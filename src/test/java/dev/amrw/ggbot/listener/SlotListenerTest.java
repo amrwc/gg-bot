@@ -1,6 +1,5 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.dto.SlotResult;
@@ -19,24 +18,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SlotListenerTest {
 
-    @Mock
-    private BotConfig botConfig;
     @Mock
     private SlotService service;
     @Mock
@@ -67,16 +60,6 @@ class SlotListenerTest {
         final var trigger = randomAlphabetic(3);
         prefix = trigger + " " + SlotListener.KEYWORD;
         when(event.getMessage()).thenReturn(message);
-        when(botConfig.getTrigger()).thenReturn(trigger);
-    }
-
-    @Test
-    @DisplayName("Should not have handled a message with wrong prefix")
-    void shouldNotHaveHandledMessageWithWrongPrefix() {
-        when(message.getContent()).thenReturn(randomAlphanumeric(16));
-        listener.onMessageCreate(event);
-        verifyNoMoreInteractions(event, message);
-        verifyNoInteractions(messageUtil, service, helper);
     }
 
     @ParameterizedTest
@@ -86,10 +69,11 @@ class SlotListenerTest {
         when(message.getContent()).thenReturn(prefix + messageContent);
         when(messageUtil.buildEmbedInfo(event, "Slot Machine")).thenReturn(embedBuilder);
         when(embedBuilder.addField(eq("Rules"), anyString())).thenReturn(embedBuilder);
+        doReturn(prefix).when(listener).getPrefix();
         when(embedBuilder.addField(eq("Usage"), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
 
-        listener.onMessageCreate(event);
+        listener.process(event);
 
         verify(channel).sendMessage(embedBuilder);
         verifyNoMoreInteractions(messageUtil, channel);
@@ -102,10 +86,11 @@ class SlotListenerTest {
     void shouldHaveSentErrorMessageOnInvalidBet(final String bet) {
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(event.getMessageAuthor()).thenReturn(messageAuthor);
+        Mockito.lenient().doReturn(prefix).when(listener).getPrefix();
         when(messageUtil.buildEmbedError(eq(event), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
 
-        listener.onMessageCreate(event);
+        listener.process(event);
 
         final var stringCaptor = ArgumentCaptor.forClass(String.class);
         verify(messageUtil).buildEmbedError(eq(event), stringCaptor.capture());
@@ -126,7 +111,7 @@ class SlotListenerTest {
         when(event.getChannel()).thenReturn(channel);
         when(messageUtil.buildEmbedError(eq(event), anyString())).thenReturn(embedBuilder);
 
-        listener.onMessageCreate(event);
+        listener.process(event);
 
         final var stringCaptor = ArgumentCaptor.forClass(String.class);
         verify(messageUtil).buildEmbedError(eq(event), stringCaptor.capture());
@@ -143,7 +128,7 @@ class SlotListenerTest {
         when(service.play(any(GameRequest.class))).thenReturn(slotResult);
         when(slotResult.hasPlayed()).thenReturn(true);
 
-        listener.onMessageCreate(event);
+        listener.process(event);
 
         verify(helper).displayResultSuspensefully(event, slotResult);
         verifyNoMoreInteractions(service, helper);

@@ -31,11 +31,16 @@ public class DiscordApiConfiguration {
      * Otherwise, if the token is invalid or not present, the <code>.login().join()</code> part will fail, and the bean
      * will not get produced. Therefore, it's important to have this step done <em>after</em> {@link BotConfig} bean
      * could have been produced.
-     * @param botConfig {@link BotConfig} produced from a config file
+     * @param botConfig {@link BotConfig}
      * @return {@link DiscordApi} bean
      */
     @Bean
     public DiscordApi discordApi(final BotConfig botConfig) {
+        if (botConfig.getAuthToken().isEmpty()) {
+            // Don't instantiate connection with Discord if the auth token is not present. Useful for integration tests
+            // that don't require the connection.
+            return null;
+        }
         log.info("Initialising connection with Discord");
         final var apiBuilder = new DiscordApiBuilder().setToken(botConfig.getAuthToken());
         listeners.forEach(apiBuilder::addListener);
