@@ -28,31 +28,41 @@ def main() -> None:
     docopt.docopt(__doc__, version=CONFIG['DEFAULT']['script_version'])
 
     db_container = CONFIG['DATABASE']['database_test_container']
-    network = CONFIG['DOCKER']['network']
-    set_envars()
+    network = CONFIG['DOCKER']['test_network']
+    db_port = CONFIG['DATABASE']['test_port']
+    set_envars(db_port)
 
     docker_utils.create_network(network)
-    database.start(container=db_container, network=network, migrations=True)
+    database.start(container=db_container, network=network, port=db_port, migrations=True)
 
     utils.log('Running integration tests')
-    utils.execute_cmd(['./gradlew', 'integrationTest', '--info'])
+    completed_process = utils.execute_cmd(['./gradlew', 'integrationTest', '--info'], pipe_stderr=True)
 
     docker_utils.rm_container(docker_utils.DockerContainer(db_container, rm_volumes=True))
+    docker_utils.rm_network(network)
+
+    if completed_process.stderr:
+        utils.raise_error(completed_process.stderr.decode('utf8'))
 
 
-def set_envars() -> None:
-    """Sets required envars."""
-    db_port = CONFIG['DATABASE']['port']
+def set_envars(db_port: str) -> None:
+    """Sets required envars.
+
+    Args:
+        db_port (str): Host port at which the database will be listening on.
+    """
     db_name = CONFIG['DOCKER']['main_image']
+    postgres_url = f"jdbc:postgresql://localhost:{db_port}"
+    postgres_username = 'postgres'
     db_password = secrets.token_hex(16)
 
-    os.environ['POSTGRES_URL'] = f"jdbc:postgresql://localhost:{db_port}"
+    os.environ['POSTGRES_URL'] = postgres_url
     os.environ['POSTGRES_DB'] = db_name
-    os.environ['POSTGRES_USER'] = 'postgres'
+    os.environ['POSTGRES_USER'] = postgres_username
     os.environ['POSTGRES_PASSWORD'] = db_password
 
-    os.environ['SPRING_DATASOURCE_URL'] = f"jdbc:postgresql://localhost:{db_port}/{db_name}"
-    os.environ['SPRING_DATASOURCE_USERNAME'] = 'postgres'
+    os.environ['SPRING_DATASOURCE_URL'] = f"{postgres_url}/{db_name}"
+    os.environ['SPRING_DATASOURCE_USERNAME'] = postgres_username
     os.environ['SPRING_DATASOURCE_PASSWORD'] = db_password
 
 

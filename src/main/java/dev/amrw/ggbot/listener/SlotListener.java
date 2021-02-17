@@ -1,6 +1,5 @@
 package dev.amrw.ggbot.listener;
 
-import dev.amrw.ggbot.config.BotConfig;
 import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.helper.SlotListenerHelper;
@@ -8,7 +7,6 @@ import dev.amrw.ggbot.service.SlotService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import lombok.extern.log4j.Log4j2;
 import org.javacord.api.event.message.MessageCreateEvent;
-import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -18,36 +16,32 @@ import java.util.Set;
  */
 @Log4j2
 @Component
-public class SlotListener implements MessageCreateListener {
+public class SlotListener extends MessageListenerBase {
 
     static final String KEYWORD = "slot";
 
-    private final BotConfig botConfig;
     private final SlotService service;
     private final DiscordMessageUtil messageUtil;
     private final SlotListenerHelper helper;
 
     public SlotListener(
-            final BotConfig botConfig,
             final SlotService service,
             final DiscordMessageUtil messageUtil,
             final SlotListenerHelper helper
     ) {
-        this.botConfig = botConfig;
         this.service = service;
         this.messageUtil = messageUtil;
         this.helper = helper;
     }
 
     @Override
-    public void onMessageCreate(final MessageCreateEvent event) {
-        final var messageContent = event.getMessage().getContent().toLowerCase();
-        final var prefix = (botConfig.getTrigger() + " " + KEYWORD).toLowerCase();
-        if (!messageContent.startsWith(prefix)) {
-            return;
-        }
+    public String getKeyword() {
+        return KEYWORD;
+    }
 
-        final var messageParts = messageContent.split("\\s+");
+    @Override
+    public void process(final MessageCreateEvent event) {
+        final var messageParts = event.getMessage().getContent().toLowerCase().split("\\s+");
         if (needsHelp(messageParts)) {
             sendHelpMessage(event);
             return;
@@ -95,7 +89,7 @@ public class SlotListener implements MessageCreateListener {
                         "💰💰❔ – **7x**\n" +
                         "💵💵💵 – **7x**\n" +
                         "💰💰💰 – **15x**")
-                .addField("Usage", "`" + botConfig.getTrigger() + " slot <bet_amount>`");
+                .addField("Usage", "`" + getPrefix() + " <bet_amount>`");
         event.getChannel().sendMessage(embedBuilder);
     }
 
@@ -121,10 +115,7 @@ public class SlotListener implements MessageCreateListener {
 
         if (invalidBet) {
             event.getChannel().sendMessage(messageUtil.buildEmbedError(event, String.format(
-                    "'%s' is an invalid bet. You can view the instructions with `%s slot help`",
-                    betString,
-                    botConfig.getTrigger())
-            ));
+                    "'%s' is an invalid bet. You can view the instructions with `%s help`", betString, getPrefix())));
         } else if (gameRequest.getBet() <= 0L) {
             event.getChannel().sendMessage(messageUtil.buildEmbedError(event, Error.NEGATIVE_BET.getMessage()));
         }
