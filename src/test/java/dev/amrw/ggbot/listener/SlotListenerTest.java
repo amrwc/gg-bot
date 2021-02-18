@@ -59,31 +59,13 @@ class SlotListenerTest {
     void beforeEach() {
         final var trigger = randomAlphabetic(3);
         prefix = trigger + " " + SlotListener.KEYWORD;
-        when(event.getMessage()).thenReturn(message);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"", " help"})
-    @DisplayName("Should have sent help message")
-    void shouldHaveSentHelpMessage(final String messageContent) {
-        when(message.getContent()).thenReturn(prefix + messageContent);
-        when(messageUtil.buildEmbedInfo(event, "Slot Machine")).thenReturn(embedBuilder);
-        when(embedBuilder.addField(eq("Rules"), anyString())).thenReturn(embedBuilder);
-        doReturn(prefix).when(listener).getPrefix();
-        when(embedBuilder.addField(eq("Usage"), anyString())).thenReturn(embedBuilder);
-        when(event.getChannel()).thenReturn(channel);
-
-        listener.process(event);
-
-        verify(channel).sendMessage(embedBuilder);
-        verifyNoMoreInteractions(messageUtil, channel);
-        verifyNoInteractions(service, helper);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"0", "-1", "-123", "abcd", "💯💯💯"})
     @DisplayName("Should have sent an error message in case of an invalid bet")
     void shouldHaveSentErrorMessageOnInvalidBet(final String bet) {
+        when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(prefix + " " + bet);
         when(event.getMessageAuthor()).thenReturn(messageAuthor);
         Mockito.lenient().doReturn(prefix).when(listener).getPrefix();
@@ -104,6 +86,7 @@ class SlotListenerTest {
     @CsvSource({"INSUFFICIENT_CREDITS", "UNKNOWN_ERROR"})
     @DisplayName("Should have sent an error message when the game has not been played")
     void shouldHaveSentErrorMessageWhenHasNotPlayed(final Error error) {
+        when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(prefix + " " + 100);
         when(service.play(any(GameRequest.class))).thenReturn(slotResult);
         when(slotResult.hasPlayed()).thenReturn(false);
@@ -124,6 +107,7 @@ class SlotListenerTest {
     @Test
     @DisplayName("Should have played a game of slots and displayed the result")
     void shouldHavePlayedAndDisplayedResult() {
+        when(event.getMessage()).thenReturn(message);
         when(message.getContent()).thenReturn(prefix + " " + 100);
         when(service.play(any(GameRequest.class))).thenReturn(slotResult);
         when(slotResult.hasPlayed()).thenReturn(true);
@@ -132,5 +116,34 @@ class SlotListenerTest {
 
         verify(helper).displayResultSuspensefully(event, slotResult);
         verifyNoMoreInteractions(service, helper);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'', true",
+            "' help', true",
+            "' 2000 help', true",
+            "' 2000', false",
+    })
+    @DisplayName("Should have determined whether the user needs to see the help message")
+    void shouldHaveDeterminedWhetherNeedsHelp(final String content, final boolean expectedResult) {
+        when(event.getMessage()).thenReturn(message);
+        when(message.getContent()).thenReturn(prefix + content);
+        assertThat(listener.needsHelp(event)).isEqualTo(expectedResult);
+    }
+
+    @Test
+    void shouldHaveSentHelpMessage() {
+        when(messageUtil.buildEmbedInfo(event, "Slot Machine")).thenReturn(embedBuilder);
+        when(embedBuilder.addField(eq("Rules"), anyString())).thenReturn(embedBuilder);
+        doReturn(prefix).when(listener).getPrefix();
+        when(embedBuilder.addField(eq("Usage"), anyString())).thenReturn(embedBuilder);
+        when(event.getChannel()).thenReturn(channel);
+
+        listener.showHelp(event);
+
+        verify(channel).sendMessage(embedBuilder);
+        verifyNoMoreInteractions(messageUtil, channel);
+        verifyNoInteractions(service, helper);
     }
 }
