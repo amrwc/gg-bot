@@ -2,6 +2,7 @@ package dev.amrw.ggbot.service;
 
 import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.dto.GameRequest;
+import dev.amrw.ggbot.dto.GameVerdict;
 import dev.amrw.ggbot.dto.SlotResult;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.DisplayName;
@@ -20,8 +21,7 @@ import static org.apache.commons.lang3.RandomUtils.nextLong;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SlotServiceTest {
@@ -44,9 +44,12 @@ class SlotServiceTest {
 
         final var result = service.play(new GameRequest(bet, event, null));
 
-        assertThat(result)
-                .usingRecursiveComparison()
-                .isEqualTo(new SlotResult(bet, false, 0L, "", currentBalance, Error.INSUFFICIENT_CREDITS));
+        final var expectedResult = new SlotResult();
+        expectedResult.setBet(bet);
+        expectedResult.setHasPlayed(false);
+        expectedResult.setCurrentBalance(currentBalance);
+        expectedResult.setError(Error.INSUFFICIENT_CREDITS);
+        assertThat(result).usingRecursiveComparison().isEqualTo(expectedResult);
         verifyNoMoreInteractions(userCreditsService);
     }
 
@@ -61,10 +64,14 @@ class SlotServiceTest {
 
         final var result = service.play(new GameRequest(bet, event, null));
 
+        final var expectedResult = new SlotResult();
+        expectedResult.setBet((long) bet);
+        expectedResult.setHasPlayed(true);
+        expectedResult.setCurrentBalance(newBalance);
         assertThat(result)
                 .usingRecursiveComparison()
-                .ignoringFields("creditsWon", "payline")
-                .isEqualTo(new SlotResult(bet, true, -1L, "<placeholder>", newBalance, null));
+                .ignoringFields("verdict", "creditsWon", "payline")
+                .isEqualTo(expectedResult);
         assertThat(result.getCreditsWon()).isNotNegative();
         assertThat(result.getPayline()).isNotEmpty();
         verifyNoMoreInteractions(userCreditsService);
@@ -79,15 +86,20 @@ class SlotServiceTest {
         final var winnings = nextLong();
         final var newBalance = nextLong();
         when(userCreditsService.getCurrentBalance(event)).thenReturn(currentBalance);
-        when(service.spin()).thenReturn(payline);
-        when(service.calculateWinnings(bet, payline)).thenReturn(winnings);
+        doReturn(payline).when(service).spin();
+        doReturn(winnings).when(service).calculateWinnings(bet, payline);
         when(userCreditsService.addCredits(event, winnings - bet)).thenReturn(newBalance);
 
         final var result = service.play(new GameRequest(bet, event, null));
 
-        assertThat(result)
-                .usingRecursiveComparison()
-                .isEqualTo(new SlotResult(bet, true, winnings, payline, newBalance, null));
+        final var expectedResult = new SlotResult();
+        expectedResult.setBet((long) bet);
+        expectedResult.setHasPlayed(true);
+        expectedResult.setVerdict(GameVerdict.WIN);
+        expectedResult.setCreditsWon(winnings);
+        expectedResult.setCurrentBalance(newBalance);
+        expectedResult.setPayline(payline);
+        assertThat(result).usingRecursiveComparison().isEqualTo(expectedResult);
         verifyNoMoreInteractions(userCreditsService);
     }
 

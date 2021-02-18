@@ -7,7 +7,6 @@ import dev.amrw.ggbot.helper.SlotListenerHelper;
 import dev.amrw.ggbot.service.SlotService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,8 +42,6 @@ class SlotListenerTest {
     private MessageCreateEvent event;
     @Mock
     private TextChannel channel;
-    @Mock
-    private MessageAuthor messageAuthor;
     @Mock
     private SlotResult slotResult;
     @Mock

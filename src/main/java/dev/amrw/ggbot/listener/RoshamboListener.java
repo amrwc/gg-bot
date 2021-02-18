@@ -3,12 +3,15 @@ package dev.amrw.ggbot.listener;
 import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.dto.RoshamboRequest;
 import dev.amrw.ggbot.dto.RoshamboShape;
+import dev.amrw.ggbot.service.RoshamboService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import lombok.extern.log4j.Log4j2;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Listener that enables users to play Roshambo (Rock, Paper, Scissors).
@@ -19,9 +22,11 @@ public class RoshamboListener extends MessageListenerBase {
 
     static final String KEYWORD = "roshambo";
 
+    private final RoshamboService service;
     private final DiscordMessageUtil messageUtil;
 
-    public RoshamboListener(final DiscordMessageUtil messageUtil) {
+    public RoshamboListener(final RoshamboService service, final DiscordMessageUtil messageUtil) {
+        this.service = service;
         this.messageUtil = messageUtil;
     }
 
@@ -32,10 +37,25 @@ public class RoshamboListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
-        final var gameRequest = parseCommand(event);
-        if (gameRequest.getError().isPresent()) {
+        final var request = parseCommand(event);
+        if (request.getError().isPresent()) {
             return;
         }
+
+        final var result = service.play(request);
+
+        final var delayedExecutor = CompletableFuture.delayedExecutor(1L, TimeUnit.SECONDS);
+        var future = event.getChannel().sendMessage("3️⃣");
+        for (final String content : new String[] {"2️⃣", "1️⃣", result.getShape().getEmoji()}) {
+            future = future.whenCompleteAsync((message, throwable) -> message.edit(content), delayedExecutor);
+        }
+
+        final var resultMessage = messageUtil.buildInfo(event, "Roshambo")
+                .addField("Result", String.format("**-- YOU %s --**", result.getVerdict().getPastTense()))
+                .addInlineField("Credits won", result.getCreditsWon().toString())
+                .addInlineField("Net profit", result.getNetProfit().toString())
+                .addInlineField("Current balance", result.getCurrentBalance().toString());
+        future.whenCompleteAsync((msg, thr) -> event.getChannel().sendMessage(resultMessage));
     }
 
     @Override
@@ -48,7 +68,7 @@ public class RoshamboListener extends MessageListenerBase {
     public void showHelp(final MessageCreateEvent event) {
         final var helpMessage = messageUtil.buildInfo(event, "Roshambo")
                 .addField("Rules", "🤘 > ✂️\n✂️ > 🧻\n🧻 > 🤘\nThe player stands to win 2:1.")
-                .addField("Usage", "`" + getPrefix() + " <bet_amount> <shape>");
+                .addField("Usage", "`" + getPrefix() + " <bet_amount> <shape>`");
         event.getChannel().sendMessage(helpMessage);
     }
 

@@ -66,6 +66,6 @@ public class SlotListenerHelper {
     }
 
     private String getOutcomeMessage(final SlotResult result) {
-        return String.format(OUTCOME_MESSAGE_FORMAT, result.getCreditsWon() > 0L ? "WON" : "LOST");
+        return String.format(OUTCOME_MESSAGE_FORMAT, result.getVerdict().getPastTense());
     }
 }

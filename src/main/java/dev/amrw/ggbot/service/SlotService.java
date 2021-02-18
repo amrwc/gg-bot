@@ -2,6 +2,7 @@ package dev.amrw.ggbot.service;
 
 import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.dto.GameRequest;
+import dev.amrw.ggbot.dto.GameVerdict;
 import dev.amrw.ggbot.dto.SlotResult;
 import dev.amrw.ggbot.util.EmojiUtil;
 import org.springframework.stereotype.Service;
@@ -49,24 +50,32 @@ public class SlotService {
 
     /**
      * Play a game of slots with the given bet.
-     * @param gameRequest slot game request
+     * @param request slot game request
      * @return result of the game
      */
-    public SlotResult play(final GameRequest gameRequest) {
-        final var currentBalance = userCreditsService.getCurrentBalance(gameRequest.getEvent());
-        if (gameRequest.getBet() > currentBalance) {
-            final var betResult = new SlotResult();
-            betResult.setBet(gameRequest.getBet());
-            betResult.setHasPlayed(false);
-            betResult.setCurrentBalance(currentBalance);
-            betResult.setError(Error.INSUFFICIENT_CREDITS);
-            return betResult;
+    public SlotResult play(final GameRequest request) {
+        final var currentBalance = userCreditsService.getCurrentBalance(request.getEvent());
+        if (request.getBet() > currentBalance) {
+            final var result = new SlotResult();
+            result.setBet(request.getBet());
+            result.setHasPlayed(false);
+            result.setCurrentBalance(currentBalance);
+            result.setError(Error.INSUFFICIENT_CREDITS);
+            return result;
         }
 
         final var payline = spin();
-        final var winnings = calculateWinnings(gameRequest.getBet(), payline);
-        final var newBalance = userCreditsService.addCredits(gameRequest.getEvent(), winnings - gameRequest.getBet());
-        return new SlotResult(gameRequest.getBet(), true, winnings, payline, newBalance, null);
+        final var winnings = calculateWinnings(request.getBet(), payline);
+        final var newBalance = userCreditsService.addCredits(request.getEvent(), winnings - request.getBet());
+
+        final var result = new SlotResult();
+        result.setBet(request.getBet());
+        result.setHasPlayed(true);
+        result.setVerdict(winnings > 0L ? GameVerdict.WIN : GameVerdict.LOSS);
+        result.setCreditsWon(winnings);
+        result.setCurrentBalance(newBalance);
+        result.setPayline(payline);
+        return result;
     }
 
     protected String spin() {
