@@ -22,7 +22,7 @@ public abstract class MessageListenerBase implements MessageListener {
 
     @Override
     public void showHelp(final MessageCreateEvent event) {
-        final var helpMessage = messageUtil.buildEmbedInfo(event, "Help")
+        final var helpMessage = messageUtil.buildInfo(event, "Help")
                 .setDescription("Use `" + botConfig.getTrigger() + " help`");
         event.getChannel().sendMessage(helpMessage);
     }

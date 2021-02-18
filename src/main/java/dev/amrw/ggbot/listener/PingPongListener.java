@@ -26,6 +26,6 @@ public class PingPongListener extends MessageListenerBase {
     @Override
     public void process(final MessageCreateEvent event) {
         event.getMessage().addReaction("🏓");
-        event.getChannel().sendMessage(messageUtil.buildEmbedInfo(event, "Ping?").setDescription("pong!"));
+        event.getChannel().sendMessage(messageUtil.buildInfo(event, "Ping?").setDescription("pong!"));
     }
 }

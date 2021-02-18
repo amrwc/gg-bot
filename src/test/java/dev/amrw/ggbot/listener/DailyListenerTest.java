@@ -56,7 +56,7 @@ class DailyListenerTest {
 
         when(dailyService.claimDailyCredits(event)).thenReturn(dailyCreditsResult);
 
-        when(messageUtil.buildEmbedError(event, error)).thenReturn(embedBuilder);
+        when(messageUtil.buildError(event, error)).thenReturn(embedBuilder);
         when(userCredit.getTimeLeftUntilNextDaily()).thenReturn(nextDailyIn);
         when(embedBuilder.addField("Next daily in", nextDailyIn)).thenReturn(embedBuilder);
 
@@ -77,7 +77,7 @@ class DailyListenerTest {
 
         when(dailyService.claimDailyCredits(event)).thenReturn(dailyCreditsResult);
 
-        when(messageUtil.buildEmbedInfo(event, "Daily Credits")).thenReturn(embedBuilder);
+        when(messageUtil.buildInfo(event, "Daily Credits")).thenReturn(embedBuilder);
         when(embedBuilder.addField("New credits", claimedCredits.toString())).thenReturn(embedBuilder);
 
         when(userCredit.getCredits()).thenReturn(credits);

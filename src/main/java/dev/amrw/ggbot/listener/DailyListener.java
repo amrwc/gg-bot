@@ -31,9 +31,9 @@ public class DailyListener extends MessageListenerBase {
         final var dailyCreditsResult = dailyService.claimDailyCredits(event);
         final var userCredit = dailyCreditsResult.getUserCredit();
         final var embedBuilder = dailyCreditsResult.getError()
-                .map(error -> messageUtil.buildEmbedError(event, error)
+                .map(error -> messageUtil.buildError(event, error)
                         .addField("Next daily in", userCredit.getTimeLeftUntilNextDaily()))
-                .orElseGet(() -> messageUtil.buildEmbedInfo(event, "Daily Credits")
+                .orElseGet(() -> messageUtil.buildInfo(event, "Daily Credits")
                         .addField("New credits", dailyCreditsResult.getClaimedCredits().toString()));
         embedBuilder.addField("Current balance", userCredit.getCredits().toString());
         event.getChannel().sendMessage(embedBuilder);

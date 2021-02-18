@@ -61,7 +61,7 @@ public class SlotListenerHelper {
             final String column2,
             final String column3
     ) {
-        return messageUtil.buildEmbedInfo(event, "Slot Machine")
+        return messageUtil.buildInfo(event, "Slot Machine")
                 .addField("Result", String.format(PAYLINE_FORMAT, column1, column2, column3));
     }
 

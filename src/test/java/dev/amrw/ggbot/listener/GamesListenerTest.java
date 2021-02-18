@@ -32,7 +32,7 @@ class GamesListenerTest {
     @DisplayName("Should have displayed currently available games")
     void shouldHaveDisplayedAvailableGames() {
         when(event.getChannel()).thenReturn(channel);
-        when(messageUtil.buildEmbedInfo(event, "Available Games")).thenReturn(embedBuilder);
+        when(messageUtil.buildInfo(event, "Available Games")).thenReturn(embedBuilder);
         when(embedBuilder.setDescription(anyString())).thenReturn(embedBuilder);
 
         listener.process(event);

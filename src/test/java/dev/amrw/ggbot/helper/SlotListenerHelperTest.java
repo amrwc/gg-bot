@@ -52,7 +52,7 @@ class SlotListenerHelperTest {
 
         when(slotResult.getPayline()).thenReturn("💯💯💯");
 
-        when(messageUtil.buildEmbedInfo(event, "Slot Machine")).thenReturn(embedBuilder);
+        when(messageUtil.buildInfo(event, "Slot Machine")).thenReturn(embedBuilder);
         when(embedBuilder.addField(eq("Result"), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
         when(channel.sendMessage(embedBuilder)).thenReturn(future);

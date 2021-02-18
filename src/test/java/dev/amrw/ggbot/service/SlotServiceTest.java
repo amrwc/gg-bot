@@ -42,7 +42,7 @@ class SlotServiceTest {
         final var currentBalance = bet / 2;
         when(userCreditsService.getCurrentBalance(event)).thenReturn(currentBalance);
 
-        final var result = service.play(new GameRequest(bet, event));
+        final var result = service.play(new GameRequest(bet, event, null));
 
         assertThat(result)
                 .usingRecursiveComparison()
@@ -59,7 +59,7 @@ class SlotServiceTest {
         when(userCreditsService.getCurrentBalance(event)).thenReturn(currentBalance);
         when(userCreditsService.addCredits(eq(event), anyLong())).thenReturn(newBalance);
 
-        final var result = service.play(new GameRequest(bet, event));
+        final var result = service.play(new GameRequest(bet, event, null));
 
         assertThat(result)
                 .usingRecursiveComparison()
@@ -83,7 +83,7 @@ class SlotServiceTest {
         when(service.calculateWinnings(bet, payline)).thenReturn(winnings);
         when(userCreditsService.addCredits(event, winnings - bet)).thenReturn(newBalance);
 
-        final var result = service.play(new GameRequest(bet, event));
+        final var result = service.play(new GameRequest(bet, event, null));
 
         assertThat(result)
                 .usingRecursiveComparison()

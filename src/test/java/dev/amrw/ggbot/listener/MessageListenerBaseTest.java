@@ -43,7 +43,7 @@ class MessageListenerBaseTest {
     @Test
     @DisplayName("Should have showed help to the user")
     void shouldHaveShowedHelp() {
-        when(messageUtil.buildEmbedInfo(event, "Help")).thenReturn(embedBuilder);
+        when(messageUtil.buildInfo(event, "Help")).thenReturn(embedBuilder);
         when(botConfig.getTrigger()).thenReturn("!gg");
         when(embedBuilder.setDescription("Use `!gg help`")).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);

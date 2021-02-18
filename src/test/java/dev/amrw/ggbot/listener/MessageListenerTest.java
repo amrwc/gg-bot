@@ -68,8 +68,7 @@ class MessageListenerTest {
     })
     @DisplayName("Should have determined whether the message content has a matching prefix")
     void shouldHaveVerifiedPrefix(final String content, final boolean expectedResult) {
-        when(event.getMessage()).thenReturn(message);
-        when(message.getContent()).thenReturn(content);
+        when(event.getMessageContent()).thenReturn(content);
         assertThat(listener.hasMatchingPrefix(event)).isEqualTo(expectedResult);
     }
 
@@ -88,8 +87,7 @@ class MessageListenerTest {
     })
     @DisplayName("Should have determined whether the user needs to see the help message")
     void shouldHaveDeterminedWhetherNeedsHelp(final String content, final boolean expectedResult) {
-        when(event.getMessage()).thenReturn(message);
-        when(message.getContent()).thenReturn(content);
+        when(event.getMessageContent()).thenReturn(content);
         assertThat(listener.needsHelp(event)).isEqualTo(expectedResult);
     }
 

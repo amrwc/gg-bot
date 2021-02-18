@@ -49,7 +49,7 @@ public interface MessageListener extends MessageCreateListener {
      * @return whether the prefix matches
      */
     default boolean hasMatchingPrefix(final MessageCreateEvent event) {
-        final var messageContent = event.getMessage().getContent().toLowerCase();
+        final var messageContent = event.getMessageContent().toLowerCase();
         final var prefix = getPrefix().toLowerCase();
         return messageContent.startsWith(prefix);
     }
@@ -63,7 +63,7 @@ public interface MessageListener extends MessageCreateListener {
      * @return whether to show the user a help message
      */
     default boolean needsHelp(final MessageCreateEvent event) {
-        final var messageParts = event.getMessage().getContent().split("\\s+");
+        final var messageParts = event.getMessageContent().split("\\s+");
         if (messageParts.length >= 2 && "help".equals(messageParts[1])) {
             // `HelpListener` should take over and display a comprehensive help message
             return false;
