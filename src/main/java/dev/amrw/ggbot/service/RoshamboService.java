@@ -1,11 +1,10 @@
 package dev.amrw.ggbot.service;
 
-import dev.amrw.ggbot.dto.*;
 import dev.amrw.ggbot.dto.Error;
+import dev.amrw.ggbot.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,13 +13,7 @@ import java.util.Map;
 @Service
 public class RoshamboService {
 
-    private static final List<RoshamboShape> SHAPES = List.of(
-            RoshamboShape.ROCK,
-            RoshamboShape.PAPER,
-            RoshamboShape.SCISSORS
-    );
-
-    private static final Map<RoshamboShape, Map<RoshamboShape, GameVerdict>> RULES = Map.of(
+    static final Map<RoshamboShape, Map<RoshamboShape, GameVerdict>> RULES = Map.of(
             RoshamboShape.ROCK, Map.of(
                     RoshamboShape.ROCK, GameVerdict.DRAW,
                     RoshamboShape.PAPER, GameVerdict.LOSS,
@@ -37,6 +30,7 @@ public class RoshamboService {
                     RoshamboShape.SCISSORS, GameVerdict.DRAW
             )
     );
+    private static final RoshamboShape[] SHAPES = RoshamboShape.values();
 
     private final UserCreditsService userCreditsService;
     private final SecureRandom random;
@@ -65,21 +59,20 @@ public class RoshamboService {
         final var randomisedShape = randomiseShape();
         final var verdict = RULES.get(request.getShape()).get(randomisedShape);
         final var winnings = calculateWinnings(request.getBet(), verdict);
-        final var newBalance = userCreditsService.addCredits(request.getEvent(), winnings - request.getBet());
 
         final var result = new RoshamboResult();
         result.setBet(request.getBet());
         result.setHasPlayed(true);
         result.setVerdict(verdict);
         result.setCreditsWon(winnings);
-        result.setCurrentBalance(newBalance);
+        result.setCurrentBalance(userCreditsService.addCredits(request.getEvent(), result.getNetProfit()));
         result.setShape(randomisedShape);
         return result;
     }
 
     protected RoshamboShape randomiseShape() {
-        final var index = random.nextInt(SHAPES.size());
-        return SHAPES.get(index);
+        final var index = random.nextInt(SHAPES.length);
+        return SHAPES[index];
     }
 
     protected long calculateWinnings(final Long bet, final GameVerdict verdict) {

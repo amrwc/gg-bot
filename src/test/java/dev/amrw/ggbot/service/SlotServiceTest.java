@@ -54,30 +54,6 @@ class SlotServiceTest {
     }
 
     @Test
-    @DisplayName("Should have played a game of slots")
-    void shouldHavePlayed() {
-        final var bet = nextInt();
-        final var currentBalance = nextLong(bet, Long.MAX_VALUE);
-        final var newBalance = nextLong();
-        when(userCreditsService.getCurrentBalance(event)).thenReturn(currentBalance);
-        when(userCreditsService.addCredits(eq(event), anyLong())).thenReturn(newBalance);
-
-        final var result = service.play(new GameRequest(bet, event, null));
-
-        final var expectedResult = new SlotResult();
-        expectedResult.setBet((long) bet);
-        expectedResult.setHasPlayed(true);
-        expectedResult.setCurrentBalance(newBalance);
-        assertThat(result)
-                .usingRecursiveComparison()
-                .ignoringFields("verdict", "creditsWon", "payline")
-                .isEqualTo(expectedResult);
-        assertThat(result.getCreditsWon()).isNotNegative();
-        assertThat(result.getPayline()).isNotEmpty();
-        verifyNoMoreInteractions(userCreditsService);
-    }
-
-    @Test
     @DisplayName("Should have played a mocked game of slots where the result is known")
     void shouldHavePlayedMocked() {
         final var bet = nextInt();
@@ -100,6 +76,30 @@ class SlotServiceTest {
         expectedResult.setCurrentBalance(newBalance);
         expectedResult.setPayline(payline);
         assertThat(result).usingRecursiveComparison().isEqualTo(expectedResult);
+        verifyNoMoreInteractions(userCreditsService);
+    }
+
+    @Test
+    @DisplayName("Should have played a game of slots")
+    void shouldHavePlayed() {
+        final var bet = nextInt();
+        final var currentBalance = nextLong(bet, Long.MAX_VALUE);
+        final var newBalance = nextLong();
+        when(userCreditsService.getCurrentBalance(event)).thenReturn(currentBalance);
+        when(userCreditsService.addCredits(eq(event), anyLong())).thenReturn(newBalance);
+
+        final var result = service.play(new GameRequest(bet, event, null));
+
+        final var expectedResult = new SlotResult();
+        expectedResult.setBet((long) bet);
+        expectedResult.setHasPlayed(true);
+        expectedResult.setCurrentBalance(newBalance);
+        assertThat(result)
+                .usingRecursiveComparison()
+                .ignoringFields("verdict", "creditsWon", "payline")
+                .isEqualTo(expectedResult);
+        assertThat(result.getCreditsWon()).isNotNegative();
+        assertThat(result.getPayline()).isNotEmpty();
         verifyNoMoreInteractions(userCreditsService);
     }
 
