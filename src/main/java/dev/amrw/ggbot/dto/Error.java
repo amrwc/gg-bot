@@ -14,6 +14,7 @@ public enum Error {
 
     ALREADY_COLLECTED_DAILY("You have already collected your daily credits today"),
     INSUFFICIENT_CREDITS("You have insufficient credits"),
+    INVALID_COMMAND("The given command is invalid"),
     NEGATIVE_BET("Bet must be a positive value"),
     UNKNOWN_ERROR("Unknown error");
 

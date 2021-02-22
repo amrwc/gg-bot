@@ -41,20 +41,14 @@ public class SlotListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
-        final var messageParts = event.getMessage().getContent().toLowerCase().split("\\s+");
-        if (needsHelp(messageParts)) {
-            sendHelpMessage(event);
-            return;
-        }
-
-        final var playRequest = parseBet(event, messageParts);
+        final var playRequest = parseCommand(event);
         if (playRequest.getBet() <= 0) {
             return;
         }
 
         final var slotResult = service.play(playRequest);
         if (!slotResult.hasPlayed()) {
-            event.getChannel().sendMessage(messageUtil.buildEmbedError(
+            event.getChannel().sendMessage(messageUtil.buildError(
                     event,
                     (slotResult.getError().isEmpty() ? Error.UNKNOWN_ERROR : slotResult.getError().get()).getMessage()
             ));
@@ -70,15 +64,18 @@ public class SlotListener extends MessageListenerBase {
      *     <li>too few arguments,</li>
      *     <li><code>help</code> keyword is among the arguments.</li>
      * </ul>
-     * @param message user's message split by white space
+     * @param event {@link MessageCreateEvent}
      * @return whether the user needs to see the help message
      */
-    private boolean needsHelp(final String[] message) {
-        return 2 == message.length || Set.of(message).contains("help");
+    @Override
+    public boolean needsHelp(final MessageCreateEvent event) {
+        final var messageParts = event.getMessageContent().toLowerCase().split("\\s+");
+        return messageParts.length <= 2 || Set.of(messageParts).contains("help");
     }
 
-    private void sendHelpMessage(final MessageCreateEvent event) {
-        final var embedBuilder = messageUtil.buildEmbedInfo(event, "Slot Machine")
+    @Override
+    public void showHelp(final MessageCreateEvent event) {
+        final var helpMessage = messageUtil.buildInfo(event, "Slot Machine")
                 .addField("Rules", "🥇🥇❔ – **0.5x**\n" +
                         "💎💎❔ – **2x**\n" +
                         "💯💯❔ – **2x**\n" +
@@ -90,36 +87,29 @@ public class SlotListener extends MessageListenerBase {
                         "💵💵💵 – **7x**\n" +
                         "💰💰💰 – **15x**")
                 .addField("Usage", "`" + getPrefix() + " <bet_amount>`");
-        event.getChannel().sendMessage(embedBuilder);
+        event.getChannel().sendMessage(helpMessage);
     }
 
-    private GameRequest parseBet(final MessageCreateEvent event, final String[] messageParts) {
-        final var betString = messageParts[2];
-        final var messageAuthor = event.getMessageAuthor();
-        final var gameRequest = new GameRequest();
-        gameRequest.setEvent(event);
-        var invalidBet = false;
+    private GameRequest parseCommand(final MessageCreateEvent event) {
+        final var messageParts = event.getMessageContent().toLowerCase().split("\\s+");
+        final var slotRequest = new GameRequest();
+        slotRequest.setEvent(event);
 
         try {
-            gameRequest.setBet(Long.parseLong(betString));
+            slotRequest.setBet(Long.parseLong(messageParts[2]));
         } catch (final NumberFormatException exception) {
-            log.debug(
-                    "User '{} ({})' placed an invalid bet: '{}'",
-                    messageAuthor.getDisplayName(),
-                    messageAuthor.getId(),
-                    betString,
-                    exception
-            );
-            invalidBet = true;
+            log.debug("{} used an invalid command: {}", event.getMessageAuthor(), event.getMessageContent(), exception);
+            event.getChannel().sendMessage(messageUtil.buildInvalidCommandError(event, getPrefix()));
+            slotRequest.setError(Error.INVALID_COMMAND);
+            return slotRequest;
         }
 
-        if (invalidBet) {
-            event.getChannel().sendMessage(messageUtil.buildEmbedError(event, String.format(
-                    "'%s' is an invalid bet. You can view the instructions with `%s help`", betString, getPrefix())));
-        } else if (gameRequest.getBet() <= 0L) {
-            event.getChannel().sendMessage(messageUtil.buildEmbedError(event, Error.NEGATIVE_BET.getMessage()));
+        if (slotRequest.getBet() <= 0L) {
+            log.debug("{} placed a negative bet: {}", event.getMessageAuthor(), event.getMessageContent());
+            event.getChannel().sendMessage(messageUtil.buildError(event, Error.NEGATIVE_BET));
+            slotRequest.setError(Error.NEGATIVE_BET);
         }
 
-        return gameRequest;
+        return slotRequest;
     }
 }

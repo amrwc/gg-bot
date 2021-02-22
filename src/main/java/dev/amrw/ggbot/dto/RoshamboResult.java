@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Outcome of a game of slots.
+ * Result of a Roshambo (Rock, Paper, Scissors) game.
  */
 @Data
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class SlotResult extends GameResult {
+public final class RoshamboResult extends GameResult {
 
-    private String payline = "";
+    private RoshamboShape shape;
 }

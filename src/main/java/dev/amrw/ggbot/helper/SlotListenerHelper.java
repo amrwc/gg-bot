@@ -61,11 +61,11 @@ public class SlotListenerHelper {
             final String column2,
             final String column3
     ) {
-        return messageUtil.buildEmbedInfo(event, "Slot Machine")
+        return messageUtil.buildInfo(event, "Slot Machine")
                 .addField("Result", String.format(PAYLINE_FORMAT, column1, column2, column3));
     }
 
     private String getOutcomeMessage(final SlotResult result) {
-        return String.format(OUTCOME_MESSAGE_FORMAT, result.getCreditsWon() > 0L ? "WON" : "LOST");
+        return String.format(OUTCOME_MESSAGE_FORMAT, result.getVerdict().getPastTense());
     }
 }

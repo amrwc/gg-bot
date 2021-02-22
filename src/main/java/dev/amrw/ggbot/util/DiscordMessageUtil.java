@@ -26,7 +26,7 @@ public class DiscordMessageUtil {
      * @param title embed title
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
-    public EmbedBuilder buildEmbedInfo(final MessageCreateEvent event, final String title) {
+    public EmbedBuilder buildInfo(final MessageCreateEvent event, final String title) {
         return new EmbedBuilder()
                 .setColor(botConfig.getEmbedColour())
                 .setAuthor(event.getMessageAuthor())
@@ -39,8 +39,22 @@ public class DiscordMessageUtil {
      * @param error {@link Error} to use as an embed description/error message
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
-    public EmbedBuilder buildEmbedError(final MessageCreateEvent event, final Error error) {
-        return buildEmbedError(event, error.getMessage());
+    public EmbedBuilder buildError(final MessageCreateEvent event, final Error error) {
+        return buildError(event, error.getMessage());
+    }
+
+    /**
+     * Builds an error message relating to an invalid command.
+     * @param event {@link MessageCreateEvent}
+     * @return {@link EmbedBuilder} ready to be sent to the Discord channel
+     */
+    public EmbedBuilder buildInvalidCommandError(final MessageCreateEvent event, final String prefix) {
+        final var description = String.format(
+                "Invalid command: %s\nYou can view the instructions with `%s help`",
+                event.getMessageContent(),
+                prefix
+        );
+        return buildError(event, description);
     }
 
     /**
@@ -49,7 +63,7 @@ public class DiscordMessageUtil {
      * @param description embed description; error message
      * @return {@link EmbedBuilder} ready to be sent to the Discord channel
      */
-    public EmbedBuilder buildEmbedError(final MessageCreateEvent event, final String description) {
+    public EmbedBuilder buildError(final MessageCreateEvent event, final String description) {
         return new EmbedBuilder()
                 .setColor(Color.RED)
                 .setAuthor(event.getMessageAuthor())

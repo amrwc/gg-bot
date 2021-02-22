@@ -49,7 +49,7 @@ class HelpListenerTest {
     @Test
     void shouldHaveDisplayedHelpMessage() {
         final var keyword = randomAlphanumeric(16);
-        when(messageUtil.buildEmbedInfo(event, "Help")).thenReturn(embedBuilder);
+        when(messageUtil.buildInfo(event, "Help")).thenReturn(embedBuilder);
         when(mockListener.getKeyword()).thenReturn(keyword);
         when(embedBuilder.addField(eq("Available keywords"), anyString())).thenReturn(embedBuilder);
         when(event.getChannel()).thenReturn(channel);
