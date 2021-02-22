@@ -14,6 +14,7 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Slot machine service.
@@ -86,8 +87,8 @@ public class SlotService {
     protected String spin() {
         final var rollBuilder = new StringBuilder();
         for (int i = 0; i < 3; i++) {
-            final var index = random.nextInt(SYMBOLS.size());
-            rollBuilder.append(SYMBOLS.get(index));
+            final var symbolIndex = random.nextInt(SYMBOLS.size());
+            rollBuilder.append(SYMBOLS.get(symbolIndex));
         }
         return rollBuilder.toString();
     }
@@ -100,27 +101,22 @@ public class SlotService {
 
         // Since `Math.multiplyExact()` has no signature allowing for floating point numbers, the calculations are done
         // using BigDecimals
+        final var result = BigDecimal.valueOf(bet).multiply(multiplier.get())
+                .setScale(0, RoundingMode.HALF_UP); // Drop all decimal points, round half-up
         try {
-            return BigDecimal.valueOf(bet).multiply(multiplier.get())
-                    .setScale(0, RoundingMode.HALF_UP) // Drop all decimal points, round half-up
-                    .longValueExact();
+            return result.longValueExact();
         } catch (final ArithmeticException exception) {
             log.error("Error calculating winnings: {} * {}", bet, multiplier, exception);
-            return Long.MAX_VALUE;
+            // Only return max Long in case of an overflow
+            return "Overflow".equals(exception.getMessage()) ? Long.MAX_VALUE : bet;
         }
     }
 
     private Optional<BigDecimal> getMultiplier(final String payline) {
-        final var potentialCombinations = new String[] {
-                payline, // All three columns
-                EmojiUtil.getEmojiSubstring(payline, 0, 2), // First and second column
-                EmojiUtil.getEmojiSubstring(payline, 1) // Second and third column
-        };
-        for (final var combination : potentialCombinations) {
-            if (PAYLINE_MULTIPLIERS.containsKey(combination)) {
-                return Optional.of(PAYLINE_MULTIPLIERS.get(combination));
-            }
-        }
-        return Optional.empty();
+        // All columns, first and second column, second and third column
+        return Stream.of(payline, EmojiUtil.getEmojiSubstring(payline, 0, 2), EmojiUtil.getEmojiSubstring(payline, 1))
+                .filter(PAYLINE_MULTIPLIERS::containsKey)
+                .findFirst()
+                .map(PAYLINE_MULTIPLIERS::get);
     }
 }
