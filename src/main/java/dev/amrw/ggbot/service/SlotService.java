@@ -5,17 +5,22 @@ import dev.amrw.ggbot.dto.GameRequest;
 import dev.amrw.ggbot.dto.GameVerdict;
 import dev.amrw.ggbot.dto.SlotResult;
 import dev.amrw.ggbot.util.EmojiUtil;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Slot machine service.
  * <p>
  * Terminology taken from <a href="https://www.onlineunitedstatescasinos.com/online-slots/terms/">here</a>.
  */
+@Log4j2
 @Service
 public class SlotService {
 
@@ -27,17 +32,17 @@ public class SlotService {
             "💵", "💵",
             "💰"
     );
-    private static final Map<String, Double> PAYLINE_MULTIPLIERS = Map.of(
-            "🥇🥇", 0.5,
-            "💎💎", 2.0,
-            "💯💯", 2.0,
-            "🥇🥇🥇", 2.5,
-            "💎💎💎", 3.0,
-            "💵💵", 3.5,
-            "💯💯💯", 4.0,
-            "💵💵💵", 7.0,
-            "💰💰", 7.0,
-            "💰💰💰", 15.0
+    private static final Map<String, BigDecimal> PAYLINE_MULTIPLIERS = Map.of(
+            "🥇🥇", BigDecimal.valueOf(0.5),
+            "💎💎", BigDecimal.valueOf(2.0),
+            "💯💯", BigDecimal.valueOf(2.0),
+            "🥇🥇🥇", BigDecimal.valueOf(2.5),
+            "💎💎💎", BigDecimal.valueOf(3.0),
+            "💵💵", BigDecimal.valueOf(3.5),
+            "💯💯💯", BigDecimal.valueOf(4.0),
+            "💵💵💵", BigDecimal.valueOf(7.0),
+            "💰💰", BigDecimal.valueOf(7.0),
+            "💰💰💰", BigDecimal.valueOf(15.0)
     );
 
     private final UserCreditsService userCreditsService;
@@ -88,15 +93,34 @@ public class SlotService {
     }
 
     protected long calculateWinnings(final long bet, final String payline) {
-        var multiplier = PAYLINE_MULTIPLIERS.get(payline);
-        if (null == multiplier) {
-            final var firstAndSecondColumn = EmojiUtil.getEmojiSubstring(payline, 0, 2);
-            multiplier = PAYLINE_MULTIPLIERS.get(firstAndSecondColumn);
-            if (null == multiplier) {
-                final var secondAndThirdColumn = EmojiUtil.getEmojiSubstring(payline, 1);
-                multiplier = PAYLINE_MULTIPLIERS.get(secondAndThirdColumn);
+        final var multiplier = getMultiplier(payline);
+        if (multiplier.isEmpty()) {
+            return 0L;
+        }
+
+        // Since `Math.multiplyExact()` has no signature allowing for floating point numbers, the calculations are done
+        // using BigDecimals
+        try {
+            return BigDecimal.valueOf(bet).multiply(multiplier.get())
+                    .setScale(0, RoundingMode.HALF_UP) // Drop all decimal points, round half-up
+                    .longValueExact();
+        } catch (final ArithmeticException exception) {
+            log.error("Error calculating winnings: {} * {}", bet, multiplier, exception);
+            return Long.MAX_VALUE;
+        }
+    }
+
+    private Optional<BigDecimal> getMultiplier(final String payline) {
+        final var potentialCombinations = new String[] {
+                payline, // All three columns
+                EmojiUtil.getEmojiSubstring(payline, 0, 2), // First and second column
+                EmojiUtil.getEmojiSubstring(payline, 1) // Second and third column
+        };
+        for (final var combination : potentialCombinations) {
+            if (PAYLINE_MULTIPLIERS.containsKey(combination)) {
+                return Optional.of(PAYLINE_MULTIPLIERS.get(combination));
             }
         }
-        return null == multiplier ? 0L : Math.round(bet * multiplier);
+        return Optional.empty();
     }
 }

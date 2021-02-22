@@ -137,4 +137,39 @@ class SlotServiceTest {
     void shouldHaveCalculatedWinnings(final String payline, final long expectedResult) {
         assertThat(service.calculateWinnings(100L, payline)).isEqualTo(expectedResult);
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'❔🥇🥇', 1",
+            "'🥇❔🥇', 0",
+            "'🥇🥇❔', 1",
+            "'🥇🥇🥇', 3",
+            "'❔💎💎', 2",
+            "'💎❔💎', 0",
+            "'💎💎❔', 2",
+            "'💎💎💎', 3",
+            "'❔💯💯', 2",
+            "'💯❔💯', 0",
+            "'💯💯❔', 2",
+            "'💯💯💯', 4",
+            "'❔💵💵', 4",
+            "'💵❔💵', 0",
+            "'💵💵❔', 4",
+            "'💵💵💵', 7",
+            "'❔💰💰', 7",
+            "'💰❔💰', 0",
+            "'💰💰❔', 7",
+            "'💰💰💰', 15",
+            "'🥇💎💯', 0",
+    })
+    @DisplayName("Should have accurately calculated small winnings")
+    void shouldHaveRoundedSmallWinnings(final String payline, final long expectedResult) {
+        assertThat(service.calculateWinnings(1L, payline)).isEqualTo(expectedResult);
+    }
+
+    @Test
+    @DisplayName("Should have caught Long overflow when calculating winnings")
+    void shouldHaveCaughtLongOverflowWhenCalculatingWinnings() {
+        assertThat(service.calculateWinnings(Long.MAX_VALUE / 2, "💎💎💎")).isEqualTo(Long.MAX_VALUE);
+    }
 }
