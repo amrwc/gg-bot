@@ -2,6 +2,14 @@
 
 Games that are currently supported by GG Bot.
 
+## Roshambo
+
+```console
+<trigger> roshambo <bet> <shape>
+```
+
+Play rock, paper, scissors with a bot!
+
 ## Slot machine
 
 ```console
