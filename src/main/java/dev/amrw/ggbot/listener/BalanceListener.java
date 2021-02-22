@@ -29,7 +29,7 @@ public class BalanceListener extends MessageListenerBase {
     @Override
     public void process(final MessageCreateEvent event) {
         final var userCredit = userCreditsService.getOrCreateUserCredit(event);
-        final var embedBuilder = messageUtil.buildEmbedInfo(event, "Credits Balance")
+        final var embedBuilder = messageUtil.buildInfo(event, "Credits Balance")
                 .setDescription(userCredit.getCredits().toString());
         event.getChannel().sendMessage(embedBuilder);
     }

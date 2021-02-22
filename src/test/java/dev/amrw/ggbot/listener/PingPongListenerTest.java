@@ -37,7 +37,7 @@ class PingPongListenerTest {
     void shouldHaveHandledMessage() {
         when(event.getMessage()).thenReturn(message);
         when(event.getChannel()).thenReturn(channel);
-        when(messageUtil.buildEmbedInfo(event, "Ping?")).thenReturn(embedBuilder);
+        when(messageUtil.buildInfo(event, "Ping?")).thenReturn(embedBuilder);
         when(embedBuilder.setDescription("pong!")).thenReturn(embedBuilder);
 
         listener.process(event);

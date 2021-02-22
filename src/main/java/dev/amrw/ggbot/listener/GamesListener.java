@@ -25,7 +25,7 @@ public class GamesListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
-        final var embedBuilder = messageUtil.buildEmbedInfo(event, "Available Games")
+        final var embedBuilder = messageUtil.buildInfo(event, "Available Games")
                 .setDescription("- Slot Machine (`slot`)");
         event.getChannel().sendMessage(embedBuilder);
     }

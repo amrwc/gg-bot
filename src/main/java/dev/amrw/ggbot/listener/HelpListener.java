@@ -29,7 +29,7 @@ public class HelpListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
-        final var helpMessage = messageUtil.buildEmbedInfo(event, "Help")
+        final var helpMessage = messageUtil.buildInfo(event, "Help")
                 .addField("Available keywords", getAvailableKeywords());
         event.getChannel().sendMessage(helpMessage);
     }

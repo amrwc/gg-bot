@@ -41,7 +41,7 @@ class BalanceListenerTest {
         final Long credits = nextLong();
         when(event.getChannel()).thenReturn(channel);
         when(userCreditsService.getOrCreateUserCredit(event)).thenReturn(userCredit);
-        when(messageUtil.buildEmbedInfo(event, "Credits Balance")).thenReturn(embedBuilder);
+        when(messageUtil.buildInfo(event, "Credits Balance")).thenReturn(embedBuilder);
         when(userCredit.getCredits()).thenReturn(credits);
         when(embedBuilder.setDescription(credits.toString())).thenReturn(embedBuilder);
 
