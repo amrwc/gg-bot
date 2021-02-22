@@ -101,14 +101,15 @@ public class SlotService {
 
         // Since `Math.multiplyExact()` has no signature allowing for floating point numbers, the calculations are done
         // using BigDecimals
-        final var result = BigDecimal.valueOf(bet).multiply(multiplier.get())
+        final var winnings = BigDecimal.valueOf(bet).multiply(multiplier.get())
                 .setScale(0, RoundingMode.HALF_UP); // Drop all decimal points, round half-up
         try {
-            return result.longValueExact();
+            return winnings.longValueExact();
         } catch (final ArithmeticException exception) {
-            log.error("Error calculating winnings: {} * {}", bet, multiplier, exception);
-            // Only return max Long in case of an overflow
-            return "Overflow".equals(exception.getMessage()) ? Long.MAX_VALUE : bet;
+            final var longOverflow = "Overflow".equals(exception.getMessage());
+            log.error("Error calculating winnings (bet={} * multiplier={}). Defaulting to {}", bet, multiplier,
+                    longOverflow ? "Long.MAX_VALUE" : "bet value", exception);
+            return longOverflow ? Long.MAX_VALUE : bet;
         }
     }
 

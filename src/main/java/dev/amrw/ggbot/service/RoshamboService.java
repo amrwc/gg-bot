@@ -2,14 +2,17 @@ package dev.amrw.ggbot.service;
 
 import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.dto.*;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Roshambo (Rock, Paper, Scissors) service.
  */
+@Log4j2
 @Service
 public class RoshamboService {
 
@@ -29,6 +32,11 @@ public class RoshamboService {
                     RoshamboShape.PAPER, GameVerdict.WIN,
                     RoshamboShape.SCISSORS, GameVerdict.DRAW
             )
+    );
+    private static final Map<GameVerdict, Long> MULTIPLIERS = Map.of(
+            GameVerdict.WIN, 2L,
+            GameVerdict.DRAW, 1L,
+            GameVerdict.LOSS, 0L
     );
     private static final RoshamboShape[] SHAPES = RoshamboShape.values();
 
@@ -76,12 +84,20 @@ public class RoshamboService {
     }
 
     protected long calculateWinnings(final Long bet, final GameVerdict verdict) {
-        if (GameVerdict.WIN.equals(verdict)) {
-            return bet * 2;
-        } else if (GameVerdict.DRAW.equals(verdict)) {
-            return bet;
-        } else {
+        final var multiplier = MULTIPLIERS.get(verdict);
+        if (Objects.equals(0L, multiplier)) {
             return 0L;
+        } else if (Objects.equals(1L, multiplier)) {
+            return bet;
+        }
+
+        try {
+            return Math.multiplyExact(bet, multiplier);
+        } catch (final ArithmeticException exception) {
+            final var longOverflow = "long overflow".equals(exception.getMessage());
+            log.error("Error calculating winnings (bet={} * multiplier={}). Defaulting to {}", bet, multiplier,
+                    longOverflow ? "Long.MAX_VALUE" : "bet value", exception);
+            return longOverflow ? Long.MAX_VALUE : bet;
         }
     }
 }

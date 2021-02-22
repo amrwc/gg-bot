@@ -141,4 +141,11 @@ class RoshamboServiceTest {
     void shouldHaveCalculatedWinnings(final Long bet, final GameVerdict verdict, final Long expectedResult) {
         assertThat(service.calculateWinnings(bet, verdict)).isEqualTo(expectedResult);
     }
+
+    @Test
+    @DisplayName("Should have handled Long overflow when calculating winnings")
+    void shouldHaveCaughtLongOverflowWhenCalculatingWinnings() {
+        assertThat(service.calculateWinnings(Long.MAX_VALUE - Integer.MAX_VALUE, GameVerdict.WIN))
+                .isEqualTo(Long.MAX_VALUE);
+    }
 }
