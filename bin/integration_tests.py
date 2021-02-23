@@ -18,8 +18,8 @@ import secrets
 import docopt
 
 import database
-import docker_utils
-import utils
+import util.docker_utils as docker_utils
+import util.utils as utils
 
 CONFIG = utils.get_config(module_path=__file__)
 
