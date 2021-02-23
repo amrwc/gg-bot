@@ -16,7 +16,7 @@ import docopt
 import requests
 import sys
 
-import utils
+import util.utils as utils
 
 CONFIG = utils.get_config(module_path=__file__)
 
