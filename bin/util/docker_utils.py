@@ -3,7 +3,7 @@
 Common Docker-related utilities.
 """
 
-import utils
+from . import utils
 
 CONFIG = utils.get_config(module_path=__file__)
 
