@@ -36,7 +36,7 @@ Envars:
 
 Example:
   export SPRING_DATASOURCE_URL='jdbc:postgresql://database-container:5432/dbname'
-  export SPRING_DATASOURCE_USERNAME='springuser'
+  export SPRING_DATASOURCE_USERNAME='spring_user'
   export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
   ./bin/run.py --apply-migrations
 """

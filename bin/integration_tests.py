@@ -53,17 +53,15 @@ def set_envars(db_port: str) -> None:
     """
     db_name = CONFIG['DOCKER']['main_image']
     postgres_url = f"jdbc:postgresql://localhost:{db_port}"
-    postgres_username = 'postgres'
-    db_password = secrets.token_hex(16)
 
     os.environ['POSTGRES_URL'] = postgres_url
     os.environ['POSTGRES_DB'] = db_name
-    os.environ['POSTGRES_USER'] = postgres_username
-    os.environ['POSTGRES_PASSWORD'] = db_password
+    os.environ['POSTGRES_USER'] = 'postgres'
+    os.environ['POSTGRES_PASSWORD'] = secrets.token_hex(16)
 
     os.environ['SPRING_DATASOURCE_URL'] = f"{postgres_url}/{db_name}"
-    os.environ['SPRING_DATASOURCE_USERNAME'] = postgres_username
-    os.environ['SPRING_DATASOURCE_PASSWORD'] = db_password
+    os.environ['SPRING_DATASOURCE_USERNAME'] = 'spring_user'
+    os.environ['SPRING_DATASOURCE_PASSWORD'] = 'SpringUserPassword'
 
 
 if __name__ == '__main__':

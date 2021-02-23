@@ -78,8 +78,8 @@ jobs:
           export POSTGRES_PASSWORD="$(xxd -l 16 -c 16 -p < /dev/random)"
 
           export SPRING_DATASOURCE_URL='jdbc:postgresql://ggbot-database:5432/ggbot'
-          export SPRING_DATASOURCE_USERNAME='postgres'
-          export SPRING_DATASOURCE_PASSWORD="$POSTGRES_PASSWORD"
+          export SPRING_DATASOURCE_USERNAME='spring_user'
+          export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
 
           # shellcheck disable=SC2086
           ./bin/run.py --apply-migrations --detach $cache_from
