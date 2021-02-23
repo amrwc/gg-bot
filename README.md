@@ -71,7 +71,7 @@ outside of macOS.
 
 ```console
 export SPRING_DATASOURCE_URL='jdbc:postgresql://database-container:5432/dbname'
-export SPRING_DATASOURCE_USERNAME='springuser'
+export SPRING_DATASOURCE_USERNAME='spring_user'
 export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
 
 export POSTGRES_URL='jdbc:postgresql://localhost:5432'
@@ -92,6 +92,12 @@ container names can be adjusted inside `./bin/config.ini`.
 
 ```console
 ./bin/teardown.py [--cache --db --network --tmp]
+```
+
+### Change `spring_user` database password
+
+```sql
+ALTER USER spring_user WITH PASSWORD '<new_password>';
 ```
 
 ## Test
