@@ -10,6 +10,7 @@ Usage:
               [--container <n>]
               [-h | --help]
               [--network <n>]
+              [--port <p>]
               [-v | --version]
 
 Options:
@@ -21,6 +22,7 @@ Options:
   -h, --help          Show this help.
   --network <n>       Name of a Docker network to operate within. Defaults to
                       the network name from the config file.
+  --port=<p>          Host port at which the database is listening on.
   --rollback=<c>      Rollback count. It specifies the number of change sets to
                       roll back. Includes `--start-db`.
   --start-db          Start the database container.
@@ -101,13 +103,14 @@ def _start(container_name: str, args: dict) -> None:
     network_name = args['--network'] if args['--network'] else CONFIG['DOCKER']['network']
 
     if args['--rollback']:
-        run_db_container(container_name, network_name)
-        time.sleep(3)  # Wait for the database to come up
+        port = args['--port'] if args['--port'] else CONFIG['DATABASE']['port']
+        run_db_container(container_name, network_name, port)
         roll_back(args['--rollback'])
     else:
         start(
             container=container_name,
             network=network_name,
+            port=args['--port'],
             migrations=args['--apply-migrations'],
             start_db=args['--start-db']
         )
@@ -138,7 +141,6 @@ def start(
     if migrations or start_db:
         run_db_container(container_name, network_name, port)
         if migrations:
-            time.sleep(3)  # Wait for the database to come up
             apply_migrations()
 
 
@@ -177,6 +179,7 @@ def run_db_container(container_name: str, network: str, port: str) -> None:
         f"POSTGRES_PASSWORD={os.environ.get('POSTGRES_PASSWORD')}",
         docker_image,
     ])
+    time.sleep(3)  # Wait for the database to come up
 
 
 def apply_migrations() -> None:
