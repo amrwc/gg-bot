@@ -5,17 +5,13 @@
 
 Discord bot to play games with.
 
-The list of available games can be viewed in [the
-documentation][supported_games], or in the server where the bot has been added
-using the `games` command.
-
 ## Documentation
 
-The bot interacts with Discord using the [Javacord][javacord] library. The
-documentation can be found [here][javacord_docs].
-
-If the Javacord's documentation doesn't cover certain Discord-specific topics,
-documentation of [Discord.js][discordjs_docs] may have more information.
+- [Architecture](./docs/architecture.md)
+- [Database Inspection](./docs/database-inspection.md)
+- [Design Decisions](./docs/design-decisions.md)
+- [Supported Games](./docs/supported-games.md)
+- [Working on `bin` Scripts](./docs/working-on-bin-scripts.md)
 
 ## Setup
 
@@ -45,7 +41,7 @@ documentation of [Discord.js][discordjs_docs] may have more information.
 
 ### Migrations
 
-See the [Database Migrations][db_migrations] document.
+See the [Database Migrations](./docs/database-migrations.md) document.
 
 ### Scripts
 
@@ -115,13 +111,8 @@ ALTER USER spring_user WITH PASSWORD '<new_password>';
 ```
 
 [discord_developer_portal]: https://discord.com/developers/applications
-[db_migrations]: ./docs/database-migrations.md
-[discordjs_docs]: https://discordjs.guide
 [github_actions]: https://github.com/amrwc/gg-bot/actions
 [github_badge_docker]:
   https://github.com/amrwc/gg-bot/workflows/Docker/badge.svg
 [github_badge_unit_integration]:
   https://github.com/amrwc/gg-bot/workflows/Unit%20and%20Integration%20Tests/badge.svg
-[javacord]: https://github.com/Javacord/Javacord
-[javacord_docs]: https://javacord.org/wiki
-[supported_games]: ./docs/supported-games.md

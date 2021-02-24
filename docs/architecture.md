@@ -28,9 +28,9 @@
 
 ### Javacord
 
-Java library for interacting with Discord servers, and therefore developing
-bots. It receives events from Discord websocket, and passes them in a
-formalised format to listeners of corresponding type.
+[Javacord][javacord] is a Java library for interacting with Discord servers,
+and therefore developing bots. It receives events from Discord websocket, and
+passes them in a formalised format to listeners of corresponding type.
 
 The event objects contain information that can be used for responding to the
 events on a Discord server. For instance, `MessageCreatedEvent` contains a
@@ -101,3 +101,5 @@ network along with the database container.
 ### Database container
 
 Container running the PostgreSQL server.
+
+[javacord]: https://github.com/Javacord/Javacord
