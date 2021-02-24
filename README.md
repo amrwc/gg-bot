@@ -5,9 +5,9 @@
 
 Discord bot to play games with.
 
-The list of available games can be viewed in
-[the documentation][supported_games], or in the server where the bot has been
-added using the `games` command.
+The list of available games can be viewed in [the
+documentation][supported_games], or in the server where the bot has been added
+using the `games` command.
 
 ## Documentation
 
@@ -21,8 +21,8 @@ documentation of [Discord.js][discordjs_docs] may have more information.
 
 ### Discord
 
-1. Create a new application on
-   [Discord Developer Portal][discord_developer_portal].
+1. Create a new application on [Discord Developer
+   Portal][discord_developer_portal].
    1. `Bot` settings.
       1. Add a bot and customise it.
       1. Save the authentication token.
@@ -34,8 +34,8 @@ documentation of [Discord.js][discordjs_docs] may have more information.
       1. In `bot permissions` section, tick `Administrator`, or choose more
          granular permissions.
       1. Copy the invitation URL from the bottom of the `scopes` section and
-         navigate to it in the browser. Sign in to a relevant Discord account and
-         add the bot to a server.
+         navigate to it in the browser. Sign in to a relevant Discord account
+         and add the bot to a server.
 1. Once the application's database has been provisioned, update the
    `DISCORD_AUTH_TOKEN` row to the authentication token.
 
@@ -118,8 +118,10 @@ ALTER USER spring_user WITH PASSWORD '<new_password>';
 [db_migrations]: ./docs/database-migrations.md
 [discordjs_docs]: https://discordjs.guide
 [github_actions]: https://github.com/amrwc/gg-bot/actions
-[github_badge_docker]: https://github.com/amrwc/gg-bot/workflows/Docker/badge.svg
-[github_badge_unit_integration]: https://github.com/amrwc/gg-bot/workflows/Unit%20and%20Integration%20Tests/badge.svg
+[github_badge_docker]:
+  https://github.com/amrwc/gg-bot/workflows/Docker/badge.svg
+[github_badge_unit_integration]:
+  https://github.com/amrwc/gg-bot/workflows/Unit%20and%20Integration%20Tests/badge.svg
 [javacord]: https://github.com/Javacord/Javacord
 [javacord_docs]: https://javacord.org/wiki
 [supported_games]: ./docs/supported-games.md
