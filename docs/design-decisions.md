@@ -25,6 +25,11 @@ The disadvantages are: having to maintain two Dockerfiles, and having to copy
 the packaged application via the host machine instead of directly between
 containers as `docker cp` doesn't support such action.
 
+## Removing Docker Compose support
+
+Due to the change from multi-stage build to separate Dockerfiles, it's not
+possible to copy the JAR file between containers within Docker Compose context.
+
 ## Keeping Discord API key inside the database
 
 Initially, the application read a config file from the classpath. Since the
