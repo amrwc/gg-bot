@@ -29,6 +29,8 @@ containers as `docker cp` doesn't support such action.
 
 Due to the change from multi-stage build to separate Dockerfiles, it's not
 possible to copy the JAR file between containers within Docker Compose context.
+To achieve that, the project's root directory would have to be mounted in the
+container.
 
 ## Keeping Discord API key inside the database
 
