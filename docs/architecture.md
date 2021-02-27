@@ -68,7 +68,7 @@ trivial, and so is maintaining their state (e.g. credits balance).
                                 |                            |
 +----------------------+        |  +----------------------+  |
 |                      |    JAR |  |                      |  |
-|   Build Container    | <------+> |    Main Container    |  |
+|   Build Container    | -------+> |    Main Container    |  |
 |                      |        |  |                      |  |
 +----------------------+        |  +----------------------+  |
            ^                    |             ^              |
