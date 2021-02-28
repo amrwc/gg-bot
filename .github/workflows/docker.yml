@@ -5,9 +5,8 @@ on:
     paths:
       - '.github/workflows/docker.yml'
       - 'bin/**'
-      - '!bin/integration_tests.py'
-      - '!bin/pgadmin.py'
       - 'docker/**'
+      - 'gradle/**'
       - 'src/main/**.java'
       - 'src/main/resources/**'
       - 'build.gradle'
@@ -17,15 +16,15 @@ on:
 env:
   USE_CACHE: 'true'
   MAIN_IMAGE: 'ggbot'
-  REGISTRY: 'docker.pkg.github.com'
+  REGISTRY: 'ghcr.io'
   TMP_CACHE: 'cache-tmp'
 
   SET_VARIABLES: |
     if [ 'true' = "$USE_CACHE" ]; then
       build_image="${MAIN_IMAGE}-gradle-build"
       echo "BUILD_IMAGE=${build_image}" >> $GITHUB_ENV
-      echo "BUILD_CONTAINER_CACHE=${REGISTRY}/${GITHUB_REPOSITORY}/${build_image}" >> $GITHUB_ENV
-      echo "MAIN_CONTAINER_CACHE=${REGISTRY}/${GITHUB_REPOSITORY}/${MAIN_IMAGE}" >> $GITHUB_ENV
+      echo "BUILD_CONTAINER_CACHE=${REGISTRY}/${GITHUB_ACTOR}/${build_image}" >> $GITHUB_ENV
+      echo "MAIN_CONTAINER_CACHE=${REGISTRY}/${GITHUB_ACTOR}/${MAIN_IMAGE}" >> $GITHUB_ENV
     fi
 
 jobs:
@@ -57,7 +56,7 @@ jobs:
 
       - name: Log into the Docker registry
         if: ${{ 'true' == env.USE_CACHE }}
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "$REGISTRY" --username "$GITHUB_ACTOR" --password-stdin
+        run: echo "${{ secrets.CR_PAT }}" | docker login "$REGISTRY" --username "$GITHUB_ACTOR" --password-stdin
 
       - name: Pull cached images
         if: ${{ 'true' == env.USE_CACHE }}
