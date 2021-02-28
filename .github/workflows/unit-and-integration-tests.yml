@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/unit-and-integration-tests.yml'
       - 'bin/**'
+      - 'gradle/**'
       - 'src/**'
       - 'build.gradle'
       - 'gradle.properties'

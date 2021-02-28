@@ -6,6 +6,7 @@ on:
       - '.github/workflows/docker.yml'
       - 'bin/**'
       - 'docker/**'
+      - 'gradle/**'
       - 'src/main/**.java'
       - 'src/main/resources/**'
       - 'build.gradle'
