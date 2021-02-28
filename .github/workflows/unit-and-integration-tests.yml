@@ -5,10 +5,6 @@ on:
     paths:
       - '.github/workflows/unit-and-integration-tests.yml'
       - 'bin/**'
-      - '!bin/api_tests.py'
-      - '!bin/pgadmin.py'
-      - '!bin/run.py'
-      - '!bin/teardown.py'
       - 'src/**'
       - 'build.gradle'
       - 'gradle.properties'
