@@ -22,8 +22,8 @@ env:
     if [ 'true' = "$USE_CACHE" ]; then
       build_image="${MAIN_IMAGE}-gradle-build"
       echo "BUILD_IMAGE=${build_image}" >> $GITHUB_ENV
-      echo "BUILD_CONTAINER_CACHE=${REGISTRY}/${build_image}" >> $GITHUB_ENV
-      echo "MAIN_CONTAINER_CACHE=${REGISTRY}/${MAIN_IMAGE}" >> $GITHUB_ENV
+      echo "BUILD_CONTAINER_CACHE=${REGISTRY}/${GITHUB_ACTOR}/${build_image}" >> $GITHUB_ENV
+      echo "MAIN_CONTAINER_CACHE=${REGISTRY}/${GITHUB_ACTOR}/${MAIN_IMAGE}" >> $GITHUB_ENV
     fi
 
 jobs:
