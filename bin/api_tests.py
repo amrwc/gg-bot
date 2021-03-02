@@ -14,7 +14,6 @@ Options:
 
 import docopt
 import requests
-import sys
 
 import util.utils as utils
 
@@ -29,8 +28,12 @@ def main() -> None:
     utils.log('Running API tests')
     response = requests.get(URL)
     if 200 != response.status_code:
-        print(f"::error::Expected 200 response code but received {response.status_code} from ${URL}")
-        sys.exit(1)
+        container = CONFIG['DOCKER']['main_image']
+        utils.log(f"Logs from '{container}':")
+        utils.execute_cmd(['docker', 'exec', container, 'tail', '-n', '500', f"/home/project/log/{container}.log"])
+        utils.raise_error(
+            f"::error::Expected 200 response code but received {response.status_code} from '{URL}', see logs above"
+        )
 
 
 if __name__ == '__main__':

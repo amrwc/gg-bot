@@ -116,3 +116,18 @@ def rm_volume(volume: str) -> None:
 
     utils.log(f"Removing '{volume}' volume")
     utils.execute_cmd(['docker', 'volume', 'rm', volume])
+
+
+def export_logs(container_name: str) -> None:
+    """Exports logs out of the given container.
+
+    Args:
+        container_name (str): Name of the container to retrieve logs from.
+    """
+    utils.log(f"Exporting logs from '{container_name}' to ./log")
+    utils.execute_cmd([
+        'docker',
+        'cp',
+        f"{container_name}:/home/project/log",
+        '.',
+    ])
