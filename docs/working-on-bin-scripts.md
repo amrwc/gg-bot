@@ -16,6 +16,12 @@ the directory as a module.
    1. Press Finish.
    1. Press _Apply_ and exit the _Project Structure_ window with _OK_ button.
 
+## Install requirements
+
+```console
+pip install -r bin/requirements.txt
+```
+
 ## Warning: No Python interpreter configured for the module
 
 1. Press the _Configure Python interpreter_ button on the warning, or go
