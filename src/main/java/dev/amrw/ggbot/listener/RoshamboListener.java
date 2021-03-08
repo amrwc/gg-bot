@@ -37,6 +37,7 @@ public class RoshamboListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
+        log.debug("Playing Roshambo with {}", event.getMessageAuthor());
         final var request = parseCommand(event);
         if (request.getError().isPresent()) {
             return;

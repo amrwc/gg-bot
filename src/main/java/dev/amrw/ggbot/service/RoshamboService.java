@@ -56,6 +56,7 @@ public class RoshamboService {
     public RoshamboResult play(final RoshamboRequest request) {
         final var currentBalance = userCreditsService.getCurrentBalance(request.getEvent());
         if (request.getBet() > currentBalance) {
+            log.debug("Didn't play because of insufficient credits {}", request.getEvent().getMessageAuthor());
             final var result = new RoshamboResult();
             result.setBet(request.getBet());
             result.setHasPlayed(false);

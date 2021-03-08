@@ -42,7 +42,7 @@ public class UserCreditsService {
     @Transactional
     public UserCredit getOrCreateUserCredit(final User user) {
         return userCreditsRepository.findUserCreditByUser(user).orElseGet(() -> {
-            log.debug("Creating new UserCredit: user={}", user.toString());
+            log.debug("Creating new UserCredit: user={}", user);
             final var newUserCredit = new UserCredit();
             newUserCredit.setUser(user);
             return userCreditsRepository.save(newUserCredit);
