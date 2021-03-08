@@ -2,12 +2,14 @@ package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.service.DailyService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
+import lombok.extern.log4j.Log4j2;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
 
 /**
  * Listener that gives the user daily credits.
  */
+@Log4j2
 @Component
 public class DailyListener extends MessageListenerBase {
 
@@ -28,6 +30,7 @@ public class DailyListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
+        log.debug("Processing daily for {}", event.getMessageAuthor());
         final var dailyCreditsResult = dailyService.claimDailyCredits(event);
         final var userCredit = dailyCreditsResult.getUserCredit();
         final var embedBuilder = dailyCreditsResult.getError()

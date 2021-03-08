@@ -2,12 +2,14 @@ package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.service.UserCreditsService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
+import lombok.extern.log4j.Log4j2;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
 
 /**
  * Listener that displays the user's credit balance.
  */
+@Log4j2
 @Component
 public class BalanceListener extends MessageListenerBase {
 
@@ -28,6 +30,7 @@ public class BalanceListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
+        log.debug("Fetching balance for {}", event.getMessageAuthor());
         final var userCredit = userCreditsService.getOrCreateUserCredit(event);
         final var embedBuilder = messageUtil.buildInfo(event, "Credits Balance")
                 .setDescription(userCredit.getCredits().toString());

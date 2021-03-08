@@ -38,6 +38,5 @@ class GamesListenerTest {
         listener.process(event);
 
         verify(channel).sendMessage(embedBuilder);
-        verifyNoMoreInteractions(event, channel);
     }
 }

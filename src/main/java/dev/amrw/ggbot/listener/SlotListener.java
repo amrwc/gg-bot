@@ -41,6 +41,7 @@ public class SlotListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
+        log.debug("Playing Slots with {}", event.getMessageAuthor());
         final var playRequest = parseCommand(event);
         if (playRequest.getBet() <= 0) {
             return;

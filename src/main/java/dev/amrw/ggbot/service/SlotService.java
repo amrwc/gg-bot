@@ -62,6 +62,7 @@ public class SlotService {
     public SlotResult play(final GameRequest request) {
         final var currentBalance = userCreditsService.getCurrentBalance(request.getEvent());
         if (request.getBet() > currentBalance) {
+            log.debug("Didn't play because of insufficient credits {}", request.getEvent().getMessageAuthor());
             final var result = new SlotResult();
             result.setBet(request.getBet());
             result.setHasPlayed(false);

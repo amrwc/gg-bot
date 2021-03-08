@@ -1,6 +1,7 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.util.DiscordMessageUtil;
+import lombok.extern.log4j.Log4j2;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +10,7 @@ import java.util.List;
 /**
  * Listener for displaying the help message.
  */
+@Log4j2
 @Component
 public class HelpListener extends MessageListenerBase {
 
@@ -29,6 +31,7 @@ public class HelpListener extends MessageListenerBase {
 
     @Override
     public void process(final MessageCreateEvent event) {
+        log.debug("Showing help to {}", event.getMessageAuthor());
         final var helpMessage = messageUtil.buildInfo(event, "Help")
                 .addField("Available keywords", getAvailableKeywords());
         event.getChannel().sendMessage(helpMessage);

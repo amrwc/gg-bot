@@ -2,6 +2,7 @@ package dev.amrw.ggbot.service;
 
 import dev.amrw.ggbot.dto.DailyCreditsResult;
 import dev.amrw.ggbot.dto.Error;
+import lombok.extern.log4j.Log4j2;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.util.Optional;
 /**
  * Service for managing daily operations.
  */
+@Log4j2
 @Service
 public class DailyService {
 
@@ -34,6 +36,7 @@ public class DailyService {
      */
     @Transactional
     public DailyCreditsResult claimDailyCredits(final MessageCreateEvent event) {
+        log.debug("Claiming daily credits for {}", event.getMessageAuthor());
         final var user = usersService.getOrCreateUser(event);
         return Optional.ofNullable(user.getUserCredit()).map(userCredit -> {
             if (!userCredit.canClaimDailyCredits()) {
