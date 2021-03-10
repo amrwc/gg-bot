@@ -1,11 +1,11 @@
-# Working on `bin` Scripts
+# Working with `bin` Scripts
 
 To work on the Python scripts in `bin/` directory, in IntelliJ IDEA, add import
 the directory as a module.
 
 1. Open Project Structure (`cmd + ;`).
-1. In _Project Settings -> Modules_, choose `ggbot` on the list. Press the `+`
-   button, and choose _Import Module_ from the dropdown.
+1. In _Project Settings -> Modules_, choose the project name from the list.
+   Press the `+` button, and choose _Import Module_ from the dropdown.
 1. Open the `bin/` directory in the file explorer.
 1. In the _Import Module_ modal that comes up, do the following steps:
    1. Choose _Create module from existing sources_, press Next.
@@ -22,7 +22,21 @@ the directory as a module.
 pip install -r bin/requirements.txt
 ```
 
-## Warning: No Python interpreter configured for the module
+## Envars
+
+Some scripts require environment variables set. To unset them, use this
+one-liner:
+
+```bash
+for var in $(export | grep -E '(POSTGRES|SPRING)' | awk -F'=' '{print $1}'); do unset "$var"; done
+```
+
+Note that in the above code snippet, `grep`'s use of `-E` flag may not work
+outside of macOS.
+
+## Warnings/errors
+
+### No Python interpreter configured for the module
 
 1. Press the _Configure Python interpreter_ button on the warning, or go
    straight to _Project Structure_ (`cmd + ;`).

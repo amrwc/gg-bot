@@ -9,9 +9,10 @@ Discord bot to play games with.
 
 - [Architecture](./docs/architecture.md)
 - [Database Inspection](./docs/database-inspection.md)
+- [Database Migrations](./docs/database-migrations.md)
 - [Design Decisions](./docs/design-decisions.md)
 - [Supported Games](./docs/supported-games.md)
-- [Working on `bin` Scripts](./docs/working-on-bin-scripts.md)
+- [Working with `bin` Scripts](./docs/working-with-bin-scripts.md)
 
 ## Setup
 
@@ -39,29 +40,11 @@ Discord bot to play games with.
    UPDATE CONFIG SET VALUE = '<auth_token>' WHERE NAME = 'DISCORD_AUTH_TOKEN';
    ```
 
-### Migrations
+### GitHub Workflows
 
-See the [Database Migrations](./docs/database-migrations.md) document.
-
-### Scripts
-
-#### Install dependencies
-
-```console
-pip install -r bin/management/requirements.txt
-```
-
-#### Envars
-
-Some scripts inside `bin/` require environment variables set. To unset them,
-use this one-liner:
-
-```bash
-for var in $(export | grep -E '(POSTGRES|SPRING)' | awk -F'=' '{print $1}'); do unset "$var"; done
-```
-
-Note that in the above code snippet, `grep`'s use of `-E` flag may not work
-outside of macOS.
+Add `CR_PAT` secret to the repository to be able to sign into container
+registry. Read more on this in [GitHub's
+documentation][github_auth_container_registry].
 
 ### Docker
 
@@ -116,3 +99,5 @@ ALTER USER spring_user WITH PASSWORD '<new_password>';
   https://github.com/amrwc/gg-bot/workflows/Docker/badge.svg
 [github_badge_unit_integration]:
   https://github.com/amrwc/gg-bot/workflows/Unit%20and%20Integration%20Tests/badge.svg
+[github_auth_container_registry]:
+  https://docs.github.com/en/packages/guides/migrating-to-github-container-registry-for-docker-images#authenticating-with-the-container-registry

@@ -21,7 +21,8 @@ export PG_PASSWORD='PgadminUserPassword'
 1. `General` tab
    1. Name: _<name_of_the_item>_
 1. `Connection` tab
-   1. Host name/address: _<hostname>, e.g. localhost, or Docker network name_
+   1. Host name/address: _\<hostname\>, e.g. localhost, or Docker database
+      container name_
    1. Port: usually `5432`
    1. Username: _<superuser_username>_
    1. Password: _<superuser_password>_

@@ -89,8 +89,8 @@ Container for building and packaging the application.
 
 ### Build cache volume
 
-Volume for storing build cache. It speeds up, each subsequent build, even if
-the build container has been destroyed.
+Volume for storing build cache. It speeds up each subsequent build, even if the
+build container has been destroyed.
 
 ### Main container
 
