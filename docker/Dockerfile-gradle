@@ -1,4 +1,4 @@
-FROM gradle:jdk11
+FROM gradle:6.8-jdk11
 
 RUN mkdir -p /home/gradle/project/src/main
 COPY build.gradle /home/gradle/project

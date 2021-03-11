@@ -1,9 +1,9 @@
-FROM openjdk:11-jre-buster
+FROM openjdk:11.0-jre-slim-buster
 
 EXPOSE 8000
 EXPOSE 8080
-RUN addgroup --system spring
-RUN adduser --system --no-create-home --ingroup spring spring
+RUN addgroup --gid 10001 --system spring
+RUN adduser --ingroup spring --no-create-home --system --uid 10000 spring
 
 WORKDIR /home/project
 COPY docker/entrypoint.sh entrypoint.sh
