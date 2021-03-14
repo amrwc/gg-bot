@@ -18,7 +18,7 @@ env:
 jobs:
   unit-tests:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Clone the repository
         uses: actions/checkout@v2
@@ -52,7 +52,7 @@ jobs:
 
   integration-tests:
     name: Integration tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Clone the repository
         uses: actions/checkout@v2
