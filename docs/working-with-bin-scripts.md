@@ -34,6 +34,11 @@ for var in $(export | grep -E '(POSTGRES|SPRING)' | awk -F'=' '{print $1}'); do 
 Note that in the above code snippet, `grep`'s use of `-E` flag may not work
 outside of macOS.
 
+## More help
+
+Each script supports `--help` option that displays the docstring of the script.
+Use that to display all information about the script.
+
 ## Warnings/errors
 
 ### No Python interpreter configured for the module
