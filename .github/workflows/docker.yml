@@ -23,8 +23,8 @@ env:
     if [ 'true' = "$USE_CACHE" ]; then
       build_image="${MAIN_IMAGE}-gradle-build"
       echo "BUILD_IMAGE=${build_image}" >> $GITHUB_ENV
-      echo "BUILD_CONTAINER_CACHE=${REGISTRY}/${GITHUB_ACTOR}/${build_image}" >> $GITHUB_ENV
-      echo "MAIN_CONTAINER_CACHE=${REGISTRY}/${GITHUB_ACTOR}/${MAIN_IMAGE}" >> $GITHUB_ENV
+      echo "BUILD_CONTAINER_CACHE=${REGISTRY}/${{ github.repository }}/${build_image}" >> $GITHUB_ENV
+      echo "MAIN_CONTAINER_CACHE=${REGISTRY}/${{ github.repository }}/${MAIN_IMAGE}" >> $GITHUB_ENV
     fi
 
 jobs:
@@ -54,9 +54,12 @@ jobs:
       - name: Set variables
         run: ${{ env.SET_VARIABLES }}
 
-      - name: Log into the Docker registry
-        if: ${{ 'true' == env.USE_CACHE }}
-        run: echo "${{ secrets.CR_PAT }}" | docker login "$REGISTRY" --username "$GITHUB_ACTOR" --password-stdin
+      - name: Log into GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
 
       - name: Pull cached images
         if: ${{ 'true' == env.USE_CACHE }}
