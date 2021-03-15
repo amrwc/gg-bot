@@ -5,6 +5,8 @@
 
 Discord bot to play games with.
 
+![GG Bot demo](./.assets/demo-1024px-16fps.gif)
+
 ## Documentation
 
 - [Architecture](./docs/architecture.md)
