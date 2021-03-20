@@ -3,21 +3,21 @@ name: Docker
 on:
   push:
     paths:
-      - '.github/workflows/docker.yml'
-      - 'bin/**'
-      - 'docker/**'
-      - 'gradle/**'
-      - 'src/main/**.java'
-      - 'src/main/resources/**'
-      - 'build.gradle'
-      - 'gradle.properties'
-      - 'settings.gradle'
+      - .github/workflows/docker.yml
+      - bin/**
+      - docker/**
+      - gradle/**
+      - src/main/**.java
+      - src/main/resources/**
+      - build.gradle
+      - gradle.properties
+      - settings.gradle
 
 env:
-  USE_DOCKER_CACHE: 'true'
-  MAIN_IMAGE: 'ggbot'
-  REGISTRY: 'ghcr.io'
-  TMP_CACHE: 'cache-tmp'
+  USE_DOCKER_CACHE: true
+  MAIN_IMAGE: ggbot
+  REGISTRY: ghcr.io
+  TMP_CACHE: cache-tmp
 
   SET_VARIABLES: |
     if [ 'true' = "$USE_DOCKER_CACHE" ]; then
