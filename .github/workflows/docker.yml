@@ -61,7 +61,7 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
       - name: Pull cached images
-        if: ${{ 'true' == ${{ secrets.USE_DOCKER_CACHE }} }}
+        if: ${{ secrets.USE_DOCKER_CACHE }}
         run: |
           docker pull "$BUILD_IMAGE_CACHE" || echo "::warning::Failed to pull ${BUILD_IMAGE_CACHE}"
           docker pull "$MAIN_IMAGE_CACHE" || echo "::warning::Failed to pull ${MAIN_IMAGE_CACHE}"
@@ -86,7 +86,7 @@ jobs:
           ./bin/run.py --apply-migrations --detach $cache_from
 
       - name: Tag and push the cache images
-        if: ${{ 'true' == ${{ secrets.USE_DOCKER_CACHE }} }}
+        if: ${{ secrets.USE_DOCKER_CACHE }}
         run: |
           if docker tag "$BUILD_IMAGE" "$BUILD_IMAGE_CACHE"; then
               docker push "$BUILD_IMAGE_CACHE" || echo "::warning::Failed to push ${BUILD_IMAGE_CACHE}"
