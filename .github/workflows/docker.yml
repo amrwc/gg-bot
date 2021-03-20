@@ -17,9 +17,11 @@ env:
   MAIN_IMAGE: ggbot
   REGISTRY: ghcr.io
   TMP_CACHE: cache-tmp
+  USE_DOCKER_CACHE: ${{ secrets.USE_DOCKER_CACHE }}
 
+  # To be executed as a step
   SET_VARIABLES: |
-    if [ 'true' = ${{ secrets.USE_DOCKER_CACHE }} ]; then
+    if [ 'true' = "$USE_DOCKER_CACHE" ]; then
         build_image="${MAIN_IMAGE}-gradle-build-cache"
         echo "BUILD_IMAGE=${build_image}" >> $GITHUB_ENV
         echo "BUILD_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${build_image}" >> $GITHUB_ENV
@@ -61,7 +63,7 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
       - name: Pull cached images
-        if: ${{ secrets.USE_DOCKER_CACHE }}
+        if: ${{ 'true' == env.USE_DOCKER_CACHE }}
         run: |
           docker pull "$BUILD_IMAGE_CACHE" || echo "::warning::Failed to pull ${BUILD_IMAGE_CACHE}"
           docker pull "$MAIN_IMAGE_CACHE" || echo "::warning::Failed to pull ${MAIN_IMAGE_CACHE}"
@@ -78,7 +80,7 @@ jobs:
           export SPRING_DATASOURCE_USERNAME='spring_user'
           export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
 
-          if [ 'true' = ${{ secrets.USE_DOCKER_CACHE }} ]; then
+          if [ 'true' = "$USE_DOCKER_CACHE" ]; then
               cache_from="--cache-from ${BUILD_IMAGE_CACHE} --cache-from ${MAIN_IMAGE_CACHE}"
           fi
 
@@ -86,7 +88,7 @@ jobs:
           ./bin/run.py --apply-migrations --detach $cache_from
 
       - name: Tag and push the cache images
-        if: ${{ secrets.USE_DOCKER_CACHE }}
+        if: ${{ 'true' == env.USE_DOCKER_CACHE }}
         run: |
           if docker tag "$BUILD_IMAGE" "$BUILD_IMAGE_CACHE"; then
               docker push "$BUILD_IMAGE_CACHE" || echo "::warning::Failed to push ${BUILD_IMAGE_CACHE}"
