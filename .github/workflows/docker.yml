@@ -23,7 +23,7 @@ env:
     if [ 'true' = "$USE_DOCKER_CACHE" ]; then
       build_image_cache="${MAIN_IMAGE}-gradle-build-cache"
       main_image_cache="${MAIN_IMAGE}-cache"
-      echo "BUILD_IMAGE=${build_image}" >> $GITHUB_ENV
+      echo "BUILD_IMAGE=${build_image_cache}" >> $GITHUB_ENV
       echo "BUILD_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${build_image_cache}" >> $GITHUB_ENV
       echo "MAIN_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${main_image_cache}" >> $GITHUB_ENV
     fi
