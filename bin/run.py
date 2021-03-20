@@ -79,7 +79,7 @@ def main() -> None:
     run_build_image(args, build_image)
     build_main_image(args, main_image)
     create_main_container(args, main_image)
-    database.start(migrations=args['--apply-migrations'], start_db=args['--start-db'])
+    database.start(docstring=__doc__, migrations=args['--apply-migrations'], start_db=args['--start-db'])
     start_main_container(args)
     docker_utils.export_logs(main_image)
 

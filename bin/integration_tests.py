@@ -33,7 +33,7 @@ def main() -> None:
     set_envars(db_port)
 
     docker_utils.create_network(network)
-    database.start(container=db_container, network=network, port=db_port, migrations=True)
+    database.start(docstring=__doc__, migrations=True, container=db_container, network=network, port=db_port)
 
     utils.log('Running integration tests')
     completed_process = utils.execute_cmd(['./gradlew', 'integrationTest', '--info'], pipe_stderr=True)

@@ -9,6 +9,7 @@ Usage:
               [--attach]
               [--container <n>]
               [-h | --help]
+              [--migrations-only]
               [--network <n>]
               [--port <p>]
               [-v | --version]
@@ -20,6 +21,8 @@ Options:
   --container <n>     Name to use for the database container. Defaults to the
                       container name from the config file.
   -h, --help          Show this help.
+  --migrations-only   Only apply the migrations, don't attempt to run the
+                      container. Useful for databases hosted remotely.
   --network <n>       Name of a Docker network to operate within. Defaults to
                       the network name from the config file.
   --port=<p>          Host port at which the database is listening on.
@@ -29,7 +32,8 @@ Options:
   -v, --version       Show the scripts' version.
 
 Envars:
-  POSTGRES_URL       URL at which the database server can be reached.
+  POSTGRES_URL       URL at which the database server can be reached. Only
+                     required when applying migrations.
   POSTGRES_DB        Name of the default database that is created when the
                      image is first started.
   POSTGRES_USER      Superuser username for PostgreSQL.
@@ -56,7 +60,6 @@ import util.utils as utils
 
 CONFIG = utils.get_config(module_path=__file__)
 REQUIRED_ENVARS = [
-    'POSTGRES_URL',
     'POSTGRES_DB',
     'POSTGRES_USER',
     'POSTGRES_PASSWORD',
@@ -76,10 +79,12 @@ def main() -> None:
         roll_back(args['--rollback'])
     else:
         start(
+            docstring=__doc__,
+            migrations=args['--apply-migrations'],
+            migrations_only=args['--migrations-only'],
             container=container_name,
             network=network_name,
             port=args['--port'],
-            migrations=args['--apply-migrations'],
             start_db=args['--start-db']
         )
 
@@ -88,28 +93,34 @@ def main() -> None:
 
 
 def start(
+        docstring: str,
+        migrations: bool,
+        migrations_only: bool = False,
         container: str = None,
         network: str = None,
         port: str = None,
-        migrations: bool = False,
         start_db: bool = False
 ) -> None:
     """Starts the database container.
 
     Args:
+        docstring (str): Docstring (__doc__) of the calling module.
+        migrations (bool): Whether to apply the migrations. Includes `start_db`.
+        migrations_only (bool): Optional; Whether to apply migrations without running the container.
         container (str): Optional; The database container's name. Defaults to the config value.
         network (str): Optional; Name of the network to operate within. Defaults to the config value.
         port (str): Optional; Host port at which the database will be listening on. Defaults to the config value.
-        migrations (bool): Optional; Whether to apply the migrations. Includes `start_db`.
         start_db (bool): Optional; Whether to start the database container.
     """
-    utils.verify_envars(REQUIRED_ENVARS, 'Postgres', __doc__)
+    utils.verify_envars(REQUIRED_ENVARS, 'Postgres', docstring)
 
     container_name = container if container else CONFIG['DATABASE']['database_container']
     network_name = network if network else CONFIG['DOCKER']['network']
     port = port if port else CONFIG['DATABASE']['port']
 
-    if migrations or start_db:
+    if migrations_only:
+        apply_migrations()
+    elif migrations or start_db:
         run_db_container(container_name, network_name, port)
         if migrations:
             apply_migrations()
@@ -155,6 +166,7 @@ def run_db_container(container_name: str, network: str, port: str) -> None:
 
 def apply_migrations() -> None:
     """Applies database migrations."""
+    utils.verify_envars(['POSTGRES_URL'], 'Postgres', __doc__)
     liquibase_cmd = database_helper.fetch_dependencies()
     liquibase_cmd.append('update')
 
@@ -168,6 +180,7 @@ def roll_back(count: str) -> None:
     Args:
         count (str): Number of latest change sets to roll back.
     """
+    utils.verify_envars(['POSTGRES_URL'], 'Postgres', __doc__)
     liquibase_cmd = database_helper.fetch_dependencies()
     liquibase_cmd.extend(['rollbackCount', count])
 
