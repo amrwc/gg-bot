@@ -17,7 +17,6 @@ on:
 env:
   MAIN_IMAGE: ggbot
   REGISTRY: ghcr.io
-  TMP_CACHE: cache-tmp
 
   SET_VARIABLES: |
     echo "MAIN_IMAGE_URL=${REGISTRY}/${{ github.repository }}/${MAIN_IMAGE}:latest" >> $GITHUB_ENV
