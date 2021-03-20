@@ -22,9 +22,9 @@ env:
   # To be executed as a step
   SET_VARIABLES: |
     if [ 'true' = "$USE_DOCKER_CACHE" ]; then
-        build_image="${MAIN_IMAGE}-gradle-build-cache"
+        build_image="${MAIN_IMAGE}-gradle-build"
         echo "BUILD_IMAGE=${build_image}" >> $GITHUB_ENV
-        echo "BUILD_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${build_image}" >> $GITHUB_ENV
+        echo "BUILD_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${build_image}-cache" >> $GITHUB_ENV
         echo "MAIN_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${MAIN_IMAGE}-cache" >> $GITHUB_ENV
     fi
 
@@ -79,6 +79,7 @@ jobs:
 
           export SPRING_DATASOURCE_URL='jdbc:postgresql://ggbot-database:5432/ggbot'
           export SPRING_DATASOURCE_USERNAME='spring_user'
+          # This password must match the default one in the initial migrations
           export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
 
           if [ 'true' = "$USE_DOCKER_CACHE" ]; then
