@@ -1,8 +1,14 @@
 package dev.amrw.ggbot.listener;
 
 import dev.amrw.ggbot.dto.Error;
+import dev.amrw.ggbot.dto.RoshamboRequest;
+import dev.amrw.ggbot.dto.RoshamboResult;
+import dev.amrw.ggbot.dto.RoshamboShape;
+import dev.amrw.ggbot.helper.RoshamboListenerHelper;
+import dev.amrw.ggbot.service.RoshamboService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,13 +18,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.RandomUtils.nextLong;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -27,7 +31,11 @@ import static org.mockito.Mockito.*;
 class RoshamboListenerTest {
 
     @Mock
+    private RoshamboService service;
+    @Mock
     private DiscordMessageUtil messageUtil;
+    @Mock
+    private RoshamboListenerHelper helper;
     @Spy
     @InjectMocks
     private RoshamboListener listener;
@@ -35,9 +43,13 @@ class RoshamboListenerTest {
     @Mock
     private MessageCreateEvent event;
     @Mock
+    private Message message;
+    @Mock
     private TextChannel channel;
     @Mock
     private EmbedBuilder embedBuilder;
+    @Mock
+    private RoshamboResult roshamboResult;
 
     private String prefix;
 
@@ -74,6 +86,27 @@ class RoshamboListenerTest {
         testParseCommand(bet, "rock");
     }
 
+    @Test
+    @DisplayName("Should have played a game of Roshambo and displayed the result")
+    void shouldHavePlayedAndDisplayedResult() {
+        final long bet = nextLong();
+        when(event.getMessageContent()).thenReturn(String.format("%s %s scissors", prefix, bet));
+        when(event.getMessage()).thenReturn(message);
+        when(service.play(any(RoshamboRequest.class))).thenReturn(roshamboResult);
+
+        listener.process(event);
+
+        verify(message).addReaction(RoshamboShape.SCISSORS.getEmoji());
+        final var roshamboRequestCaptor = ArgumentCaptor.forClass(RoshamboRequest.class);
+        verify(helper).displayResultSuspensefully(eq(event), roshamboRequestCaptor.capture(), eq(roshamboResult));
+
+        final var expectedRequest = new RoshamboRequest();
+        expectedRequest.setEvent(event);
+        expectedRequest.setBet(bet);
+        expectedRequest.setShape(RoshamboShape.SCISSORS);
+        assertThat(roshamboRequestCaptor.getValue()).usingRecursiveComparison().isEqualTo(expectedRequest);
+    }
+
     @ParameterizedTest
     @CsvSource({
             "'', true",
@@ -83,6 +116,7 @@ class RoshamboListenerTest {
             "'!gg roshambo 100', true",
             "'!gg roshambo 100 help', true",
             "'!gg roshambo 100 rock help', true",
+
             "'!gg roshambo 100 abcd', false",
             "'!gg roshambo 100 rock', false",
     })

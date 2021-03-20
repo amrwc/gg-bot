@@ -12,7 +12,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public final class RoshamboResult extends GameResult {
+public class RoshamboResult extends GameResult {
 
     private RoshamboShape shape;
 }
