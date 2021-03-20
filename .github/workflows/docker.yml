@@ -14,18 +14,16 @@ on:
       - settings.gradle
 
 env:
-  USE_DOCKER_CACHE: true
   MAIN_IMAGE: ggbot
   REGISTRY: ghcr.io
   TMP_CACHE: cache-tmp
 
   SET_VARIABLES: |
-    if [ 'true' = "$USE_DOCKER_CACHE" ]; then
-      build_image_cache="${MAIN_IMAGE}-gradle-build-cache"
-      main_image_cache="${MAIN_IMAGE}-cache"
-      echo "BUILD_IMAGE=${build_image_cache}" >> $GITHUB_ENV
-      echo "BUILD_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${build_image_cache}" >> $GITHUB_ENV
-      echo "MAIN_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${main_image_cache}" >> $GITHUB_ENV
+    if [ 'true' = ${{ secrets.USE_DOCKER_CACHE }} ]; then
+        build_image="${MAIN_IMAGE}-gradle-build-cache"
+        echo "BUILD_IMAGE=${build_image}" >> $GITHUB_ENV
+        echo "BUILD_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${build_image}" >> $GITHUB_ENV
+        echo "MAIN_IMAGE_CACHE=${REGISTRY}/${{ github.repository }}/${MAIN_IMAGE}-cache" >> $GITHUB_ENV
     fi
 
 jobs:
@@ -63,17 +61,13 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
       - name: Pull cached images
-        if: ${{ 'true' == env.USE_DOCKER_CACHE }}
+        if: ${{ 'true' == secrets.USE_DOCKER_CACHE }}
         run: |
           docker pull "$BUILD_IMAGE_CACHE" || echo "::warning::Failed to pull ${BUILD_IMAGE_CACHE}"
           docker pull "$MAIN_IMAGE_CACHE" || echo "::warning::Failed to pull ${MAIN_IMAGE_CACHE}"
 
       - name: Build and run the container
         run: |
-          if [ 'true' = "$USE_DOCKER_CACHE" ]; then
-            cache_from="--cache-from ${BUILD_IMAGE_CACHE} --cache-from ${MAIN_IMAGE_CACHE}"
-          fi
-
           # Set required envars
           export POSTGRES_URL='jdbc:postgresql://localhost:5432'
           export POSTGRES_DB='ggbot'
@@ -84,21 +78,25 @@ jobs:
           export SPRING_DATASOURCE_USERNAME='spring_user'
           export SPRING_DATASOURCE_PASSWORD='SpringUserPassword'
 
+          if [ 'true' = ${{ secrets.USE_DOCKER_CACHE }} ]; then
+              cache_from="--cache-from ${BUILD_IMAGE_CACHE} --cache-from ${MAIN_IMAGE_CACHE}"
+          fi
+
           # shellcheck disable=SC2086
           ./bin/run.py --apply-migrations --detach $cache_from
 
       - name: Tag and push the cache images
-        if: ${{ 'true' == env.USE_DOCKER_CACHE }}
+        if: ${{ 'true' == secrets.USE_DOCKER_CACHE }}
         run: |
           if docker tag "$BUILD_IMAGE" "$BUILD_IMAGE_CACHE"; then
-            docker push "$BUILD_IMAGE_CACHE" || echo "::warning::Failed to push ${BUILD_IMAGE_CACHE}"
+              docker push "$BUILD_IMAGE_CACHE" || echo "::warning::Failed to push ${BUILD_IMAGE_CACHE}"
           else
-            echo "::warning::Failed to tag ${BUILD_IMAGE}"
+              echo "::warning::Failed to tag ${BUILD_IMAGE}"
           fi
           if docker tag "$MAIN_IMAGE" "$MAIN_IMAGE_CACHE"; then
-            docker push "$MAIN_IMAGE_CACHE" || echo "::warning::Failed to push ${MAIN_IMAGE_CACHE}"
+              docker push "$MAIN_IMAGE_CACHE" || echo "::warning::Failed to push ${MAIN_IMAGE_CACHE}"
           else
-            echo "::warning::Failed to tag ${MAIN_IMAGE}"
+              echo "::warning::Failed to tag ${MAIN_IMAGE}"
           fi
 
       - name: Test the API
