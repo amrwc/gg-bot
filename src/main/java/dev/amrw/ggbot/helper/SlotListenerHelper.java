@@ -32,9 +32,9 @@ public class SlotListenerHelper {
      * @param result {@link SlotResult}
      */
     public void displayResultSuspensefully(final MessageCreateEvent event, final SlotResult result) {
-        final String column1 = EmojiUtil.getEmojiAtCodePoint(result.getPayline(), 0);
-        final String column2 = EmojiUtil.getEmojiAtCodePoint(result.getPayline(), 1);
-        final String column3 = EmojiUtil.getEmojiAtCodePoint(result.getPayline(), 2);
+        final var column1 = EmojiUtil.getEmojiAtCodePoint(result.getPayline(), 0);
+        final var column2 = EmojiUtil.getEmojiAtCodePoint(result.getPayline(), 1);
+        final var column3 = EmojiUtil.getEmojiAtCodePoint(result.getPayline(), 2);
         var future = event.getChannel().sendMessage(buildResultEmbed(event, "❔", "❔", "❔"));
         final var edits = new EmbedBuilder[] {
                 buildResultEmbed(event, column1, "❔", "❔"),
@@ -47,11 +47,10 @@ public class SlotListenerHelper {
                         .addInlineField("Net profit", result.getNetProfit().toString())
                         .addInlineField("Current balance", result.getCurrentBalance().toString()),
         };
-        for (final EmbedBuilder edit : edits) {
-            future = future.whenCompleteAsync(
-                    (message, throwable) -> message.edit(edit),
-                    CompletableFuture.delayedExecutor(1L, TimeUnit.SECONDS)
-            );
+
+        final var delayedExecutor = CompletableFuture.delayedExecutor(1L, TimeUnit.SECONDS);
+        for (final var edit : edits) {
+            future = future.whenCompleteAsync((message, throwable) -> message.edit(edit), delayedExecutor);
         }
     }
 

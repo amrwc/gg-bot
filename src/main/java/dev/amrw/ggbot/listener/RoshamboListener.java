@@ -3,6 +3,7 @@ package dev.amrw.ggbot.listener;
 import dev.amrw.ggbot.dto.Error;
 import dev.amrw.ggbot.dto.RoshamboRequest;
 import dev.amrw.ggbot.dto.RoshamboShape;
+import dev.amrw.ggbot.helper.RoshamboListenerHelper;
 import dev.amrw.ggbot.service.RoshamboService;
 import dev.amrw.ggbot.util.DiscordMessageUtil;
 import lombok.extern.log4j.Log4j2;
@@ -10,8 +11,6 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Listener that enables users to play Roshambo (Rock, Paper, Scissors).
@@ -24,10 +23,16 @@ public class RoshamboListener extends MessageListenerBase {
 
     private final RoshamboService service;
     private final DiscordMessageUtil messageUtil;
+    private final RoshamboListenerHelper helper;
 
-    public RoshamboListener(final RoshamboService service, final DiscordMessageUtil messageUtil) {
+    public RoshamboListener(
+            final RoshamboService service,
+            final DiscordMessageUtil messageUtil,
+            final RoshamboListenerHelper helper
+    ) {
         this.service = service;
         this.messageUtil = messageUtil;
+        this.helper = helper;
     }
 
     @Override
@@ -43,20 +48,11 @@ public class RoshamboListener extends MessageListenerBase {
             return;
         }
 
+        event.getMessage().addReaction(request.getShape().getEmoji());
+
         final var result = service.play(request);
-
-        final var delayedExecutor = CompletableFuture.delayedExecutor(1L, TimeUnit.SECONDS);
-        var future = event.getChannel().sendMessage("3️⃣");
-        for (final String content : new String[] {"2️⃣", "1️⃣", result.getShape().getEmoji()}) {
-            future = future.whenCompleteAsync((message, throwable) -> message.edit(content), delayedExecutor);
-        }
-
-        final var resultMessage = messageUtil.buildInfo(event, "Roshambo")
-                .addField("Result", String.format("**-- YOU %s --**", result.getVerdict().getPastTense()))
-                .addInlineField("Credits won", result.getCreditsWon().toString())
-                .addInlineField("Net profit", result.getNetProfit().toString())
-                .addInlineField("Current balance", result.getCurrentBalance().toString());
-        future.whenCompleteAsync((msg, thr) -> event.getChannel().sendMessage(resultMessage));
+        log.debug("Roshambo result: {}", result);
+        helper.displayResultSuspensefully(event, request, result);
     }
 
     @Override
@@ -89,7 +85,7 @@ public class RoshamboListener extends MessageListenerBase {
         }
 
         if (roshamboRequest.getBet() <= 0L) {
-            log.debug("{} placed a negative bet: {}", event.getMessageAuthor(), event.getMessageContent());
+            log.debug("{} placed a non-positive bet: {}", event.getMessageAuthor(), event.getMessageContent());
             event.getChannel().sendMessage(messageUtil.buildError(event, Error.NEGATIVE_BET));
             roshamboRequest.setError(Error.NEGATIVE_BET);
         }

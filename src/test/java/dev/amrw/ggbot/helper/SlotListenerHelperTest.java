@@ -43,8 +43,8 @@ class SlotListenerHelperTest {
     private CompletableFuture<Message> future;
 
     @Test
-    @SuppressWarnings("unchecked") // For `Predicate.class`, `Consumer.class`, and `BiConsumer.class`
     @DisplayName("Should have suspensefully displayed the result message")
+    @SuppressWarnings("unchecked") // For `Predicate.class`, `Consumer.class`, and `BiConsumer.class`
     void shouldHaveDisplayedResultSuspensefully() {
         final Long creditsWon = nextLong();
         final Long netProfit = nextLong();
