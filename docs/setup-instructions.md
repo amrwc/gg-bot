@@ -34,8 +34,8 @@ ALTER USER spring_user WITH PASSWORD '<new_password>';
 
 ## GitHub Workflows
 
-Add `CR_PAT` secret to the repository to be able to sign into container
-registry. Read more on this in [GitHub's
+Add `CONTAINER_REGISTRY_TOKEN` secret to the repository to be able to sign into
+container registry. Read more on this in [GitHub's
 documentation][github_auth_container_registry].
 
 [discord_developer_portal]: https://discord.com/developers/applications
