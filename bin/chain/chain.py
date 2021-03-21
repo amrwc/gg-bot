@@ -21,12 +21,14 @@ class Chain:
             Whether the execution was successful.
         """
         for command in self.commands:
-            if command.__class__.__name__ in self.context.skip:
+            command_name = command.__class__.__name__
+            if command_name in self.context.skip:
+                utils.warn(f"Skipping command: '{command_name}'")
                 continue
 
             result = command.execute()
             if result.is_failure():
-                utils.warn(f"Execution status of '{command.__class__.__name__}' command: {result.name}")
+                utils.warn(f"Execution status of '{command_name}' command: {result.name}")
                 return False
 
         return True

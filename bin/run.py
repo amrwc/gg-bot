@@ -73,6 +73,7 @@ def main() -> None:
     chain_result = RunChain(CONFIG, args).execute()
     if not chain_result:
         utils.raise_error('Error executing the chain')
+
     build_main_image(args, main_image)
     create_main_container(args, main_image)
     database.start(docstring=__doc__, migrations=args['--apply-migrations'], start_db=args['--start-db'])
