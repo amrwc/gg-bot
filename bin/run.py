@@ -41,16 +41,13 @@ Example:
   ./bin/run.py --apply-migrations
 """
 
-import glob
 import os
-import pathlib
-import shutil
 
 import docopt
 
 import database
-import util.docker_utils as docker_utils
-import util.utils as utils
+from chain.impl.run_chain import RunChain
+from util import docker_utils, utils
 
 CONFIG = utils.get_config(module_path=__file__)
 REQUIRED_ENVARS = [
@@ -73,92 +70,14 @@ def main() -> None:
         docker_utils.rm_container(docker_utils.DockerContainer(build_image))
         docker_utils.rm_image(build_image)
 
-    docker_utils.create_volume(CONFIG['DOCKER']['cache_volume'])
-    docker_utils.create_network(CONFIG['DOCKER']['network'])
-    build_build_image(args, build_image)
-    run_build_image(args, build_image)
+    chain_result = RunChain(CONFIG, args).execute()
+    if not chain_result:
+        utils.raise_error('Error executing the chain')
     build_main_image(args, main_image)
     create_main_container(args, main_image)
     database.start(docstring=__doc__, migrations=args['--apply-migrations'], start_db=args['--start-db'])
     start_main_container(args)
     docker_utils.export_logs(main_image)
-
-
-def build_build_image(args: dict, build_image: str = None) -> None:
-    """Builds the build image.
-
-    Args:
-        args (dict): Parsed command-line arguments passed to the script.
-        build_image (str): Optional; Build image name. Defaults to the value from config file.
-    """
-    build_image = build_image if build_image else CONFIG['DOCKER']['build_image']
-
-    if not args['--rebuild'] and docker_utils.item_exists('image', build_image):
-        utils.warn(f"Image '{build_image}' already exists, not building")
-        return
-
-    utils.log(f"Building '{build_image}' image")
-    build_image_cmd = [
-        'docker',
-        'build',
-        '--tag',
-        build_image,
-        '--file',
-        os.path.join('docker', 'Dockerfile-gradle'),
-        '.',
-    ]
-    if args['--no-cache']:
-        build_image_cmd.insert(2, '--no-cache')
-    elif args['--cache-from']:
-        for item in args['--cache-from']:
-            build_image_cmd[2:2] = ['--cache-from', item]
-    utils.execute_cmd(build_image_cmd)
-
-
-def run_build_image(args: dict, build_image: str = None) -> None:
-    """Runs the build image and copies the compiled JAR file out of the container.
-
-    Args:
-        args (dict): Parsed command-line arguments passed to the script.
-        build_image (str): Optional; Build image name. Defaults to the value from config file.
-    """
-    build_image = build_image if build_image else CONFIG['DOCKER']['build_image']
-    build_container = build_image
-
-    if not args['--rebuild'] and docker_utils.item_exists('container', build_container):
-        utils.warn(f"Container '{build_container}' already exists, not running")
-        return
-
-    utils.log(f"Running '{build_image}' image")
-    build_container_cmd = [
-        'docker',
-        'run',
-        '--name',
-        build_container,
-        '--volume',
-        f"{CONFIG['DOCKER']['cache_volume']}:/home/gradle/.gradle",
-        '--user',
-        'gradle',
-        build_image,
-    ]
-    build_container_cmd.extend(CONFIG['DOCKER']['build_command'].split(' '))
-    if not args['--detach']:
-        build_container_cmd[2:2] = ['--interactive', '--tty']
-    utils.execute_cmd(build_container_cmd)
-
-    utils.log(f"Copying JAR from '{build_container}' container")
-    shutil.rmtree(os.path.join('build', 'libs'), ignore_errors=True)
-    pathlib.Path(os.path.join('build')).mkdir(parents=True, exist_ok=True)
-    utils.execute_cmd([
-        'docker',
-        'cp',
-        f"{build_container}:/home/gradle/project/build/libs",
-        os.path.join('build'),
-    ])
-    for file in glob.glob(os.path.join('build', 'libs', '*.jar')):
-        if file.endswith('.jar'):
-            os.rename(file, os.path.join('build', 'libs', 'app.jar'))
-            break
 
 
 def build_main_image(args: dict, main_image: str = None) -> None:
