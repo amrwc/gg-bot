@@ -13,14 +13,17 @@ import util.utils as utils
 DRIVER_URL = 'https://jdbc.postgresql.org/download/postgresql-42.2.18.jar'
 SHA256_DRIVER = '0c891979f1eb2fe44432da114d09760b5063dad9e669ac0ac6b0b6bfb91bb3ba'
 DRIVER_PATH = os.path.join('tmp', 'db-driver', 'postgresql.jar')
+# DRIVER_PATH = os.path.join('..', 'tmp', 'db-driver', 'postgresql.jar')
 
 LIQUIBASE_URL = 'https://github.com/liquibase/liquibase/releases/download/v4.2.2/liquibase-4.2.2.tar.gz'
 SHA256_LIQUIBASE_ARCHIVE = '807ef4b514d01fc62f7aaf4150a8435c90ccb5986f3272d3cfd1bd26c2cf7b4c'
 SHA256_LIQUIBASE_JAR = 'c092425c70b76bb28b6c260c1db8ee4845b7c4888f137937869393abca03af11'
 LIQUIBASE_DIR = os.path.join('tmp', 'liquibase')
+# LIQUIBASE_DIR = os.path.join('..', 'tmp', 'liquibase')
 LIQUIBASE_PATH = os.path.join(LIQUIBASE_DIR, 'liquibase.jar')
 LIQUIBASE_ARCHIVE = os.path.join(LIQUIBASE_DIR, 'liquibase.tar.gz')
-LIQUIBASE_PROPERTIES_PATH = os.path.join('src', 'main', 'resources', 'liquibase.properties')
+# LIQUIBASE_PROPERTIES_PATH = os.path.join('src', 'main', 'resources', 'liquibase.properties')
+LIQUIBASE_PROPERTIES_PATH = os.path.join('ggbot', 'src', 'main', 'resources', 'liquibase.properties')
 
 
 def fetch_dependencies() -> List[str]:
