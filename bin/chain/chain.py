@@ -1,3 +1,5 @@
+from typing import List
+
 from command.command import Command
 from context.context import Context
 from util import utils
@@ -6,7 +8,7 @@ from util import utils
 class Chain:
     """Chain of Responsibility parent class."""
 
-    commands: list[Command]
+    commands: List[Command]
     context: Context
 
     def __init__(self) -> None:
@@ -29,10 +31,10 @@ class Chain:
 
         return True
 
-    def append_commands(self, commands: list[Command]) -> None:
+    def append_commands(self, commands: List[Command]) -> None:
         """Appends the given commands to the chain.
 
         Args:
-            commands (list[Command]): List of commands to append to the chain.
+            commands (List[Command]): List of commands to append to the chain.
         """
         self.commands.extend(commands)
