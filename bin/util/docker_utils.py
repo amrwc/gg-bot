@@ -23,31 +23,41 @@ def item_exists(command: str, item: str) -> bool:
     return any([item == word for word in items.split()])
 
 
-def create_network(name: str = None) -> None:
+def create_network(name: str = None) -> bool:
     """Creates a Docker network if the name isn't taken.
 
     Args:
         name (str): Optional; Name of the network. Defaults to the network name specified in the config file.
+
+    Returns:
+        Whether the operation was successful.
     """
     network_name = name if name else CONFIG['DOCKER']['network']
     if item_exists('network', network_name):
         utils.warn(f"Network '{network_name}' already exists, not creating")
+        return True
     else:
         utils.log(f"Creating '{network_name}' network")
-        utils.execute_cmd(['docker', 'network', 'create', network_name])
+        completed_process = utils.execute_cmd(['docker', 'network', 'create', network_name])
+        return 0 == completed_process.returncode
 
 
-def create_volume(name: str) -> None:
+def create_volume(name: str) -> bool:
     """Creates a Docker volume if the name isn't taken.
 
     Args:
         name (str): Name of the volume.
+
+    Returns:
+        Whether the operation was successful.
     """
     if item_exists('volume', name):
         utils.warn(f"Volume '{name}' already exists, not creating")
+        return True
     else:
         utils.log(f"Creating '{name}' volume")
-        utils.execute_cmd(['docker', 'volume', 'create', name])
+        completed_process = utils.execute_cmd(['docker', 'volume', 'create', name])
+        return 0 == completed_process.returncode
 
 
 class DockerContainer:
