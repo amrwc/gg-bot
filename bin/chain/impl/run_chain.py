@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from chain.chain import Chain
 from command.impl.build_build_image import BuildBuildImage
+from command.impl.build_main_image import BuildMainImage
 from command.impl.copy_jar_out import CopyJarOut
 from command.impl.prepare_docker_environment import PrepareDockerEnvironment
 from command.impl.run_build_image import RunBuildImage
@@ -28,4 +29,5 @@ class RunChain(Chain):
             BuildBuildImage(self.context),
             RunBuildImage(self.context),
             CopyJarOut(self.context),
+            BuildMainImage(self.context),
         ])

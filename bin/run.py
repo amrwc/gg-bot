@@ -74,44 +74,10 @@ def main() -> None:
     if not chain_result:
         utils.raise_error('Error executing the chain')
 
-    build_main_image(args, main_image)
     create_main_container(args, main_image)
     database.start(docstring=__doc__, migrations=args['--apply-migrations'], start_db=args['--start-db'])
     start_main_container(args)
     docker_utils.export_logs(main_image)
-
-
-def build_main_image(args: dict, main_image: str = None) -> None:
-    """Builds the main image.
-
-    Args:
-        args (dict): Parsed command-line arguments passed to the script.
-        main_image (str): Optional; Main image name. Defaults to the value from config file.
-    """
-    main_image = main_image if main_image else CONFIG['DOCKER']['main_image']
-
-    if not args['--rebuild'] and docker_utils.item_exists('image', main_image):
-        utils.warn(f"Image '{main_image}' already exists, not building")
-        return
-
-    utils.log(f"Building '{main_image}' image")
-    main_image_cmd = [
-        'docker',
-        'build',
-        '--tag',
-        main_image,
-        '--file',
-        os.path.join('docker', 'Dockerfile'),
-        '.',
-    ]
-    if args['--no-cache']:
-        main_image_cmd.insert(2, '--no-cache')
-    elif args['--cache-from']:
-        for item in args['--cache-from']:
-            main_image_cmd[2:2] = ['--cache-from', item]
-    if args['--suspend'] or args['--debug']:
-        main_image_cmd[2:2] = ['--build-arg', 'suspend=true' if args['--suspend'] else 'debug=true']
-    utils.execute_cmd(main_image_cmd)
 
 
 def create_main_container(args: dict, main_image: str = None) -> None:
