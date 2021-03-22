@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{yellow} %style{[%thread]}{magenta} %highlight{%-5level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green} %logger.%M - %message%n%throwable"/>
+        </Console>
+        <RollingFile name="RollBySizeAndTime"
+                     fileName="log/bin.log"
+                     filePattern="log/bin-%d{yyyy-MM-dd}-%i.log.gz"
+                     ignoreExceptions="false">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger.%M - %message%n%throwable"/>
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="32 KB"/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="log/bin-*.log.gz"/>
+                    <IfLastModified age="7d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.github.dockerjava" level="INFO">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollBySizeAndTime"/>
+        </Logger>
+        <!-- Used by docker-java for interacting with Docker socket -->
+        <Logger name="org.apache.hc.client5.http" level="INFO">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollBySizeAndTime"/>
+        </Logger>
+        <Root level="DEBUG">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollBySizeAndTime"/>
+        </Root>
+    </Loggers>
+</Configuration>
+
+        <!-- https://www.baeldung.com/log4j2-appenders-layouts-filters -->
+        <!-- https://www.baeldung.com/java-logging-rolling-file-appenders -->
