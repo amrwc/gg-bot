@@ -1,6 +1,6 @@
 package dev.amrw.bin.chain;
 
-import dev.amrw.bin.command.PrepareDockerEnvironment;
+import dev.amrw.bin.chain.command.PrepareDockerEnvironment;
 import org.apache.commons.chain.impl.ChainBase;
 
 public class RunChain extends ChainBase {

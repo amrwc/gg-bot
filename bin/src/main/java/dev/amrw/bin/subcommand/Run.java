@@ -1,7 +1,7 @@
-package dev.amrw.bin.instruction;
+package dev.amrw.bin.subcommand;
 
 import dev.amrw.bin.chain.RunChain;
-import dev.amrw.bin.context.RunChainContext;
+import dev.amrw.bin.chain.context.RunChainContext;
 import lombok.extern.log4j.Log4j2;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -44,6 +44,7 @@ public class Run implements Callable<Integer> {
     public Integer call() {
         final var context = new RunChainContext();
         final var chain = new RunChain();
+
         boolean result;
         try {
             result = chain.execute(context);

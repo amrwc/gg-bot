@@ -1,6 +1,6 @@
 package dev.amrw.bin;
 
-import dev.amrw.bin.instruction.Run;
+import dev.amrw.bin.subcommand.Run;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
