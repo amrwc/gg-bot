@@ -2,6 +2,10 @@ package dev.amrw.bin.subcommand;
 
 import dev.amrw.bin.chain.RunChain;
 import dev.amrw.bin.chain.context.RunChainContext;
+import dev.amrw.bin.dto.RunArgs;
+import dev.amrw.bin.util.ConfigReader;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -15,6 +19,8 @@ import static picocli.CommandLine.ExitCode;
  * Build and run the application.
  */
 @Log4j2
+@Getter
+@Accessors(fluent = true)
 @Command(
         name = "run",
         mixinStandardHelpOptions = true,
@@ -42,7 +48,11 @@ public class Run implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        final var context = new RunChainContext();
+        final var configReader = new ConfigReader();
+        final var config = configReader.getDefaultConfig()
+                .orElseThrow(() -> new IllegalArgumentException("Error reading default config"));
+        final var args = new RunArgs(this);
+        final var context = new RunChainContext(config, args);
         final var chain = new RunChain();
 
         boolean result;

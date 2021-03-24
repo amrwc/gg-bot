@@ -19,6 +19,7 @@ repositories {
 
 ext {
     dockerJavaVersion = '3.2.7'
+    jacksonVersion = '2.12.2'
     junitVersion = '5.7.1'
     log4jVersion = '2.14.1'
     lombokVersion = '1.18.18'
@@ -27,6 +28,8 @@ ext {
 }
 
 dependencies {
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
     implementation "com.github.docker-java:docker-java-core:${dockerJavaVersion}"
     implementation "com.github.docker-java:docker-java-transport-httpclient5:${dockerJavaVersion}"
     implementation 'commons-chain:commons-chain:1.2'

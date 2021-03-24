@@ -1,0 +1,21 @@
+spring:
+  port: '8080'
+  debugPort: '8000'
+
+database:
+  port: '5432'
+  testPort: '5444'
+  dockerImage: postgres:latest
+  databaseContainer: ggbot-database
+  databaseTestContainer: ggbot-test-database
+  pgAdminImage: dpage/pgadmin4
+  pgAdminContainer: pgadmin
+  pgAdminPort: '5050'
+
+docker:
+  cacheVolume: gradle-build-cache
+  network: ggbot-network
+  testNetwork: ggbot-test-network
+  mainImage: ggbot
+  buildImage: ggbot-gradle-build
+  buildCommand: gradle build --stacktrace --exclude-task test
