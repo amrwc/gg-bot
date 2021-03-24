@@ -59,7 +59,7 @@ public class Run implements Callable<Integer> {
         try {
             result = chain.execute(context);
         } catch (final Exception exception) {
-            log.debug("Error executing chain {}", chain.getClass(), exception);
+            log.error("Error executing chain {}", chain.getClass(), exception);
             result = false;
         }
 

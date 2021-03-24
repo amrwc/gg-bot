@@ -18,7 +18,7 @@ public class PrepareDockerEnvironment implements Command {
         final var runChainContext = (RunChainContext) context;
         createNetwork(runChainContext);
         createVolume(runChainContext);
-        return Command.PROCESSING_COMPLETE;
+        return Command.CONTINUE_PROCESSING;
     }
 
     private void createNetwork(final RunChainContext context) {

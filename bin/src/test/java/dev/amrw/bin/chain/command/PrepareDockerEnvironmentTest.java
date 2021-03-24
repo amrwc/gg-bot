@@ -6,6 +6,7 @@ import com.github.dockerjava.api.model.Network;
 import dev.amrw.bin.chain.context.RunChainContext;
 import dev.amrw.bin.config.Config;
 import dev.amrw.bin.config.DockerConfig;
+import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,7 +63,7 @@ class PrepareDockerEnvironmentTest {
         addCreateNetworkStubs(networkExists);
         addCreateVolumeStubs(volumeExists);
 
-        assertThat(command.execute(context)).isTrue();
+        assertThat(command.execute(context)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         verify(createNetworkCmd, times(networkExists ? 0 : 1)).exec();
         verify(createVolumeCmd, times(volumeExists ? 0 : 1)).exec();
