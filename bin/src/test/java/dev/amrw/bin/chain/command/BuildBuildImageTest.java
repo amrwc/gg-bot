@@ -84,7 +84,7 @@ class BuildBuildImageTest {
     @DisplayName("Should have skipped building the build image if it already exists")
     void shouldHaveSkippedWhenImageExists() {
         when(args.rebuild()).thenReturn(false);
-        assertThat(command.execute(context)).isEqualTo(Command.PROCESSING_COMPLETE);
+        assertThat(command.execute(context)).isEqualTo(Command.CONTINUE_PROCESSING);
     }
 
     @ParameterizedTest
@@ -116,7 +116,7 @@ class BuildBuildImageTest {
         when(buildImageCmd.exec(any(BuildImageResultCallback.class))).thenReturn(callback);
         when(callback.awaitImageId()).thenReturn(newImageId);
 
-        assertThat(command.execute(context)).isEqualTo(Command.PROCESSING_COMPLETE);
+        assertThat(command.execute(context)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         if (noCache) {
             verify(buildImageCmd).withNoCache(true);

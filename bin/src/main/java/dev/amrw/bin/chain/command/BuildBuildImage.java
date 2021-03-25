@@ -1,10 +1,7 @@
 package dev.amrw.bin.chain.command;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
-import dev.amrw.bin.chain.context.RunChainContext;
 import dev.amrw.bin.config.DockerConfig;
-import dev.amrw.bin.dto.RunArgs;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -18,14 +15,12 @@ import java.util.stream.Collectors;
  * Builds the build image.
  */
 @Log4j2
-public class BuildBuildImage implements Command {
+public class BuildBuildImage extends RunChainCommand {
 
     @Override
     public boolean execute(final Context context) {
-        final var runChainContext = (RunChainContext) context;
-        final var args = runChainContext.getArgs();
+        super.prepareContext(context);
         final var imageName = runChainContext.getConfig().getDockerConfig().getBuildImage();
-        final var dockerClient = runChainContext.getDockerClient();
 
         // Example repo tags: [ggbot-gradle-build:latest], [<none>:<none>], [postgres:latest], [dpage/pgadmin4:latest]
         // Only keep repo tags that start with the image name
@@ -36,8 +31,7 @@ public class BuildBuildImage implements Command {
 
         if (!args.rebuild() && !images.isEmpty()) {
             log.info("Image already exists, not building (name={})", imageName);
-            // return Command.CONTINUE_PROCESSING;
-            return Command.PROCESSING_COMPLETE; // TEMP: Remove when the next command has been built
+            return Command.CONTINUE_PROCESSING;
         }
 
         if (args.noCache()) {
@@ -51,13 +45,12 @@ public class BuildBuildImage implements Command {
             });
         }
 
-        buildImage(dockerClient, imageName, args);
+        buildImage(imageName);
 
-        // return Command.CONTINUE_PROCESSING;
-        return Command.PROCESSING_COMPLETE; // TEMP: Remove when the next command has been built
+        return Command.CONTINUE_PROCESSING;
     }
 
-    private void buildImage(final DockerClient dockerClient, final String imageName, final RunArgs args) {
+    private void buildImage(final String imageName) {
         log.info("Building image (name={})", imageName);
         final var buildImageCmd = dockerClient
                 .buildImageCmd()
