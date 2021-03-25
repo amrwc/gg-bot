@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.ListImagesCmd;
+import com.github.dockerjava.api.command.RemoveImageCmd;
 import com.github.dockerjava.api.model.Image;
 import dev.amrw.bin.chain.context.RunChainContext;
 import dev.amrw.bin.config.Config;
@@ -51,6 +52,11 @@ class BuildBuildImageTest {
     private DockerClient dockerClient;
 
     @Mock
+    private ListImagesCmd listImagesCmd;
+    @Mock
+    private Image image;
+
+    @Mock
     private BuildImageCmd buildImageCmd;
     @Captor
     private ArgumentCaptor<Set<String>> cacheFromCaptor;
@@ -68,19 +74,16 @@ class BuildBuildImageTest {
         when(config.getDockerConfig()).thenReturn(dockerConfig);
 
         when(dockerConfig.getBuildImage()).thenReturn(buildImageName);
+
+        when(dockerClient.listImagesCmd()).thenReturn(listImagesCmd);
+        when(listImagesCmd.exec()).thenReturn(List.of(image));
+        when(image.getRepoTags()).thenReturn(new String[] {buildImageName + ":latest"});
     }
 
     @Test
     @DisplayName("Should have skipped building the build image if it already exists")
     void shouldHaveSkippedWhenImageExists() {
-        final var listImagesCmd = mock(ListImagesCmd.class);
-        final var image = mock(Image.class);
-
         when(args.rebuild()).thenReturn(false);
-        when(dockerClient.listImagesCmd()).thenReturn(listImagesCmd);
-        when(listImagesCmd.exec()).thenReturn(List.of(image));
-        when(image.getRepoTags()).thenReturn(new String[] {buildImageName + ":latest"});
-
         assertThat(command.execute(context)).isEqualTo(Command.PROCESSING_COMPLETE);
     }
 
@@ -88,28 +91,36 @@ class BuildBuildImageTest {
     @MethodSource
     @DisplayName("Should have built the build image")
     void shouldHaveBuiltBuildImage(final boolean noCache, final List<String> cacheFrom) {
+        final var removeImageCmd = mock(RemoveImageCmd.class);
         final var callback = mock(BuildImageResultCallback.class);
-        final var imageId = "sha256:" + randomAlphanumeric(32);
+        final var existingImageId = randomAlphanumeric(32);
+        final var newImageId = "sha256:" + randomAlphanumeric(32);
 
         when(args.rebuild()).thenReturn(true);
+
+        when(args.noCache()).thenReturn(noCache);
+        if (noCache) {
+            when(image.getId()).thenReturn(existingImageId);
+            when(dockerClient.removeImageCmd(existingImageId)).thenReturn(removeImageCmd);
+        }
 
         when(dockerClient.buildImageCmd()).thenReturn(buildImageCmd);
         when(buildImageCmd.withTags(Set.of(buildImageName))).thenReturn(buildImageCmd);
         when(buildImageCmd.withBaseDirectory(any(File.class))).thenReturn(buildImageCmd);
         when(buildImageCmd.withDockerfile(any(File.class))).thenReturn(buildImageCmd);
 
-        when(args.noCache()).thenReturn(noCache);
         if (!noCache) {
             when(args.cacheFrom()).thenReturn(cacheFrom);
         }
 
         when(buildImageCmd.exec(any(BuildImageResultCallback.class))).thenReturn(callback);
-        when(callback.awaitImageId()).thenReturn(imageId);
+        when(callback.awaitImageId()).thenReturn(newImageId);
 
         assertThat(command.execute(context)).isEqualTo(Command.PROCESSING_COMPLETE);
 
         if (noCache) {
             verify(buildImageCmd).withNoCache(true);
+            verify(removeImageCmd).exec();
         } else {
             verify(buildImageCmd).withCacheFrom(cacheFromCaptor.capture());
             assertThat(cacheFromCaptor.getValue()).containsAll(cacheFrom);
