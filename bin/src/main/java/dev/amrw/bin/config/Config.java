@@ -11,10 +11,6 @@ import lombok.Setter;
 @Setter
 public class Config {
 
-    @JsonProperty("spring")
-    private SpringConfig springConfig;
-    @JsonProperty("database")
-    private DatabaseConfig databaseConfig;
     @JsonProperty("docker")
     private DockerConfig dockerConfig;
 }

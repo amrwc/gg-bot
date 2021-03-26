@@ -1,5 +1,6 @@
 package dev.amrw.bin.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,15 +11,19 @@ import lombok.Setter;
 @Setter
 public class DockerConfig {
 
-    /** Docker base directory path, relative to this Gradle subproject. */
-    public static final String BASE_DIR_PATH = "..";
-    /** Dockerfile directory path, relative to this Gradle subproject. */
-    public static final String DOCKERFILE_GRADLE_PATH = "../docker/Dockerfile-gradle";
-
-    private String cacheVolume;
+    private String baseDirPath;
+    private String dockerfileGradlePath;
     private String network;
     private String testNetwork;
-    private String mainImage;
-    private String buildImage;
-    private String buildCommand;
+
+    @JsonProperty("buildImage")
+    private BuildImageConfig buildImageConfig;
+    @JsonProperty("mainImage")
+    private MainImageConfig mainImageConfig;
+    @JsonProperty("databaseContainer")
+    private DatabaseContainerConfig databaseContainerConfig;
+    @JsonProperty("databaseTestContainer")
+    private DatabaseTestContainerConfig databaseTestContainer;
+    @JsonProperty("pgAdminContainer")
+    private PgAdminContainerConfig pgAdminContainer;
 }

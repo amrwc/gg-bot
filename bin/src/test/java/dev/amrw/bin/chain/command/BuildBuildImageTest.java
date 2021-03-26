@@ -7,6 +7,7 @@ import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.command.RemoveImageCmd;
 import com.github.dockerjava.api.model.Image;
 import dev.amrw.bin.chain.context.RunChainContext;
+import dev.amrw.bin.config.BuildImageConfig;
 import dev.amrw.bin.config.Config;
 import dev.amrw.bin.config.DockerConfig;
 import dev.amrw.bin.dto.RunArgs;
@@ -47,6 +48,8 @@ class BuildBuildImageTest {
     @Mock
     private DockerConfig dockerConfig;
     @Mock
+    private BuildImageConfig buildImageConfig;
+    @Mock
     private RunArgs args;
     @Mock
     private DockerClient dockerClient;
@@ -73,7 +76,8 @@ class BuildBuildImageTest {
 
         when(config.getDockerConfig()).thenReturn(dockerConfig);
 
-        when(dockerConfig.getBuildImage()).thenReturn(buildImageName);
+        when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
+        when(buildImageConfig.getName()).thenReturn(buildImageName);
 
         when(dockerClient.listImagesCmd()).thenReturn(listImagesCmd);
         when(listImagesCmd.exec()).thenReturn(List.of(image));
@@ -104,6 +108,8 @@ class BuildBuildImageTest {
             when(dockerClient.removeImageCmd(existingImageId)).thenReturn(removeImageCmd);
         }
 
+        when(dockerConfig.getBaseDirPath()).thenReturn(randomAlphabetic(16));
+        when(dockerConfig.getDockerfileGradlePath()).thenReturn(randomAlphabetic(16));
         when(dockerClient.buildImageCmd()).thenReturn(buildImageCmd);
         when(buildImageCmd.withTags(Set.of(buildImageName))).thenReturn(buildImageCmd);
         when(buildImageCmd.withBaseDirectory(any(File.class))).thenReturn(buildImageCmd);

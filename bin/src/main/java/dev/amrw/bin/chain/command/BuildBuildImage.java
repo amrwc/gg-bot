@@ -1,7 +1,6 @@
 package dev.amrw.bin.chain.command;
 
 import com.github.dockerjava.api.command.BuildImageResultCallback;
-import dev.amrw.bin.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -20,7 +19,7 @@ public class BuildBuildImage extends RunChainCommand {
     @Override
     public boolean execute(final Context context) {
         super.prepareContext(context);
-        final var imageName = runChainContext.getConfig().getDockerConfig().getBuildImage();
+        final var imageName = dockerConfig.getBuildImageConfig().getName();
 
         // Example repo tags: [ggbot-gradle-build:latest], [<none>:<none>], [postgres:latest], [dpage/pgadmin4:latest]
         // Only keep repo tags that start with the image name
@@ -36,9 +35,9 @@ public class BuildBuildImage extends RunChainCommand {
 
         if (args.noCache()) {
             // When the `--no-cache` Docker option for the `build` command has been specified, the existing image with
-            // the same tag is going to be re-tagged to `<none>:<none>` and left behind. This is why it's necessary to
-            // remove the existing images before building from scratch as to not leave an untagged image behind. It's a
-            // build image, therefore there's no significant data to be lost.
+            // the same tag is going to be re-tagged to `<none>:<none>` and left behind (it'll be dangling). This is
+            // why it's best to remove the existing images before building from scratch as to not leave an untagged
+            // image behind. It's a build image, therefore there's no significant data to be lost.
             images.forEach(image -> {
                 log.debug("Removing image (repoTags={}, id={})", image.getRepoTags(), image.getId());
                 dockerClient.removeImageCmd(image.getId()).exec();
@@ -52,11 +51,13 @@ public class BuildBuildImage extends RunChainCommand {
 
     private void buildImage(final String imageName) {
         log.info("Building image (name={})", imageName);
+        final var baseDirectory = new File(dockerConfig.getBaseDirPath());
+        final var dockerfileGradle = new File(dockerConfig.getDockerfileGradlePath());
         final var buildImageCmd = dockerClient
                 .buildImageCmd()
                 .withTags(Set.of(imageName))
-                .withBaseDirectory(new File(DockerConfig.BASE_DIR_PATH))
-                .withDockerfile(new File(DockerConfig.DOCKERFILE_GRADLE_PATH));
+                .withBaseDirectory(baseDirectory)
+                .withDockerfile(dockerfileGradle);
 
         if (args.noCache()) {
             buildImageCmd.withNoCache(true);

@@ -1,21 +1,38 @@
-spring:
-  port: '8080'
-  debugPort: '8000'
-
-database:
-  port: '5432'
-  testPort: '5444'
-  dockerImage: postgres:latest
-  databaseContainer: ggbot-database
-  databaseTestContainer: ggbot-test-database
-  pgAdminImage: dpage/pgadmin4
-  pgAdminContainer: pgadmin
-  pgAdminPort: '5050'
-
 docker:
-  cacheVolume: gradle-build-cache
+  # Docker base directory path, relative to this Gradle subproject.
+  baseDirPath: '..'
+  # Dockerfile directory path, relative to this Gradle subproject.
+  dockerfileGradlePath: '../docker/Dockerfile-gradle'
   network: ggbot-network
   testNetwork: ggbot-test-network
-  mainImage: ggbot
-  buildImage: ggbot-gradle-build
-  buildCommand: gradle build --stacktrace --exclude-task test
+
+  buildImage:
+    name: ggbot-gradle-build
+    user: gradle
+    volume: gradle-build-cache
+    command:
+      - gradle
+      - build
+      - --stacktrace
+      - --exclude-task
+      - test
+
+  mainImage:
+    name: ggbot
+    port: '8080'
+    debugPort: '8000'
+
+  databaseContainer:
+    repoTag: postgres:latest
+    name: ggbot-database
+    port: '5432'
+
+  databaseTestContainer:
+    repoTag: postgres:latest
+    name: ggbot-test-database
+    port: '5444'
+
+  pgAdminContainer:
+    repoTag: dpage/pgadmin4
+    name: pgadmin
+    port: '5050'

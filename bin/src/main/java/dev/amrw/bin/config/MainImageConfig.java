@@ -4,12 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Spring configuration POJO.
+ * Main image configuration POJO.
  */
 @Getter
 @Setter
-public class SpringConfig {
+public class MainImageConfig {
 
+    private String name;
     private String port;
     private String debugPort;
 }

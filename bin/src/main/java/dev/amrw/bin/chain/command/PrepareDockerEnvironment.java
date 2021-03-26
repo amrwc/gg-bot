@@ -21,19 +21,17 @@ public class PrepareDockerEnvironment extends RunChainCommand {
     }
 
     private void createNetwork() {
-        final var dockerClient = runChainContext.getDockerClient();
-        final var networkName = runChainContext.getConfig().getDockerConfig().getNetwork();
+        final var networkName = dockerConfig.getNetwork();
         final var networks = dockerClient.listNetworksCmd().withNameFilter(networkName).exec();
         if (networks.isEmpty()) {
             dockerClient.createNetworkCmd().withName(networkName).exec();
         } else {
-            log.info("Network '{}' already exists, not creating", networkName);
+            log.info("Network already exists, not creating (name={})", networkName);
         }
     }
 
     private void createVolume() {
-        final var dockerClient = runChainContext.getDockerClient();
-        final var volumeName = runChainContext.getConfig().getDockerConfig().getCacheVolume();
+        final var volumeName = dockerConfig.getBuildImageConfig().getVolume();
         final var volumes = dockerClient
                 .listVolumesCmd()
                 .withFilter("name", List.of(volumeName))
@@ -42,7 +40,7 @@ public class PrepareDockerEnvironment extends RunChainCommand {
         if (volumes.isEmpty()) {
             dockerClient.createVolumeCmd().withName(volumeName).exec();
         } else {
-            log.info("Volume '{}' already exists, not creating", volumeName);
+            log.info("Volume already exists, not creating (name={})", volumeName);
         }
     }
 }

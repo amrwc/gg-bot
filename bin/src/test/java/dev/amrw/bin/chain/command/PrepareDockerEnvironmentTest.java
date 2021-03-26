@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.Network;
 import dev.amrw.bin.chain.context.RunChainContext;
+import dev.amrw.bin.config.BuildImageConfig;
 import dev.amrw.bin.config.Config;
 import dev.amrw.bin.config.DockerConfig;
 import org.apache.commons.chain.Command;
@@ -35,6 +36,8 @@ class PrepareDockerEnvironmentTest {
     private Config config;
     @Mock
     private DockerConfig dockerConfig;
+    @Mock
+    private BuildImageConfig buildImageConfig;
 
     @Mock
     private ListNetworksCmd listNetworksCmd;
@@ -86,7 +89,8 @@ class PrepareDockerEnvironmentTest {
     private void addCreateVolumeStubs(final boolean volumeExists) {
         final var volumeName = randomAlphabetic(16);
 
-        when(dockerConfig.getCacheVolume()).thenReturn(volumeName);
+        when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
+        when(buildImageConfig.getVolume()).thenReturn(volumeName);
         when(dockerClient.listVolumesCmd()).thenReturn(listVolumesCmd);
         when(listVolumesCmd.withFilter("name", List.of(volumeName))).thenReturn(listVolumesCmd);
         when(listVolumesCmd.exec()).thenReturn(listVolumesResponse);
