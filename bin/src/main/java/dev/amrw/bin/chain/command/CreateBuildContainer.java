@@ -1,6 +1,7 @@
 package dev.amrw.bin.chain.command;
 
 import com.github.dockerjava.api.model.Volume;
+import dev.amrw.bin.config.BuildImageConfig;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -13,22 +14,15 @@ import java.util.Set;
 @Log4j2
 public class CreateBuildContainer extends RunChainCommand {
 
-    /** Location of Gradle cache inside the Docker container. */
-    private static final String GRADLE_CACHE_PATH = "/home/gradle/.gradle";
-
     @Override
     public boolean execute(final Context context) {
         super.prepareContext(context);
-        final var buildImageName = dockerConfig.getBuildImageConfig().getName();
-        final var cacheVolumeName = dockerConfig.getBuildImageConfig().getVolume();
-        final var cacheVolumePath = String.format("%s:%s", cacheVolumeName, GRADLE_CACHE_PATH);
-        final var user = dockerConfig.getBuildImageConfig().getUser();
-        final var command = dockerConfig.getBuildImageConfig().getCommand();
-
+        final var buildImageConfig = dockerConfig.getBuildImageConfig();
         final var containers = dockerClient.listContainersCmd()
                 .withShowAll(true)
-                .withFilter("name", Set.of(buildImageName))
+                .withFilter("name", Set.of(buildImageConfig.getName()))
                 .exec();
+
         if (!containers.isEmpty()) {
             if (args.rebuild()) {
                 containers.forEach(container -> {
@@ -36,26 +30,37 @@ public class CreateBuildContainer extends RunChainCommand {
                     dockerClient.removeContainerCmd(container.getId()).exec();
                 });
             } else {
-                log.info("Container already exists, not building (name={})", buildImageName);
+                log.info("Container already exists, not building (name={})", buildImageConfig.getName());
                 // return Command.CONTINUE_PROCESSING;
                 return Command.PROCESSING_COMPLETE; // TEMP: Remove when the next command has been built
             }
         }
 
+        createContainer(buildImageConfig);
+
+        // return Command.CONTINUE_PROCESSING;
+        return Command.PROCESSING_COMPLETE; // TEMP: Remove when the next command has been built
+    }
+
+    private void createContainer(final BuildImageConfig buildImageConfig) {
+        final var buildImageName = buildImageConfig.getName();
+        final var detach = args.detach();
+        final var cacheVolumePath = String.format("%s:%s",
+                buildImageConfig.getVolume(), buildImageConfig.getGradleCachePath());
+        final var user = buildImageConfig.getUser();
+        final var command = buildImageConfig.getCommand();
+
         log.info("Creating container (name={}, detach={}, cacheVolume={}, user={}, command={})",
-                buildImageName, args.detach(), cacheVolumePath, user, command);
+                buildImageName, detach, cacheVolumePath, user, command);
         final var cacheVolume = new Volume(cacheVolumePath);
         dockerClient.createContainerCmd(buildImageName)
                 .withName(buildImageName)
                 .withVolumes(cacheVolume)
                 .withUser(user)
-                .withAttachStdin(args.detach())
-                .withAttachStdout(args.detach())
-                .withAttachStderr(args.detach())
+                .withAttachStdin(detach)
+                .withAttachStdout(detach)
+                .withAttachStderr(detach)
                 .withCmd(command)
                 .exec();
-
-        // return Command.CONTINUE_PROCESSING;
-        return Command.PROCESSING_COMPLETE; // TEMP: Remove when the next command has been built
     }
 }
