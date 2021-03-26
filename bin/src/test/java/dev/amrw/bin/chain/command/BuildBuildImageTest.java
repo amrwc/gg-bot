@@ -1,16 +1,11 @@
 package dev.amrw.bin.chain.command;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.command.RemoveImageCmd;
 import com.github.dockerjava.api.model.Image;
-import dev.amrw.bin.chain.context.RunChainContext;
 import dev.amrw.bin.config.BuildImageConfig;
-import dev.amrw.bin.config.Config;
-import dev.amrw.bin.config.DockerConfig;
-import dev.amrw.bin.dto.RunArgs;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,23 +31,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class BuildBuildImageTest {
+class BuildBuildImageTest extends CommandTestBase {
 
     @InjectMocks
     private BuildBuildImage command;
 
     @Mock
-    private RunChainContext context;
-    @Mock
-    private Config config;
-    @Mock
-    private DockerConfig dockerConfig;
-    @Mock
     private BuildImageConfig buildImageConfig;
-    @Mock
-    private RunArgs args;
-    @Mock
-    private DockerClient dockerClient;
 
     @Mock
     private ListImagesCmd listImagesCmd;
@@ -68,13 +53,8 @@ class BuildBuildImageTest {
 
     @BeforeEach
     void beforeEach() {
+        super.beforeEach();
         buildImageName = randomAlphabetic(16);
-
-        when(context.getArgs()).thenReturn(args);
-        when(context.getConfig()).thenReturn(config);
-        when(context.getDockerClient()).thenReturn(dockerClient);
-
-        when(config.getDockerConfig()).thenReturn(dockerConfig);
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getName()).thenReturn(buildImageName);

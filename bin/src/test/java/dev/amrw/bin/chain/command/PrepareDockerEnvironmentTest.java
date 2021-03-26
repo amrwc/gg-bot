@@ -1,13 +1,10 @@
 package dev.amrw.bin.chain.command;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.Network;
-import dev.amrw.bin.chain.context.RunChainContext;
 import dev.amrw.bin.config.BuildImageConfig;
-import dev.amrw.bin.config.Config;
-import dev.amrw.bin.config.DockerConfig;
 import org.apache.commons.chain.Command;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,19 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PrepareDockerEnvironmentTest {
+class PrepareDockerEnvironmentTest extends CommandTestBase {
 
     @InjectMocks
     private PrepareDockerEnvironment command;
 
-    @Mock
-    private RunChainContext context;
-    @Mock
-    private DockerClient dockerClient;
-    @Mock
-    private Config config;
-    @Mock
-    private DockerConfig dockerConfig;
     @Mock
     private BuildImageConfig buildImageConfig;
 
@@ -51,6 +40,11 @@ class PrepareDockerEnvironmentTest {
     @Mock
     private CreateVolumeCmd createVolumeCmd;
 
+    @BeforeEach
+    void beforeEach() {
+        super.beforeEach();
+    }
+
     @ParameterizedTest
     @CsvSource({
             "false, false",
@@ -60,9 +54,6 @@ class PrepareDockerEnvironmentTest {
     })
     @DisplayName("Should have prepared Docker environment")
     void shouldHavePreparedDockerEnvironment(final boolean networkExists, final boolean volumeExists) {
-        when(context.getDockerClient()).thenReturn(dockerClient);
-        when(context.getConfig()).thenReturn(config);
-        when(config.getDockerConfig()).thenReturn(dockerConfig);
         addCreateNetworkStubs(networkExists);
         addCreateVolumeStubs(volumeExists);
 

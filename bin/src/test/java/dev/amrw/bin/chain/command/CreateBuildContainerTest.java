@@ -1,16 +1,11 @@
 package dev.amrw.bin.chain.command;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Volume;
-import dev.amrw.bin.chain.context.RunChainContext;
 import dev.amrw.bin.config.BuildImageConfig;
-import dev.amrw.bin.config.Config;
-import dev.amrw.bin.config.DockerConfig;
-import dev.amrw.bin.dto.RunArgs;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,24 +26,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CreateBuildContainerTest {
+class CreateBuildContainerTest extends CommandTestBase {
 
     @InjectMocks
     private CreateBuildContainer command;
 
     @Mock
-    private RunChainContext context;
-    @Mock
-    private RunArgs args;
-    @Mock
-    private Config config;
-    @Mock
-    private DockerConfig dockerConfig;
-    @Mock
     private BuildImageConfig buildImageConfig;
 
-    @Mock
-    private DockerClient dockerClient;
     @Mock
     private ListContainersCmd listContainersCmd;
     @Mock
@@ -62,15 +47,12 @@ class CreateBuildContainerTest {
 
     @BeforeEach
     void beforeEach() {
+        super.beforeEach();
         buildImageName = randomAlphabetic(16);
 
-        when(context.getArgs()).thenReturn(args);
-        when(context.getConfig()).thenReturn(config);
-        when(config.getDockerConfig()).thenReturn(dockerConfig);
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getName()).thenReturn(buildImageName);
 
-        when(context.getDockerClient()).thenReturn(dockerClient);
         when(dockerClient.listContainersCmd()).thenReturn(listContainersCmd);
         when(listContainersCmd.withShowAll(true)).thenReturn(listContainersCmd);
         when(listContainersCmd.withFilter("name", Set.of(buildImageName))).thenReturn(listContainersCmd);
