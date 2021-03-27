@@ -1,7 +1,6 @@
 package dev.amrw.bin.chain.command;
 
 import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.model.Network;
 import dev.amrw.bin.config.BuildImageConfig;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,30 +12,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PrepareDockerEnvironmentTest extends CommandTestBase {
+class PrepareDockerEnvironmentTest extends RunChainCommandTestBase {
 
     @InjectMocks
-    private PrepareDockerEnvironment command;
+    private PrepareDockerEnvironment prepareDockerEnvironment;
 
     @Mock
     private BuildImageConfig buildImageConfig;
-
-    @Mock
-    private ListNetworksCmd listNetworksCmd;
     @Mock
     private CreateNetworkCmd createNetworkCmd;
-
-    @Mock
-    private ListVolumesCmd listVolumesCmd;
-    @Mock
-    private ListVolumesResponse listVolumesResponse;
     @Mock
     private CreateVolumeCmd createVolumeCmd;
 
@@ -57,7 +46,7 @@ class PrepareDockerEnvironmentTest extends CommandTestBase {
         addCreateNetworkStubs(networkExists);
         addCreateVolumeStubs(volumeExists);
 
-        assertThat(command.execute(context)).isEqualTo(Command.CONTINUE_PROCESSING);
+        assertThat(prepareDockerEnvironment.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         verify(createNetworkCmd, times(networkExists ? 0 : 1)).exec();
         verify(createVolumeCmd, times(volumeExists ? 0 : 1)).exec();
@@ -67,9 +56,7 @@ class PrepareDockerEnvironmentTest extends CommandTestBase {
         final var networkName = randomAlphabetic(16);
 
         when(dockerConfig.getNetwork()).thenReturn(networkName);
-        when(dockerClient.listNetworksCmd()).thenReturn(listNetworksCmd);
-        when(listNetworksCmd.withNameFilter(networkName)).thenReturn(listNetworksCmd);
-        when(listNetworksCmd.exec()).thenReturn(networkExists ? List.of(mock(Network.class)) : List.of());
+        when(runChainContext.networkExists()).thenReturn(networkExists);
 
         if (!networkExists) {
             when(dockerClient.createNetworkCmd()).thenReturn(createNetworkCmd);
@@ -82,11 +69,7 @@ class PrepareDockerEnvironmentTest extends CommandTestBase {
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getVolume()).thenReturn(volumeName);
-        when(dockerClient.listVolumesCmd()).thenReturn(listVolumesCmd);
-        when(listVolumesCmd.withFilter("name", List.of(volumeName))).thenReturn(listVolumesCmd);
-        when(listVolumesCmd.exec()).thenReturn(listVolumesResponse);
-        when(listVolumesResponse.getVolumes()).thenReturn(
-                volumeExists ? List.of(mock(InspectVolumeResponse.class)) : List.of());
+        when(runChainContext.buildCacheVolumeExists()).thenReturn(volumeExists);
 
         if (!volumeExists) {
             when(dockerClient.createVolumeCmd()).thenReturn(createVolumeCmd);

@@ -2,7 +2,6 @@ package dev.amrw.bin.chain.command;
 
 import com.github.dockerjava.api.command.BuildImageCmd;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
-import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.command.RemoveImageCmd;
 import com.github.dockerjava.api.model.Image;
 import dev.amrw.bin.config.BuildImageConfig;
@@ -31,16 +30,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class BuildBuildImageTest extends CommandTestBase {
+class BuildBuildImageTest extends RunChainCommandTestBase {
 
     @InjectMocks
-    private BuildBuildImage command;
+    private BuildBuildImage buildBuildImage;
 
     @Mock
     private BuildImageConfig buildImageConfig;
 
-    @Mock
-    private ListImagesCmd listImagesCmd;
     @Mock
     private Image image;
 
@@ -58,17 +55,14 @@ class BuildBuildImageTest extends CommandTestBase {
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getName()).thenReturn(buildImageName);
-
-        when(dockerClient.listImagesCmd()).thenReturn(listImagesCmd);
-        when(listImagesCmd.exec()).thenReturn(List.of(image));
-        when(image.getRepoTags()).thenReturn(new String[] {buildImageName + ":latest"});
     }
 
     @Test
     @DisplayName("Should have skipped building the build image if it already exists")
     void shouldHaveSkippedWhenImageExists() {
         when(args.rebuild()).thenReturn(false);
-        assertThat(command.execute(context)).isEqualTo(Command.CONTINUE_PROCESSING);
+        when(runChainContext.buildImageExists()).thenReturn(true);
+        assertThat(buildBuildImage.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
     }
 
     @ParameterizedTest
@@ -84,6 +78,7 @@ class BuildBuildImageTest extends CommandTestBase {
 
         when(args.noCache()).thenReturn(noCache);
         if (noCache) {
+            when(dockerClientHelper.findImagesByName(buildImageName)).thenReturn(List.of(image));
             when(image.getId()).thenReturn(existingImageId);
             when(dockerClient.removeImageCmd(existingImageId)).thenReturn(removeImageCmd);
         }
@@ -102,7 +97,7 @@ class BuildBuildImageTest extends CommandTestBase {
         when(buildImageCmd.exec(any(BuildImageResultCallback.class))).thenReturn(callback);
         when(callback.awaitImageId()).thenReturn(newImageId);
 
-        assertThat(command.execute(context)).isEqualTo(Command.CONTINUE_PROCESSING);
+        assertThat(buildBuildImage.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         if (noCache) {
             verify(buildImageCmd).withNoCache(true);

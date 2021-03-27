@@ -6,7 +6,6 @@ import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,17 +18,10 @@ public class BuildBuildImage extends RunChainCommand {
     @Override
     public boolean execute(final Context context) {
         super.prepareContext(context);
-        final var imageName = dockerConfig.getBuildImageConfig().getName();
+        final var buildImageName = dockerConfig.getBuildImageConfig().getName();
 
-        // Example repo tags: [ggbot-gradle-build:latest], [<none>:<none>], [postgres:latest], [dpage/pgadmin4:latest]
-        // Only keep repo tags that start with the image name
-        final var images = dockerClient.listImagesCmd().exec()
-                .stream()
-                .filter(image -> Arrays.stream(image.getRepoTags()).anyMatch(tag -> tag.startsWith(imageName)))
-                .collect(Collectors.toList());
-
-        if (!args.rebuild() && !images.isEmpty()) {
-            log.info("Image already exists, not building (name={})", imageName);
+        if (!args.rebuild() && runChainContext.buildImageExists()) {
+            log.info("Image already exists, not building (name={})", buildImageName);
             return Command.CONTINUE_PROCESSING;
         }
 
@@ -37,14 +29,15 @@ public class BuildBuildImage extends RunChainCommand {
             // When the `--no-cache` Docker option for the `build` command has been specified, the existing image with
             // the same tag is going to be re-tagged to `<none>:<none>` and left behind (it'll be dangling). This is
             // why it's best to remove the existing images before building from scratch as to not leave an untagged
-            // image behind. It's a build image, therefore there's no significant data to be lost.
+            // image behind.
+            final var images = dockerClientHelper.findImagesByName(buildImageName);
             images.forEach(image -> {
                 log.debug("Removing image (repoTags={}, id={})", image.getRepoTags(), image.getId());
                 dockerClient.removeImageCmd(image.getId()).exec();
             });
         }
 
-        buildImage(imageName);
+        buildImage(buildImageName);
 
         return Command.CONTINUE_PROCESSING;
     }
@@ -52,7 +45,9 @@ public class BuildBuildImage extends RunChainCommand {
     private void buildImage(final String imageName) {
         log.info("Building image (name={})", imageName);
         final var baseDirectory = new File(dockerConfig.getBaseDirPath());
+        log.trace("Docker base directory:\n{}", baseDirectory);
         final var dockerfileGradle = new File(dockerConfig.getDockerfileGradlePath());
+        log.trace("Dockerfile-gradle:\n{}", dockerfileGradle);
         final var buildImageCmd = dockerClient
                 .buildImageCmd()
                 .withTags(Set.of(imageName))
@@ -62,6 +57,7 @@ public class BuildBuildImage extends RunChainCommand {
         if (args.noCache()) {
             buildImageCmd.withNoCache(true);
         } else {
+            log.trace("Caching from:\n{}", args.cacheFrom());
             buildImageCmd.withCacheFrom(args.cacheFrom().stream().collect(Collectors.toUnmodifiableSet()));
         }
 
