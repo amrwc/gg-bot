@@ -23,6 +23,10 @@ public class RunChainContext extends ContextBase {
     private final DockerClient dockerClient;
     private final DockerClientHelper dockerClientHelper;
 
+    // TODO: Rethink this approach of passing state between commands. Is there a cleaner way of passing certain
+    //  information between steps that don't necessarily happen one after the other? What if a step must run
+    //  conditionally on one of these properties? Perhaps it's better to maintain a Set of steps to skip and add items
+    //  to it depending on the circumstances in the current step?
     @Setter
     @Accessors(fluent = true)
     private boolean networkExists;

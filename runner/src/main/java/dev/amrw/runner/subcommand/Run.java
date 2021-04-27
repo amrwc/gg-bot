@@ -4,8 +4,6 @@ import dev.amrw.runner.chain.RunChain;
 import dev.amrw.runner.chain.context.RunChainContext;
 import dev.amrw.runner.dto.RunArgs;
 import dev.amrw.runner.util.ConfigReader;
-import lombok.Getter;
-import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -19,8 +17,6 @@ import static picocli.CommandLine.ExitCode;
  * Build and run the application.
  */
 @Log4j2
-@Getter
-@Accessors(fluent = true)
 @Command(
         name = "run",
         mixinStandardHelpOptions = true,
@@ -51,7 +47,7 @@ public class Run implements Callable<Integer> {
         final var configReader = new ConfigReader();
         final var config = configReader.getDefaultConfig()
                 .orElseThrow(() -> new IllegalArgumentException("Error reading default config"));
-        final var args = new RunArgs(this);
+        final var args = buildRunArgs();
         final var context = new RunChainContext(config, args);
         final var chain = new RunChain();
 
@@ -64,5 +60,18 @@ public class Run implements Callable<Integer> {
         }
 
         return result ? ExitCode.OK : ExitCode.SOFTWARE;
+    }
+
+    private RunArgs buildRunArgs() {
+        return new RunArgs.Builder()
+                .withApplyMigrations(applyMigrations)
+                .withCacheFrom(cacheFrom)
+                .withDebug(debug)
+                .withDetach(detach)
+                .withNoCache(noCache)
+                .withRebuild(rebuild)
+                .withStartDb(startDb)
+                .withSuspend(suspend)
+                .build();
     }
 }
