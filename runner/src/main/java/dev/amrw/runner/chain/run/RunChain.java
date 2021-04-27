@@ -1,6 +1,6 @@
-package dev.amrw.runner.chain;
+package dev.amrw.runner.chain.run;
 
-import dev.amrw.runner.chain.command.*;
+import dev.amrw.runner.chain.run.command.*;
 import org.apache.commons.chain.impl.ChainBase;
 
 public class RunChain extends ChainBase {
@@ -12,6 +12,6 @@ public class RunChain extends ChainBase {
         addCommand(new BuildBuildImage());
         addCommand(new CreateBuildContainer());
         addCommand(new StartBuildContainer());
-        addCommand(new CopyJarFromBuildContainer());
+        addCommand(new CopyLibsArchiveFromBuildContainer());
     }
 }

@@ -1,4 +1,4 @@
-package dev.amrw.runner.chain.command;
+package dev.amrw.runner.chain.run.command;
 
 import dev.amrw.runner.config.BuildImageConfig;
 import lombok.extern.log4j.Log4j2;

@@ -1,4 +1,4 @@
-package dev.amrw.runner.chain.command;
+package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.model.Volume;
 import dev.amrw.runner.config.BuildImageConfig;

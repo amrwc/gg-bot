@@ -1,4 +1,4 @@
-package dev.amrw.runner.chain.command;
+package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
 import lombok.extern.log4j.Log4j2;

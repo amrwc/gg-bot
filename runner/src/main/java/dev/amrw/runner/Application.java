@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.*;
 
 /**
- * The bin commands', and the whole application's entry point.
+ * The runner commands', and the whole application's entry point.
  */
 @Command(
         name = "runner",
