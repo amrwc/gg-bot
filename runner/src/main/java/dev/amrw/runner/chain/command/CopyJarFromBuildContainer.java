@@ -1,11 +1,10 @@
 package dev.amrw.runner.chain.command;
 
+import dev.amrw.runner.util.FileUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -13,6 +12,12 @@ import java.io.IOException;
  */
 @Log4j2
 public class CopyJarFromBuildContainer extends RunChainCommand {
+
+    private final FileUtil fileUtil;
+
+    public CopyJarFromBuildContainer() {
+        this.fileUtil = new FileUtil();
+    }
 
     // TODO: Add logic to skip this step if the main container already exists
     @Override
@@ -24,18 +29,15 @@ public class CopyJarFromBuildContainer extends RunChainCommand {
 
         log.info("Copying build archive from build container (id={}, containerPath={})",
                 buildContainerId, pathToJarDir);
-        final var stream = dockerClient.copyArchiveFromContainerCmd(buildContainerId, pathToJarDir)
+        final var archiveStream = dockerClient.copyArchiveFromContainerCmd(buildContainerId, pathToJarDir)
                 .exec();
 
-        // TODO: Extract the path to the config file
-        final var hostPath = "bin";
-        log.info("Creating directory on host machine (path={})", hostPath);
-        final var hostTargetDirectory = new File(hostPath);
-        FileUtils.forceMkdir(hostTargetDirectory);
+        final var binPath = config.getBinPath();
+        // Make sure the directory exists, in case it's the first run.
+        fileUtil.mkdir(binPath);
 
-        // TODO: Extract to a constant somewhere
-        final var hostTargetFile = new File(hostTargetDirectory + "/archive.tar.gz");
-        FileUtils.copyInputStreamToFile(stream, hostTargetFile);
+        final var archiveName = dockerConfig.getBuildImageConfig().getLibsArchiveName();
+        fileUtil.toFile(archiveStream, binPath + "/" + archiveName);
 
         // return Command.CONTINUE_PROCESSING;
         return Command.PROCESSING_COMPLETE; // TEMP: Remove when the next command has been built

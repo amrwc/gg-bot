@@ -11,6 +11,7 @@ import lombok.Setter;
 @Setter
 public class Config {
 
+    private String binPath;
     @JsonProperty("docker")
     private DockerConfig dockerConfig;
 }

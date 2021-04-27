@@ -1,6 +1,7 @@
 package dev.amrw.runner.chain.command;
 
 import com.github.dockerjava.api.DockerClient;
+import dev.amrw.runner.config.Config;
 import dev.amrw.runner.helper.DockerClientHelper;
 import dev.amrw.runner.chain.context.RunChainContext;
 import dev.amrw.runner.config.DockerConfig;
@@ -17,6 +18,7 @@ abstract class RunChainCommand implements Command {
     RunArgs args;
     DockerClient dockerClient;
     DockerClientHelper dockerClientHelper;
+    Config config;
     DockerConfig dockerConfig;
 
     void prepareContext(final Context context) {
@@ -24,7 +26,7 @@ abstract class RunChainCommand implements Command {
         this.args = this.runChainContext.getArgs();
         this.dockerClient = this.runChainContext.getDockerClient();
         this.dockerClientHelper = this.runChainContext.getDockerClientHelper();
-        final var config = this.runChainContext.getConfig();
+        this.config = this.runChainContext.getConfig();
         this.dockerConfig = config.getDockerConfig();
     }
 }
