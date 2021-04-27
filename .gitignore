@@ -40,5 +40,6 @@ out/
 .vscode/
 
 ### The application's output ###
+bin/
 log/
 tmp/
