@@ -27,6 +27,10 @@ public class RunChainContext extends ContextBase {
     //  information between steps that don't necessarily happen one after the other? What if a step must run
     //  conditionally on one of these properties? Perhaps it's better to maintain a Set of steps to skip and add items
     //  to it depending on the circumstances in the current step?
+    //  <p>
+    //  OK, so they're only populated in the first command of the chain. Maybe I should enclose them in some sort of a
+    //  pre-chain POJO? This way they'll be immutable. Then, things such as `buildContainerId` can be mutable and stored
+    //  here as a field.
     @Setter
     @Accessors(fluent = true)
     private boolean networkExists;
@@ -39,6 +43,12 @@ public class RunChainContext extends ContextBase {
     @Setter
     @Accessors(fluent = true)
     private boolean buildContainerExists;
+    @Setter
+    @Accessors(fluent = true)
+    private boolean mainImageExists;
+    @Setter
+    @Accessors(fluent = true)
+    private boolean mainContainerExists;
 
     public RunChainContext(final Config config, final RunArgs args) {
         super();

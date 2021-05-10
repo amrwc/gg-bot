@@ -88,8 +88,7 @@ class CopyLibsArchiveFromBuildContainerTest extends RunChainCommandTestBase {
     void shouldHaveCopiedLibsArchiveFromBuildContainer() throws IOException {
         when(buildImageConfig.getLibsArchiveName()).thenReturn(archiveName);
 
-        // assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
-        assertThat(command.execute(runChainContext)).isEqualTo(Command.PROCESSING_COMPLETE); // TEMP: Remove when the next command has been built
+        assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         verify(fileUtil).mkdir(binPath);
         verify(fileUtil).toFile(archiveStream, binPath + "/" + archiveName);

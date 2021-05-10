@@ -16,11 +16,14 @@ public class CheckDockerComponents extends RunChainCommand {
         super.prepareContext(context);
 
         final var buildImageConfig = dockerConfig.getBuildImageConfig();
+        final var mainImageConfig = dockerConfig.getMainImageConfig();
 
         runChainContext.networkExists(checkNetworkExists());
         runChainContext.buildCacheVolumeExists(checkBuildCacheVolumeExists(buildImageConfig));
-        runChainContext.buildImageExists(checkBuildImageExists(buildImageConfig));
-        runChainContext.buildContainerExists(checkBuildContainerExists(buildImageConfig));
+        runChainContext.buildImageExists(dockerClientHelper.imageExists(buildImageConfig.getName()));
+        runChainContext.buildContainerExists(dockerClientHelper.containerExists(buildImageConfig.getName()));
+        runChainContext.mainImageExists(dockerClientHelper.imageExists(mainImageConfig.getName()));
+        runChainContext.mainContainerExists(dockerClientHelper.containerExists(mainImageConfig.getName()));
 
         return Command.CONTINUE_PROCESSING;
     }
@@ -39,21 +42,5 @@ public class CheckDockerComponents extends RunChainCommand {
         final var volumesFiltered = dockerClientHelper.findVolumesByName(buildCacheVolumeName);
         log.trace("Volumes filtered by name (name={}):\n{}", buildCacheVolumeName, volumesFiltered);
         return !volumesFiltered.isEmpty();
-    }
-
-    private boolean checkBuildImageExists(final BuildImageConfig buildImageConfig) {
-        final var buildImageName = buildImageConfig.getName();
-        log.debug("Checking whether the build image already exists (name={})", buildImageName);
-        final var imagesFiltered = dockerClientHelper.findImagesByName(buildImageName);
-        log.trace("Images filtered by name (name={}):\n{}", buildImageName, imagesFiltered);
-        return !imagesFiltered.isEmpty();
-    }
-
-    private boolean checkBuildContainerExists(final BuildImageConfig buildImageConfig) {
-        final var buildContainerName = buildImageConfig.getName();
-        log.debug("Checking whether the build container already exists (name={})", buildContainerName);
-        final var containers = dockerClientHelper.findContainersByName(buildContainerName);
-        log.trace("Containers filtered by name (name={}):\n{}", buildContainerName, containers);
-        return !containers.isEmpty();
     }
 }

@@ -13,6 +13,7 @@ public class DockerConfig {
 
     private String baseDirPath;
     private String dockerfileGradlePath;
+    private String dockerfileMainPath;
     private String network;
     private String testNetwork;
 

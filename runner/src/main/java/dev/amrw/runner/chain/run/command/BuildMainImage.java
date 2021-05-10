@@ -13,16 +13,15 @@ import java.util.stream.Collectors;
  * Builds the build image.
  */
 @Log4j2
-public class BuildBuildImage extends RunChainCommand {
+public class BuildMainImage extends RunChainCommand {
 
-    // TODO: DRY the code here and in `BuildMainImage`.
     @Override
     public boolean execute(final Context context) {
         super.prepareContext(context);
-        final var buildImageName = dockerConfig.getBuildImageConfig().getName();
+        final var mainImageName = dockerConfig.getMainImageConfig().getName();
 
-        if (!args.rebuild() && runChainContext.buildImageExists()) {
-            log.info("Image already exists, not building (name={})", buildImageName);
+        if (!args.rebuild() && runChainContext.mainImageExists()) {
+            log.info("Image already exists, not building (name={})", mainImageName);
             return Command.CONTINUE_PROCESSING;
         }
 
@@ -31,14 +30,14 @@ public class BuildBuildImage extends RunChainCommand {
             // the same tag is going to be re-tagged to `<none>:<none>` and left behind (it'll be dangling). This is
             // why it's best to remove the existing images before building from scratch as to not leave an untagged
             // image behind.
-            final var images = dockerClientHelper.findImagesByName(buildImageName);
+            final var images = dockerClientHelper.findImagesByName(mainImageName);
             images.forEach(image -> {
                 log.debug("Removing image (repoTags={}, id={})", image.getRepoTags(), image.getId());
                 dockerClient.removeImageCmd(image.getId()).exec();
             });
         }
 
-        buildImage(buildImageName);
+        buildImage(mainImageName);
 
         return Command.CONTINUE_PROCESSING;
     }
@@ -47,27 +46,28 @@ public class BuildBuildImage extends RunChainCommand {
         log.info("Building image (name={})", imageName);
         final var baseDirectory = new File(dockerConfig.getBaseDirPath());
         log.trace("Docker base directory: {}", baseDirectory);
-        final var dockerfileGradle = new File(dockerConfig.getDockerfileGradlePath());
-        log.trace("Dockerfile-gradle: {}", dockerfileGradle);
-        final var buildImageCmd = dockerClient.buildImageCmd()
+        final var dockerfileMain = new File(dockerConfig.getDockerfileMainPath());
+        log.trace("Dockerfile: {}", dockerfileMain);
+        final var mainImageCmd = dockerClient.buildImageCmd()
                 // NOTE: There's a dependency on `baseDirectory` inside `withDockerfile()`, therefore
                 // `withBaseDirectory()` _must_ come before `withDockerfile()`, if applicable. Otherwise, this error
                 // may be thrown:
                 // > Dockerfile is excluded by pattern '*' in .dockerignore file
                 .withTags(Set.of(imageName))
+                .withBuildArg("debug", Boolean.toString(args.debug()))
+                .withBuildArg("suspend", Boolean.toString(args.suspend()))
                 .withBaseDirectory(baseDirectory)
-                .withDockerfile(dockerfileGradle);
+                .withDockerfile(dockerfileMain);
 
         if (args.noCache()) {
-            buildImageCmd.withNoCache(true);
+            mainImageCmd.withNoCache(true);
         } else {
             log.trace("Caching from:\n{}", args.cacheFrom());
-            buildImageCmd.withCacheFrom(args.cacheFrom().stream().collect(Collectors.toUnmodifiableSet()));
+            mainImageCmd.withCacheFrom(args.cacheFrom().stream().collect(Collectors.toUnmodifiableSet()));
         }
 
-        // TODO: Try displaying the logs
-        //  Extend `BuildImageResultCallback` and @Override `onNext()`
-        final var imageId = buildImageCmd.exec(new BuildImageResultCallback()).awaitImageId();
+        // TODO: Prettify the `BuildImageResultCallback` logs in the console
+        final var imageId = mainImageCmd.exec(new BuildImageResultCallback()).awaitImageId();
         log.debug("Created image (name={}, id={})", imageName, imageId);
     }
 }

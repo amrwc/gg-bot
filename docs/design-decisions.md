@@ -109,4 +109,22 @@ the Amazon's recommendation found here:
 Therefore, revoking the default `CREATE` permission on the `public` schema
 allows for more granular permission settings for specific roles.
 
+## Rewriting Python `bin`/`runner` scripts in Java
+
+The decision was to turn the bunch of hacked Python scripts into a
+well-written, properly unit-tested, object-oriented set of command-line
+applications.
+
+[Picocli][picocli] turned out to be a perfect choice for bootstrapping a CLI
+application -- it's simple to start with, and supports 'sub-commands', which
+are essentially sub-applications.
+
+[docker-java][docker_java] was used for interacting with Docker locally. It's
+not beginner-friendly, and has basically no documentation on its own. The
+maintainers emphasise that it's a thin, type-safe layer on top of the low-level
+Docker API. Therefore, knowing the low-level Docker API is a prerequisite to
+be productive with the framework.
+
+[docker_java]: https://github.com/docker-java/docker-java
 [hashicorp_vault]: https://www.vaultproject.io
+[picocli]: https://picocli.info

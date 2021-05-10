@@ -3,8 +3,9 @@ binPath: './bin'
 docker:
   # Docker base directory path, relative to this Gradle subproject.
   baseDirPath: '..'
-  # Dockerfile directory path, relative to this Gradle subproject.
+  # Dockerfile paths, relative to this Gradle subproject.
   dockerfileGradlePath: '../docker/Dockerfile-gradle'
+  dockerfileMainPath: '../docker/Dockerfile'
   network: ggbot-network
   testNetwork: ggbot-test-network
 

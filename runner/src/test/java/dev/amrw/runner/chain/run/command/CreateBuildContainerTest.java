@@ -4,7 +4,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.HostConfig;
 import dev.amrw.runner.config.BuildImageConfig;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,14 +42,16 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     private CreateContainerCmd createContainerCmd;
 
     @Captor
-    private ArgumentCaptor<Volume> volumeCaptor;
+    private ArgumentCaptor<HostConfig> hostConfigCaptor;
 
     private String buildImageName;
+    private String gradleCachePath;
 
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
         buildImageName = randomAlphabetic(16);
+        gradleCachePath = randomAlphabetic(16);
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getName()).thenReturn(buildImageName);
@@ -69,34 +71,30 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     @Test
     @DisplayName("Should have created the build container")
     void shouldHaveCreatedContainer() {
-        final var cacheVolumePath = addCommonStubs(true);
+        addCommonStubs(true);
 
         assertThat(createBuildContainer.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         verify(removeContainerCmd).exec();
-        verify(createContainerCmd).withVolumes(volumeCaptor.capture());
-        assertThat(volumeCaptor.getValue().getPath()).isEqualTo(cacheVolumePath);
-        verifyNoMoreInteractions(dockerClient);
+        addCommonVerifications();
     }
 
     @Test
     @DisplayName("Should have created the build container, without removing an existing one")
     void shouldHaveCreatedContainerWithoutRemoving() {
-        final var cacheVolumePath = addCommonStubs(false);
+        addCommonStubs(false);
 
         assertThat(createBuildContainer.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
-        verify(createContainerCmd).withVolumes(volumeCaptor.capture());
-        assertThat(volumeCaptor.getValue().getPath()).isEqualTo(cacheVolumePath);
-        verifyNoMoreInteractions(dockerClient);
+        addCommonVerifications();
+        verifyNoInteractions(removeContainerCmd);
     }
 
-    private String addCommonStubs(final boolean buildContainerExists) {
+    private void addCommonStubs(final boolean buildContainerExists) {
         final var containerId = randomAlphanumeric(16);
 
         final var detach = nextBoolean();
         final var cacheVolumeName = randomAlphanumeric(16);
-        final var gradleCachePath = randomAlphanumeric(16);
         final var user = randomAlphanumeric(16);
         final var containerCommand = List.of(randomAlphanumeric(16));
 
@@ -109,21 +107,27 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
         }
 
         when(args.detach()).thenReturn(detach);
-        when(buildImageConfig.getVolume()).thenReturn(cacheVolumeName);
-        when(buildImageConfig.getGradleCachePath()).thenReturn(gradleCachePath);
         when(buildImageConfig.getUser()).thenReturn(user);
         when(buildImageConfig.getCommand()).thenReturn(containerCommand);
 
+        when(buildImageConfig.getVolume()).thenReturn(cacheVolumeName);
+        when(buildImageConfig.getGradleCachePath()).thenReturn(gradleCachePath);
+
         when(dockerClient.createContainerCmd(buildImageName)).thenReturn(createContainerCmd);
         when(createContainerCmd.withName(buildImageName)).thenReturn(createContainerCmd);
-        when(createContainerCmd.withVolumes(any(Volume.class))).thenReturn(createContainerCmd);
+        when(createContainerCmd.withHostConfig(any(HostConfig.class))).thenReturn(createContainerCmd);
         when(createContainerCmd.withUser(user)).thenReturn(createContainerCmd);
         when(createContainerCmd.withAttachStdin(detach)).thenReturn(createContainerCmd);
         when(createContainerCmd.withAttachStdout(detach)).thenReturn(createContainerCmd);
         when(createContainerCmd.withAttachStderr(detach)).thenReturn(createContainerCmd);
         when(createContainerCmd.withCmd(containerCommand)).thenReturn(createContainerCmd);
         when(createContainerCmd.exec()).thenReturn(mock(CreateContainerResponse.class));
+    }
 
-        return cacheVolumeName + ":" + gradleCachePath;
+    private void addCommonVerifications() {
+        verify(createContainerCmd).withHostConfig(hostConfigCaptor.capture());
+        assertThat(hostConfigCaptor.getValue().getBinds()).hasSize(1);
+        assertThat(hostConfigCaptor.getValue().getBinds()[0].getVolume().getPath()).isEqualTo(gradleCachePath);
+        verifyNoMoreInteractions(dockerClient);
     }
 }

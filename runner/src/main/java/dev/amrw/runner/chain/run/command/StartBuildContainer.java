@@ -1,6 +1,7 @@
 package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
+import dev.amrw.runner.callback.FrameResultCallback;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -8,7 +9,7 @@ import org.apache.commons.chain.Context;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Creates the build container.
+ * Starts the build container.
  */
 @Log4j2
 public class StartBuildContainer extends RunChainCommand {
@@ -20,8 +21,14 @@ public class StartBuildContainer extends RunChainCommand {
 
         final var containerId = findContainerId();
 
-        log.info("Starting container (id={})", containerId);
+        log.info("Starting build container (id={})", containerId);
         dockerClient.startContainerCmd(containerId).exec();
+
+        dockerClient.attachContainerCmd(containerId)
+                .withStdOut(true)
+                .withStdErr(true)
+                .withFollowStream(true)
+                .exec(new FrameResultCallback());
 
         log.debug("Awaiting build container to finish running (id={})", containerId);
         final var statusCode = dockerClient.waitContainerCmd(containerId)

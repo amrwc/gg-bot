@@ -1,9 +1,11 @@
 package dev.amrw.runner.chain.run.command;
 
+import com.github.dockerjava.api.command.AttachContainerCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.command.WaitContainerCmd;
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
 import com.github.dockerjava.api.model.Container;
+import dev.amrw.runner.callback.FrameResultCallback;
 import dev.amrw.runner.config.BuildImageConfig;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +40,8 @@ class StartBuildContainerTest extends RunChainCommandTestBase {
     @Mock
     private StartContainerCmd startContainerCmd;
     @Mock
+    private AttachContainerCmd attachContainerCmd;
+    @Mock
     private WaitContainerCmd waitContainerCmd;
     @Mock
     private WaitContainerResultCallback waitContainerResultCallback;
@@ -60,12 +64,19 @@ class StartBuildContainerTest extends RunChainCommandTestBase {
         when(container.getId()).thenReturn(containerId);
 
         when(dockerClient.startContainerCmd(containerId)).thenReturn(startContainerCmd);
+
+        when(dockerClient.attachContainerCmd(containerId)).thenReturn(attachContainerCmd);
+        when(attachContainerCmd.withStdOut(true)).thenReturn(attachContainerCmd);
+        when(attachContainerCmd.withStdErr(true)).thenReturn(attachContainerCmd);
+        when(attachContainerCmd.withFollowStream(true)).thenReturn(attachContainerCmd);
+
         when(dockerClient.waitContainerCmd(containerId)).thenReturn(waitContainerCmd);
         when(waitContainerCmd.exec(any(WaitContainerResultCallback.class))).thenReturn(waitContainerResultCallback);
         when(waitContainerResultCallback.awaitStatusCode(2, TimeUnit.MINUTES)).thenReturn(statusCode);
 
         assertThat(startBuildContainer.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
+        verify(attachContainerCmd).exec(any(FrameResultCallback.class));
         verify(startContainerCmd).exec();
     }
 }

@@ -24,7 +24,6 @@ public class CopyLibsArchiveFromBuildContainer extends RunChainCommand {
     public boolean execute(final Context context) {
         super.prepareContext(context);
 
-        final var runChainHelper = getRunChainHelper();
         final var buildContainerId = runChainHelper.findBuildContainerId();
         final var buildImageConfig = dockerConfig.getBuildImageConfig();
         final var pathToJarDir = buildImageConfig.getLibsPath();
@@ -44,14 +43,14 @@ public class CopyLibsArchiveFromBuildContainer extends RunChainCommand {
         }
 
         final var archiveName = buildImageConfig.getLibsArchiveName();
+        final var archivePath = binPath + "/" + archiveName;
         try {
-            fileUtil.toFile(archiveStream, binPath + "/" + archiveName);
+            fileUtil.toFile(archiveStream, archivePath);
         } catch (final IOException exception) {
-            log.error("Error creating bin directory", exception);
+            log.error("Error saving libs archive (path={})", archivePath, exception);
             return Command.PROCESSING_COMPLETE;
         }
 
-        // return Command.CONTINUE_PROCESSING;
-        return Command.PROCESSING_COMPLETE; // TEMP: Remove when the next command has been built
+        return Command.CONTINUE_PROCESSING;
     }
 }

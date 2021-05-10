@@ -76,6 +76,18 @@ public class DockerClientHelper {
     }
 
     /**
+     * Checks whether an image with the given name exists.
+     * @param imageName Docker image's name.
+     * @return whether the image exists
+     */
+    public boolean imageExists(final String imageName) {
+        log.debug("Checking whether the image exists (name={})", imageName);
+        final var imagesFiltered = findImagesByName(imageName);
+        log.trace("Images filtered by name (name={}):\n{}", imageName, imagesFiltered);
+        return !imagesFiltered.isEmpty();
+    }
+
+    /**
      * Finds containers with the given name.
      * <p>
      * NOTE: Docker doesn't allow duplicated names, therefore this list should contain at most one element.
@@ -88,5 +100,17 @@ public class DockerClientHelper {
                 .withShowAll(true)
                 .withFilter("name", Set.of(containerName))
                 .exec();
+    }
+
+    /**
+     * Checks whether a container with the given name exists.
+     * @param containerName Docker container's name.
+     * @return whether the container exists
+     */
+    public boolean containerExists(final String containerName) {
+        log.debug("Checking whether the container exists (name={})", containerName);
+        final var containers = findContainersByName(containerName);
+        log.trace("Containers filtered by name (name={}):\n{}", containerName, containers);
+        return !containers.isEmpty();
     }
 }
