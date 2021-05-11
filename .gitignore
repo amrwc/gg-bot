@@ -40,5 +40,9 @@ out/
 .vscode/
 
 ### The application's output ###
+bin/
 log/
 tmp/
+
+### OS-specific ###
+.DS_Store
