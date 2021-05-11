@@ -3,6 +3,7 @@ package dev.amrw.runner.callback;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.Frame;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,7 +32,10 @@ public class FrameResultCallback implements ResultCallback<Frame> {
 
     @Override
     public void onNext(final Frame object) {
-        System.out.println(new String(object.getPayload()));
+        final var output = new String(object.getPayload());
+        if (StringUtils.isNotBlank(output)) {
+            System.out.println(output.trim());
+        }
     }
 
     @Override

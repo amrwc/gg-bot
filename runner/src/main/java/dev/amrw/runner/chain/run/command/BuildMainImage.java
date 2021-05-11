@@ -1,6 +1,6 @@
 package dev.amrw.runner.chain.run.command;
 
-import com.github.dockerjava.api.command.BuildImageResultCallback;
+import dev.amrw.runner.callback.BuildImageResultCallback;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -66,7 +66,6 @@ public class BuildMainImage extends RunChainCommand {
             mainImageCmd.withCacheFrom(args.cacheFrom().stream().collect(Collectors.toUnmodifiableSet()));
         }
 
-        // TODO: Prettify the `BuildImageResultCallback` logs in the console
         final var imageId = mainImageCmd.exec(new BuildImageResultCallback()).awaitImageId();
         log.debug("Created image (name={}, id={})", imageName, imageId);
     }

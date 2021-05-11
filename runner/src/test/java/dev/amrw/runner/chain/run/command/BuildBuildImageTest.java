@@ -1,9 +1,9 @@
 package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.BuildImageCmd;
-import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.RemoveImageCmd;
 import com.github.dockerjava.api.model.Image;
+import dev.amrw.runner.callback.BuildImageResultCallback;
 import dev.amrw.runner.config.BuildImageConfig;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
