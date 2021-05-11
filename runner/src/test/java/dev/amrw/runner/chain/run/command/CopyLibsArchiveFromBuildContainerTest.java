@@ -3,6 +3,7 @@ package dev.amrw.runner.chain.run.command;
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
 import dev.amrw.runner.chain.run.helper.RunChainHelper;
 import dev.amrw.runner.config.BuildImageConfig;
+import dev.amrw.runner.exception.ContainerArchiveCopyingException;
 import dev.amrw.runner.util.FileUtil;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import java.io.InputStream;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +40,7 @@ class CopyLibsArchiveFromBuildContainerTest extends RunChainCommandTestBase {
     @Mock
     private CopyArchiveFromContainerCmd copyArchiveFromContainerCmd;
 
+    private String libsPath;
     private InputStream archiveStream;
     private String binPath;
     private String archiveName;
@@ -47,7 +50,7 @@ class CopyLibsArchiveFromBuildContainerTest extends RunChainCommandTestBase {
         super.beforeEach();
 
         final var buildContainerId = randomAlphanumeric(16);
-        final var libsPath = randomAlphabetic(16);
+        libsPath = randomAlphabetic(16);
         archiveStream = mock(InputStream.class);
         binPath = randomAlphabetic(16);
         archiveName = randomAlphabetic(16);
@@ -63,22 +66,24 @@ class CopyLibsArchiveFromBuildContainerTest extends RunChainCommandTestBase {
     }
 
     @Test
-    @DisplayName("Should have exception when creating `bin` directory")
+    @DisplayName("Should have rethrown exception when creating `bin` directory")
     void shouldHaveHandledExceptionWhenCreatingBinDir() throws IOException {
         doThrow(new IOException()).when(fileUtil).mkdir(binPath);
 
-        assertThat(command.execute(runChainContext)).isEqualTo(Command.PROCESSING_COMPLETE);
+        assertThatThrownBy(() -> command.execute(runChainContext)).isInstanceOf(IOException.class);
 
         verifyNoMoreInteractions(buildImageConfig, fileUtil);
     }
 
     @Test
-    @DisplayName("Should have handled exception when saving `libs` archive to file")
+    @DisplayName("Should have thrown correct exception when saving `libs` archive to file")
     void shouldHaveHandledExceptionWhenSavingArchiveToFile() throws IOException {
         when(buildImageConfig.getLibsArchiveName()).thenReturn(archiveName);
         doThrow(new IOException()).when(fileUtil).toFile(archiveStream, binPath + "/" + archiveName);
 
-        assertThat(command.execute(runChainContext)).isEqualTo(Command.PROCESSING_COMPLETE);
+        assertThatThrownBy(() -> command.execute(runChainContext))
+                .isInstanceOf(ContainerArchiveCopyingException.class)
+                .hasMessageContainingAll(libsPath, binPath + "/" + archiveName);
 
         verify(fileUtil).mkdir(binPath);
     }
