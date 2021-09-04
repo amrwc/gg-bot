@@ -15,8 +15,8 @@ on:
 
 env:
   MAIN_IMAGE: 'ggbot'
-  REGISTRY: 'ghcr.i'o
-  TMP_CACHE: 'cache-tm'p
+  REGISTRY: 'ghcr.io'
+  TMP_CACHE: 'cache-tmp'
   USE_DOCKER_CACHE: ${{ secrets.USE_DOCKER_CACHE }}
 
   # To be executed as a step
