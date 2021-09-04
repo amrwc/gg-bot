@@ -1,4 +1,4 @@
-FROM gradle:7.0-jdk11
+FROM gradle:7.2-jdk11
 
 RUN mkdir -p /home/gradle/project/src/main
 COPY ggbot/build.gradle /home/gradle/project
