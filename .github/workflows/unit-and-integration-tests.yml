@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/unit-and-integration-tests.yml'
-      - 'binpython/**'
+      - 'bin/**'
       - 'gradle/**'
       - '**/src/**'
       - '**/build.gradle'
@@ -89,7 +89,7 @@ jobs:
         run: |
           python3 -m pip install -U pip
           python3 -m pip install -U setuptools
-          pip3 install -r ./binpython/requirements.txt
+          pip3 install -r ./bin/requirements.txt
 
       - name: Grant Gradle wrapper (gradlew) sufficient permissions
         run: chmod +x ./gradlew
@@ -98,4 +98,4 @@ jobs:
         run: ./gradlew build --info
 
       - name: Run integration tests
-        run: ./binpython/integration_tests.py
+        run: ./bin/integration_tests.py

@@ -3,7 +3,7 @@ spring:
 #  datasource:
 #    # Use `localhost` instead of using the Docker network name when running a local PostgreSQL instance.
 #    url: 'jdbc:postgresql://docker-network:5432/dbname'
-#    username: 'springuser'
+#    username: 'spring_user'
 #    password: 'SpringUserPassword'
   jpa:
     hibernate:
