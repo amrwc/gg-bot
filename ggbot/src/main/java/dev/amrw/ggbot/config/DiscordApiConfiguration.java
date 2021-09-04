@@ -39,6 +39,7 @@ public class DiscordApiConfiguration {
         if (botConfig.getAuthToken().isEmpty()) {
             // Don't instantiate connection with Discord if the auth token is not present. Useful for integration tests
             // that don't require the connection.
+            log.warn("Discord auth token missing in the BOT's config; not logging in");
             return null;
         }
         log.info("Initialising connection with Discord");
