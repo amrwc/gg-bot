@@ -67,10 +67,12 @@ class DockerClientHelperTest {
         final var listImagesCmd = mock(ListImagesCmd.class);
         final var goodImage = mock(Image.class);
         final var badImage = mock(Image.class);
+        final var worseImage = mock(Image.class);
 
         when(dockerClient.listImagesCmd()).thenReturn(listImagesCmd);
-        when(listImagesCmd.exec()).thenReturn(List.of(badImage, goodImage));
+        when(listImagesCmd.exec()).thenReturn(List.of(badImage, goodImage, worseImage));
         when(badImage.getRepoTags()).thenReturn(new String[] {randomAlphanumeric(24)});
+        when(worseImage.getRepoTags()).thenReturn(null);
         when(goodImage.getRepoTags()).thenReturn(new String[] {imageName + randomAlphanumeric(8)});
 
         assertThat(helper.findImagesByName(imageName)).isEqualTo(List.of(goodImage));

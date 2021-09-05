@@ -71,7 +71,8 @@ public class DockerClientHelper {
         log.debug("Finding images by name (name={})", imageName);
         return dockerClient.listImagesCmd().exec()
                 .stream()
-                .filter(image -> Arrays.stream(image.getRepoTags()).anyMatch(tag -> tag.startsWith(imageName)))
+                .filter(image -> image.getRepoTags() != null
+                        && Arrays.stream(image.getRepoTags()).anyMatch(tag -> tag.startsWith(imageName)))
                 .collect(Collectors.toList());
     }
 
