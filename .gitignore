@@ -41,6 +41,7 @@ out/
 ### The application's output ###
 log/
 tmp/
+runner/bin/
 
 ### OS-specific ###
 .DS_Store
