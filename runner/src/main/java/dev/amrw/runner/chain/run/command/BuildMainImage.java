@@ -30,6 +30,7 @@ public class BuildMainImage extends RunChainCommand {
             // the same tag is going to be re-tagged to `<none>:<none>` and left behind (it'll be dangling). This is
             // why it's best to remove the existing images before building from scratch as to not leave an untagged
             // image behind.
+            log.debug("Finding images by name (name={})", mainImageName);
             final var images = dockerClientHelper.findImagesByName(mainImageName);
             images.forEach(image -> {
                 log.debug("Removing image (repoTags={}, id={})", image.getRepoTags(), image.getId());

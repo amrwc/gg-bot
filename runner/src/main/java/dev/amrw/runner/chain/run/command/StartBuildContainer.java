@@ -42,6 +42,7 @@ public class StartBuildContainer extends RunChainCommand {
     private String findContainerId() {
         final var buildImageConfig = dockerConfig.getBuildImageConfig();
         final var buildContainerName = buildImageConfig.getName();
+        log.debug("Finding containers by name (name={})", buildContainerName);
         final var containers = dockerClientHelper.findContainersByName(buildContainerName);
         final var buildContainer = containers.get(0);
         return buildContainer.getId();

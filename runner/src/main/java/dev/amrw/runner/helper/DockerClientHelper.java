@@ -31,10 +31,11 @@ public class DockerClientHelper {
      * @return {@link List} of {@link Network} matching the given name
      */
     public List<Network> findNetworksByName(final String networkName) {
-        log.debug("Finding networks by name (name={})", networkName);
-        return dockerClient.listNetworksCmd()
+        final var networks = dockerClient.listNetworksCmd()
                 .withNameFilter(networkName)
                 .exec();
+        log.trace("Networks filtered by name (name={}):\n{}", networkName, networks);
+        return networks;
     }
 
     /**
@@ -43,18 +44,19 @@ public class DockerClientHelper {
      * @return {@link List} of {@link InspectVolumeResponse} matching the given name
      */
     public List<InspectVolumeResponse> findVolumesByName(final String volumeName) {
-        log.debug("Finding volumes by name (name={})", volumeName);
-        return dockerClient
+        final var volumes = dockerClient
                 .listVolumesCmd()
                 .withFilter("name", List.of(volumeName))
                 .exec()
                 .getVolumes();
+        log.trace("Volumes filtered by name (name={}):\n{}", volumeName, volumes);
+        return volumes;
     }
 
     /**
      * Finds images by the given name.
      * <p>
-     * NOTE: This method uses {@link Image#repoTags} to filter by name, because the
+     * NOTE: This method uses {@link Image#getRepoTags} to filter by name, because the
      * {@link ListImagesCmd#withImageNameFilter(String)} method doesn't actually filter the images in an intuitive way.
      * <p>
      * <h2>Example repo tags</h2>
@@ -68,7 +70,6 @@ public class DockerClientHelper {
      * @return {@link List} of {@link Image}s matching the given name
      */
     public List<Image> findImagesByName(final String imageName) {
-        log.debug("Finding images by name (name={})", imageName);
         return dockerClient.listImagesCmd().exec()
                 .stream()
                 .filter(image -> image.getRepoTags() != null
@@ -82,7 +83,6 @@ public class DockerClientHelper {
      * @return whether the image exists
      */
     public boolean imageExists(final String imageName) {
-        log.debug("Checking whether the image exists (name={})", imageName);
         final var imagesFiltered = findImagesByName(imageName);
         log.trace("Images filtered by name (name={}):\n{}", imageName, imagesFiltered);
         return !imagesFiltered.isEmpty();
@@ -96,7 +96,6 @@ public class DockerClientHelper {
      * @return {@link List} of {@link Container}s matching the given name
      */
     public List<Container> findContainersByName(final String containerName) {
-        log.debug("Finding containers by name (name={})", containerName);
         return dockerClient.listContainersCmd()
                 .withShowAll(true)
                 .withFilter("name", Set.of(containerName))
@@ -109,7 +108,7 @@ public class DockerClientHelper {
      * @return whether the container exists
      */
     public boolean containerExists(final String containerName) {
-        log.debug("Checking whether the container exists (name={})", containerName);
+        log.debug("Finding containers by name (name={})", containerName);
         final var containers = findContainersByName(containerName);
         log.trace("Containers filtered by name (name={}):\n{}", containerName, containers);
         return !containers.isEmpty();

@@ -32,6 +32,7 @@ public class CreateMainContainer extends RunChainCommand {
         if (runChainContext.mainContainerExists()) {
             final var mainContainerName = mainImageConfig.getName();
             if (args.rebuild()) {
+                log.debug("Finding containers by name (name={})", mainContainerName);
                 final var containers = dockerClientHelper.findContainersByName(mainContainerName);
                 containers.forEach(container -> {
                     log.debug("Removing container (id={}, names={})", container.getId(), container.getNames());

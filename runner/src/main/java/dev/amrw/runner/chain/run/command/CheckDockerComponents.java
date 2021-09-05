@@ -20,9 +20,13 @@ public class CheckDockerComponents extends RunChainCommand {
 
         runChainContext.networkExists(checkNetworkExists());
         runChainContext.buildCacheVolumeExists(checkBuildCacheVolumeExists(buildImageConfig));
+        log.debug("Checking whether the image exists (name={})", buildImageConfig.getName());
         runChainContext.buildImageExists(dockerClientHelper.imageExists(buildImageConfig.getName()));
+        log.debug("Checking whether the container exists (name={})", buildImageConfig.getName());
         runChainContext.buildContainerExists(dockerClientHelper.containerExists(buildImageConfig.getName()));
+        log.debug("Checking whether the image exists (name={})", mainImageConfig.getName());
         runChainContext.mainImageExists(dockerClientHelper.imageExists(mainImageConfig.getName()));
+        log.debug("Checking whether the container exists (name={})", mainImageConfig.getName());
         runChainContext.mainContainerExists(dockerClientHelper.containerExists(mainImageConfig.getName()));
 
         return Command.CONTINUE_PROCESSING;
@@ -31,6 +35,7 @@ public class CheckDockerComponents extends RunChainCommand {
     private boolean checkNetworkExists() {
         final var networkName = dockerConfig.getNetwork();
         log.debug("Checking whether the network already exists (name={})", networkName);
+        log.debug("Finding networks by name (name={})", networkName);
         final var networksFiltered = dockerClientHelper.findNetworksByName(networkName);
         log.trace("Networks filtered (name={}):\n{}", networkName, networksFiltered);
         return !networksFiltered.isEmpty();
@@ -39,6 +44,7 @@ public class CheckDockerComponents extends RunChainCommand {
     private boolean checkBuildCacheVolumeExists(final BuildImageConfig buildImageConfig) {
         final var buildCacheVolumeName = buildImageConfig.getVolume();
         log.debug("Checking whether the build cache volume already exists (name={})", buildCacheVolumeName);
+        log.debug("Finding volumes by name (name={})", buildCacheVolumeName);
         final var volumesFiltered = dockerClientHelper.findVolumesByName(buildCacheVolumeName);
         log.trace("Volumes filtered by name (name={}):\n{}", buildCacheVolumeName, volumesFiltered);
         return !volumesFiltered.isEmpty();
