@@ -63,15 +63,15 @@ public class Run implements Callable<Integer> {
     }
 
     private RunArgs buildRunArgs() {
-        return new RunArgs.Builder()
-                .withApplyMigrations(applyMigrations)
-                .withCacheFrom(cacheFrom)
-                .withDebug(debug)
-                .withDetach(detach)
-                .withNoCache(noCache)
-                .withRebuild(rebuild)
-                .withStartDb(startDb)
-                .withSuspend(suspend)
+        return RunArgs.builder()
+                .applyMigrations(applyMigrations)
+                .cacheFrom(cacheFrom)
+                .debug(debug)
+                .detach(detach)
+                .noCache(noCache)
+                .rebuild(rebuild)
+                .startDb(startDb)
+                .suspend(suspend)
                 .build();
     }
 }
