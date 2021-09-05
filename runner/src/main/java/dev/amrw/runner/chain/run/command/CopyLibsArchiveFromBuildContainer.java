@@ -26,8 +26,10 @@ public class CopyLibsArchiveFromBuildContainer extends RunChainCommand {
     public boolean execute(final Context context) throws IOException {
         super.prepareContext(context);
 
-        final var buildContainerId = runChainHelper.findBuildContainerId();
         final var buildImageConfig = dockerConfig.getBuildImageConfig();
+        final var buildImageName = buildImageConfig.getName();
+        log.debug("Finding container ID by name (name={})", buildImageName);
+        final var buildContainerId = dockerClientHelper.findContainerIdByName(buildImageName);
         final var pathToJarDir = buildImageConfig.getLibsPath();
 
         log.info("Copying build archive from build container (id={}, containerPath={})",

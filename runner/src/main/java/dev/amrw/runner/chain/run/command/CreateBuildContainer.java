@@ -22,12 +22,12 @@ public class CreateBuildContainer extends RunChainCommand {
         if (runChainContext.buildContainerExists()) {
             final var buildContainerName = buildImageConfig.getName();
             if (args.rebuild()) {
-                log.debug("Finding containers by name (name={})", buildContainerName);
-                final var containers = dockerClientHelper.findContainersByName(buildContainerName);
-                containers.forEach(container -> {
+                log.debug("Finding container by name (name={})", buildContainerName);
+                dockerClientHelper.findContainerByName(buildContainerName).ifPresent(container -> {
                     log.debug("Removing container (id={}, names={})", container.getId(), container.getNames());
                     dockerClient.removeContainerCmd(container.getId()).exec();
                 });
+                // TODO: Remove the Docker image!
             } else {
                 log.info("Container already exists, not building (name={})", buildContainerName);
                 return Command.CONTINUE_PROCESSING;

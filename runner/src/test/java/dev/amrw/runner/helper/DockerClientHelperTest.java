@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Network;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
@@ -29,6 +31,19 @@ class DockerClientHelperTest {
     private DockerClient dockerClient;
     @InjectMocks
     private DockerClientHelper helper;
+
+    @Mock
+    private ListContainersCmd listContainersCmd;
+    @Mock
+    private Container container1;
+    @Mock
+    private Container container2;
+    private String containerName;
+
+    @BeforeEach
+    void beforeEach() {
+        containerName = randomAlphanumeric(16);
+    }
 
     @Test
     @DisplayName("Should have found Docker networks by name")
@@ -99,31 +114,53 @@ class DockerClientHelperTest {
     @Test
     @DisplayName("Should have found Docker containers by name")
     void shouldHaveFoundContainersByName() {
-        final var containerName = randomAlphanumeric(16);
-        final var listContainersCmd = mock(ListContainersCmd.class);
-        final var container = mock(Container.class);
+        findContainersByNameStubbings();
+        assertThat(helper.findContainersByName(containerName)).isEqualTo(List.of(container1, container2));
+    }
 
-        when(dockerClient.listContainersCmd()).thenReturn(listContainersCmd);
-        when(listContainersCmd.withShowAll(true)).thenReturn(listContainersCmd);
-        when(listContainersCmd.withFilter("name", Set.of(containerName))).thenReturn(listContainersCmd);
-        when(listContainersCmd.exec()).thenReturn(List.of(container));
+    @Test
+    @DisplayName("Should have found a Docker container with the given name")
+    void shouldHaveFoundContainerByName() {
+        findContainersByNameStubbings();
+        multipleContainersFoundStubbings(containerName);
+        assertThat(helper.findContainerByName(containerName)).isEqualTo(Optional.of(container2));
+    }
 
-        assertThat(helper.findContainersByName(containerName)).isEqualTo(List.of(container));
+    @Test
+    void shouldHaveFoundContainerIdByName() {
+        findContainersByNameStubbings();
+        multipleContainersFoundStubbings(containerName);
+
+        final var container2Id = randomAlphanumeric(32);
+        when(container2.getId()).thenReturn(container2Id);
+
+        assertThat(helper.findContainerIdByName(containerName)).isEqualTo(container2Id);
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     @DisplayName("Should have determined whether a Docker container with the given name exists")
     void shouldHaveDeterminedWhetherContainerExists(final boolean containerExists) {
-        final var containerName = randomAlphanumeric(16);
-        final var listContainersCmd = mock(ListContainersCmd.class);
-        final var container = mock(Container.class);
+        findContainersByNameStubbings();
+        multipleContainersFoundStubbings(containerExists ? containerName : randomAlphanumeric(16));
+        assertThat(helper.containerExists(containerName)).isEqualTo(containerExists);
+    }
 
+    private void findContainersByNameStubbings() {
         when(dockerClient.listContainersCmd()).thenReturn(listContainersCmd);
         when(listContainersCmd.withShowAll(true)).thenReturn(listContainersCmd);
         when(listContainersCmd.withFilter("name", Set.of(containerName))).thenReturn(listContainersCmd);
-        when(listContainersCmd.exec()).thenReturn(containerExists ? List.of(container) : List.of());
+        when(listContainersCmd.exec()).thenReturn(List.of(container1, container2));
+    }
 
-        assertThat(helper.containerExists(containerName)).isEqualTo(containerExists);
+    private void multipleContainersFoundStubbings(final String containerName) {
+        when(container1.getNames()).thenReturn(new String[] {
+                "/" + randomAlphanumeric(16),
+                "/" + randomAlphanumeric(16)
+        });
+        when(container2.getNames()).thenReturn(new String[] {
+                "/" + randomAlphanumeric(16),
+                "/" + containerName
+        });
     }
 }

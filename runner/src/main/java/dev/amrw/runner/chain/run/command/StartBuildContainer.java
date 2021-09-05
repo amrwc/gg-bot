@@ -19,7 +19,10 @@ public class StartBuildContainer extends RunChainCommand {
     public boolean execute(final Context context) {
         super.prepareContext(context);
 
-        final var containerId = findContainerId();
+        final var buildImageConfig = dockerConfig.getBuildImageConfig();
+        final var buildImageName = buildImageConfig.getName();
+        log.debug("Finding container ID by name (name={})", buildImageName);
+        final var containerId = dockerClientHelper.findContainerIdByName(buildImageName);
 
         log.info("Starting build container (id={})", containerId);
         dockerClient.startContainerCmd(containerId).exec();
@@ -37,14 +40,5 @@ public class StartBuildContainer extends RunChainCommand {
         log.info("Build container finished (statusCode={}, id={})", statusCode, containerId);
 
         return Command.CONTINUE_PROCESSING;
-    }
-
-    private String findContainerId() {
-        final var buildImageConfig = dockerConfig.getBuildImageConfig();
-        final var buildContainerName = buildImageConfig.getName();
-        log.debug("Finding containers by name (name={})", buildContainerName);
-        final var containers = dockerClientHelper.findContainersByName(buildContainerName);
-        final var buildContainer = containers.get(0);
-        return buildContainer.getId();
     }
 }

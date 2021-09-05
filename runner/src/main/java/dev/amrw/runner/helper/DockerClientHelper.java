@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,28 +90,50 @@ public class DockerClientHelper {
     }
 
     /**
-     * Finds containers with the given name.
-     * <p>
-     * NOTE: Docker doesn't allow duplicated names, therefore this list should contain at most one element.
-     * @param containerName name of the container to find
-     * @return {@link List} of {@link Container}s matching the given name
+     * Finds containers matching the given name part.
+     * @param containerNameSlug part of the name to search by
+     * @return {@link List} of {@link Container}s matching the given slug
      */
-    public List<Container> findContainersByName(final String containerName) {
+    public List<Container> findContainersByName(final String containerNameSlug) {
         return dockerClient.listContainersCmd()
                 .withShowAll(true)
-                .withFilter("name", Set.of(containerName))
+                .withFilter("name", Set.of(containerNameSlug))
                 .exec();
     }
 
     /**
+     * Finds a container with the given name.
+     * @param containerName name of the container
+     * @return {@link Optional} {@link Container} if one has been found, empty {@link Optional} otherwise.
+     */
+    public Optional<Container> findContainerByName(final String containerName) {
+        return findContainersByName(containerName)
+                .stream()
+                // The `names` field is an array, and usually only contains one element.
+                .filter(container -> Arrays.stream(container.getNames())
+                        // Container names start with a forward slash.
+                        .anyMatch(name -> name.substring(1).equals(containerName)))
+                .findFirst();
+    }
+
+    /**
+     * Finds a container ID by the given container name.
+     * @param containerName name of the container
+     * @return ID of the container, or empty string if not found.
+     */
+    public String findContainerIdByName(final String containerName) {
+        return findContainerByName(containerName)
+                .map(Container::getId)
+                .orElse("");
+    }
+
+    /**
      * Checks whether a container with the given name exists.
-     * @param containerName Docker container's name.
+     * @param containerName Docker container's name
      * @return whether the container exists
      */
     public boolean containerExists(final String containerName) {
-        log.debug("Finding containers by name (name={})", containerName);
-        final var containers = findContainersByName(containerName);
-        log.trace("Containers filtered by name (name={}):\n{}", containerName, containers);
-        return !containers.isEmpty();
+        final var optionalContainer = findContainerByName(containerName);
+        return optionalContainer.isPresent();
     }
 }

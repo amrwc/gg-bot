@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -34,8 +35,6 @@ class StartBuildContainerTest extends RunChainCommandTestBase {
 
     @Mock
     private BuildImageConfig buildImageConfig;
-    @Mock
-    private Container container;
 
     @Mock
     private StartContainerCmd startContainerCmd;
@@ -60,8 +59,7 @@ class StartBuildContainerTest extends RunChainCommandTestBase {
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getName()).thenReturn(buildContainerName);
-        when(dockerClientHelper.findContainersByName(buildContainerName)).thenReturn(List.of(container));
-        when(container.getId()).thenReturn(containerId);
+        when(dockerClientHelper.findContainerIdByName(buildContainerName)).thenReturn(containerId);
 
         when(dockerClient.startContainerCmd(containerId)).thenReturn(startContainerCmd);
 

@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
@@ -100,7 +101,7 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
 
         when(runChainContext.buildContainerExists()).thenReturn(buildContainerExists);
         if (buildContainerExists) {
-            when(dockerClientHelper.findContainersByName(buildImageName)).thenReturn(List.of(container));
+            when(dockerClientHelper.findContainerByName(buildImageName)).thenReturn(Optional.of(container));
             when(args.rebuild()).thenReturn(true);
             when(container.getId()).thenReturn(containerId);
             when(dockerClient.removeContainerCmd(containerId)).thenReturn(removeContainerCmd);

@@ -1,6 +1,7 @@
 package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
+import com.github.dockerjava.api.model.Container;
 import dev.amrw.runner.callback.FrameResultCallback;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
@@ -21,7 +22,10 @@ public class StartMainContainer extends RunChainCommand {
     public boolean execute(final Context context) throws IOException {
         super.prepareContext(context);
 
-        final var containerId = findContainerId();
+        final var mainImageConfig = dockerConfig.getMainImageConfig();
+        final var mainImageName = mainImageConfig.getName();
+        log.debug("Finding container ID by name (name={})", mainImageName);
+        final var containerId = dockerClientHelper.findContainerIdByName(mainImageName);
 
         log.info("Starting main container (id={})", containerId);
         dockerClient.startContainerCmd(containerId).exec();
@@ -44,16 +48,5 @@ public class StartMainContainer extends RunChainCommand {
         log.info("Main container finished (statusCode={}, id={})", statusCode, containerId);
 
         return Command.PROCESSING_COMPLETE;
-    }
-
-    // TODO: This should be moved to DockerClientHelper, or removed altogether by relying on CheckDockerComponents.
-    //  Although, the container may not have existed before this execution, so this method is still going to be useful.
-    private String findContainerId() {
-        final var mainImageConfig = dockerConfig.getMainImageConfig();
-        final var buildContainerName = mainImageConfig.getName();
-        log.debug("Finding containers by name (name={})", buildContainerName);
-        final var containers = dockerClientHelper.findContainersByName(buildContainerName);
-        final var buildContainer = containers.get(0);
-        return buildContainer.getId();
     }
 }

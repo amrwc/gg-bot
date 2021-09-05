@@ -1,7 +1,6 @@
 package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
-import dev.amrw.runner.chain.run.helper.RunChainHelper;
 import dev.amrw.runner.config.BuildImageConfig;
 import dev.amrw.runner.exception.ContainerArchiveCopyingException;
 import dev.amrw.runner.util.FileUtil;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
@@ -29,12 +27,9 @@ class CopyLibsArchiveFromBuildContainerTest extends RunChainCommandTestBase {
 
     @Mock
     private FileUtil fileUtil;
-    @Spy
     @InjectMocks
     private CopyLibsArchiveFromBuildContainer command;
 
-    @Mock
-    private RunChainHelper runChainHelper;
     @Mock
     private BuildImageConfig buildImageConfig;
     @Mock
@@ -49,15 +44,16 @@ class CopyLibsArchiveFromBuildContainerTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
+        final var buildContainerName = randomAlphanumeric(16);
         final var buildContainerId = randomAlphanumeric(16);
         libsPath = randomAlphabetic(16);
         archiveStream = mock(InputStream.class);
         binPath = randomAlphabetic(16);
         archiveName = randomAlphabetic(16);
 
-        doReturn(runChainHelper).when(command).getRunChainHelper();
-        when(runChainHelper.findBuildContainerId()).thenReturn(buildContainerId);
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
+        when(buildImageConfig.getName()).thenReturn(buildContainerName);
+        when(dockerClientHelper.findContainerIdByName(buildContainerName)).thenReturn(buildContainerId);
         when(buildImageConfig.getLibsPath()).thenReturn(libsPath);
         when(dockerClient.copyArchiveFromContainerCmd(buildContainerId, libsPath))
                 .thenReturn(copyArchiveFromContainerCmd);
