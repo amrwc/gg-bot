@@ -4,9 +4,9 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
-import dev.amrw.runner.helper.DockerClientHelper;
 import dev.amrw.runner.config.Config;
 import dev.amrw.runner.dto.RunArgs;
+import dev.amrw.runner.helper.DockerClientHelper;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -17,6 +17,15 @@ import org.apache.commons.chain.impl.ContextBase;
  */
 @Getter
 public class RunChainContext extends ContextBase {
+
+    /** Path where Gradle puts the application's JAR file onto. */
+    public static final String GRADLE_LIBS_PATH = "/home/gradle/project/build/libs";
+    /** Name of the TAR archive with {@link #GRADLE_LIBS_PATH} contents to be copied onto the host machine. */
+    public static final String GRADLE_LIBS_ARCHIVE_NAME = "gradle-libs.tar.gz";
+    /** Path to the local directory where things can be copied into. */
+    public static final String HOST_BIN_PATH = "./bin";
+    /** Path to the host location of Gradle {@code libs} archive. */
+    public static final String HOST_GRADLE_LIBS_ARCHIVE_PATH = HOST_BIN_PATH + "/" + GRADLE_LIBS_ARCHIVE_NAME;
 
     private final Config config;
     private final RunArgs args;
@@ -63,5 +72,12 @@ public class RunChainContext extends ContextBase {
                 .build();
         this.dockerClient = DockerClientImpl.getInstance(dockerClientConfig, httpClient);
         this.dockerClientHelper = new DockerClientHelper(this.dockerClient);
+    }
+
+    public String getBuildImageName() {
+        return config
+                .getDockerConfig()
+                .getBuildImageConfig()
+                .getName();
     }
 }

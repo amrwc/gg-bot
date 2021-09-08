@@ -19,7 +19,6 @@ public class FileUtil {
      * @throws IOException if the directory cannot be created or the file already exists but is not a directory
      */
     public void mkdir(final String path) throws IOException {
-        log.debug("Creating directory (path={})", path);
         final var directory = new File(path);
         FileUtils.forceMkdir(directory);
     }
@@ -34,7 +33,6 @@ public class FileUtil {
      * @throws IOException if an IO error occurs during copying
      */
     public void toFile(final InputStream stream, final String destination) throws IOException {
-        log.debug("Saving InputStream to file (destination={})", destination);
         final var file = new File(destination);
         FileUtils.copyInputStreamToFile(stream, file);
     }

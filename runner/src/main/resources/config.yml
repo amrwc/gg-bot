@@ -1,5 +1,3 @@
-binPath: './bin'
-
 docker:
   # Docker base directory path, relative to this Gradle subproject.
   baseDirPath: '..'
@@ -15,8 +13,6 @@ docker:
     volume: gradle-build-cache
     # Location of Gradle cache inside the Docker container.
     gradleCachePath: '/home/gradle/.gradle'
-    libsPath: '/home/gradle/project/build/libs'
-    libsArchiveName: 'build-image-libs.tar.gz'
     command:
       - gradle
       - build

@@ -1,6 +1,7 @@
 package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
+import dev.amrw.runner.chain.run.RunChainContext;
 import dev.amrw.runner.config.BuildImageConfig;
 import dev.amrw.runner.exception.ContainerArchiveCopyingException;
 import dev.amrw.runner.util.FileUtil;
@@ -16,55 +17,45 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CopyLibsArchiveFromBuildContainerTest extends RunChainCommandTestBase {
+class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
 
     @Mock
     private FileUtil fileUtil;
     @InjectMocks
-    private CopyLibsArchiveFromBuildContainer command;
+    private CopyJarFromBuildContainer command;
 
     @Mock
     private BuildImageConfig buildImageConfig;
     @Mock
     private CopyArchiveFromContainerCmd copyArchiveFromContainerCmd;
 
-    private String libsPath;
     private InputStream archiveStream;
-    private String binPath;
-    private String archiveName;
 
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
 
-        final var buildContainerName = randomAlphanumeric(16);
+        final var buildImageName = randomAlphanumeric(16);
         final var buildContainerId = randomAlphanumeric(16);
-        libsPath = randomAlphabetic(16);
         archiveStream = mock(InputStream.class);
-        binPath = randomAlphabetic(16);
-        archiveName = randomAlphabetic(16);
 
-        when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
-        when(buildImageConfig.getName()).thenReturn(buildContainerName);
-        when(dockerClientHelper.findContainerIdByName(buildContainerName)).thenReturn(buildContainerId);
-        when(buildImageConfig.getLibsPath()).thenReturn(libsPath);
-        when(dockerClient.copyArchiveFromContainerCmd(buildContainerId, libsPath))
+        when(runChainContext.getBuildImageName()).thenReturn(buildImageName);
+        when(dockerClientHelper.findContainerIdByName(buildImageName)).thenReturn(buildContainerId);
+        when(dockerClient.copyArchiveFromContainerCmd(buildContainerId, RunChainContext.GRADLE_LIBS_PATH))
                 .thenReturn(copyArchiveFromContainerCmd);
         when(copyArchiveFromContainerCmd.exec()).thenReturn(archiveStream);
-        when(config.getBinPath()).thenReturn(binPath);
     }
 
     @Test
     @DisplayName("Should have rethrown exception when creating `bin` directory")
     void shouldHaveHandledExceptionWhenCreatingBinDir() throws IOException {
-        doThrow(new IOException()).when(fileUtil).mkdir(binPath);
+        doThrow(new IOException()).when(fileUtil).mkdir(RunChainContext.HOST_BIN_PATH);
 
         assertThatThrownBy(() -> command.execute(runChainContext)).isInstanceOf(IOException.class);
 
@@ -74,24 +65,25 @@ class CopyLibsArchiveFromBuildContainerTest extends RunChainCommandTestBase {
     @Test
     @DisplayName("Should have thrown correct exception when saving `libs` archive to file")
     void shouldHaveHandledExceptionWhenSavingArchiveToFile() throws IOException {
-        when(buildImageConfig.getLibsArchiveName()).thenReturn(archiveName);
-        doThrow(new IOException()).when(fileUtil).toFile(archiveStream, binPath + "/" + archiveName);
+
+        doThrow(new IOException())
+                .when(fileUtil)
+                .toFile(archiveStream, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
 
         assertThatThrownBy(() -> command.execute(runChainContext))
                 .isInstanceOf(ContainerArchiveCopyingException.class)
-                .hasMessageContainingAll(libsPath, binPath + "/" + archiveName);
+                .hasMessageContainingAll(
+                        RunChainContext.GRADLE_LIBS_PATH, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
 
-        verify(fileUtil).mkdir(binPath);
+        verify(fileUtil).mkdir(RunChainContext.HOST_BIN_PATH);
     }
 
     @Test
     @DisplayName("Should have copied the `libs` archive from the build container")
     void shouldHaveCopiedLibsArchiveFromBuildContainer() throws IOException {
-        when(buildImageConfig.getLibsArchiveName()).thenReturn(archiveName);
-
         assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
-        verify(fileUtil).mkdir(binPath);
-        verify(fileUtil).toFile(archiveStream, binPath + "/" + archiveName);
+        verify(fileUtil).mkdir(RunChainContext.HOST_BIN_PATH);
+        verify(fileUtil).toFile(archiveStream, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
     }
 }
