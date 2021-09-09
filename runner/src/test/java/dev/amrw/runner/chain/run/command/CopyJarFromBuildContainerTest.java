@@ -2,7 +2,6 @@ package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
 import dev.amrw.runner.chain.run.RunChainContext;
-import dev.amrw.runner.config.BuildImageConfig;
 import dev.amrw.runner.exception.ContainerArchiveCopyingException;
 import dev.amrw.runner.util.FileUtil;
 import org.apache.commons.chain.Command;
@@ -31,8 +30,6 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
     private CopyJarFromBuildContainer command;
 
     @Mock
-    private BuildImageConfig buildImageConfig;
-    @Mock
     private CopyArchiveFromContainerCmd copyArchiveFromContainerCmd;
 
     private InputStream archiveStream;
@@ -50,16 +47,6 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
         when(dockerClient.copyArchiveFromContainerCmd(buildContainerId, RunChainContext.GRADLE_LIBS_PATH))
                 .thenReturn(copyArchiveFromContainerCmd);
         when(copyArchiveFromContainerCmd.exec()).thenReturn(archiveStream);
-    }
-
-    @Test
-    @DisplayName("Should have rethrown exception when creating `bin` directory")
-    void shouldHaveHandledExceptionWhenCreatingBinDir() throws IOException {
-        doThrow(new IOException()).when(fileUtil).mkdir(RunChainContext.HOST_BIN_PATH);
-
-        assertThatThrownBy(() -> command.execute(runChainContext)).isInstanceOf(IOException.class);
-
-        verifyNoMoreInteractions(buildImageConfig, fileUtil);
     }
 
     @Test

@@ -31,28 +31,24 @@ public class CopyJarFromBuildContainer extends RunChainCommand {
         log.debug("Finding container ID by name (name={})", buildImageName);
         final var buildContainerId = dockerClientHelper.findContainerIdByName(buildImageName);
 
+        // Copy the entire `libs` directory instead of just the JAR file, because the filename changes depending on the
+        // application's version.
         log.info("Copying build archive from build container (id={}, containerPath={})",
                 buildContainerId, RunChainContext.GRADLE_LIBS_PATH);
-        final var archiveStream = dockerClient
-                .copyArchiveFromContainerCmd(buildContainerId, RunChainContext.GRADLE_LIBS_PATH)
-                .exec();
-
-        try {
+        try (
+                // This archive is not actually GZipped, just Tarred.
+                final var archiveStream = dockerClient
+                        .copyArchiveFromContainerCmd(buildContainerId, RunChainContext.GRADLE_LIBS_PATH)
+                        .exec();
+        ) {
             // Make sure the directory exists, in case it's the first run.
             log.debug("Creating directory (path={})", RunChainContext.HOST_BIN_PATH);
             fileUtil.mkdir(RunChainContext.HOST_BIN_PATH);
-        } catch (final IOException exception) {
-            log.error("Error creating directory (path={})", RunChainContext.HOST_BIN_PATH, exception);
-            throw exception;
-        }
 
-        try {
             log.debug("Saving InputStream to file (source = {}, destination={})",
                     RunChainContext.GRADLE_LIBS_PATH, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
             fileUtil.toFile(archiveStream, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
         } catch (final IOException exception) {
-            log.error("Error saving libs archive (source = {}, path={})",
-                    RunChainContext.GRADLE_LIBS_PATH, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH, exception);
             throw new ContainerArchiveCopyingException(
                     RunChainContext.GRADLE_LIBS_PATH, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
         }

@@ -20,12 +20,20 @@ public class RunChainContext extends ContextBase {
 
     /** Path where Gradle puts the application's JAR file onto. */
     public static final String GRADLE_LIBS_PATH = "/home/gradle/project/build/libs";
-    /** Name of the TAR archive with {@link #GRADLE_LIBS_PATH} contents to be copied onto the host machine. */
-    public static final String GRADLE_LIBS_ARCHIVE_NAME = "gradle-libs.tar.gz";
-    /** Path to the local directory where things can be copied into. */
+    /** Name of the tar.gz archive with {@link #GRADLE_LIBS_PATH} contents to be copied onto the host machine. */
+    public static final String GRADLE_LIBS_TAR_GZ_ARCHIVE_NAME = "gradle-libs.tar.gz";
+    /** Path to the host directory where things can be copied into. */
     public static final String HOST_BIN_PATH = "./bin";
+    /** Path to the unarchived Gradle {@code libs} directory. */
+    public static final String HOST_BIN_LIBS_PATH = HOST_BIN_PATH + "/libs";
     /** Path to the host location of Gradle {@code libs} archive. */
-    public static final String HOST_GRADLE_LIBS_ARCHIVE_PATH = HOST_BIN_PATH + "/" + GRADLE_LIBS_ARCHIVE_NAME;
+    public static final String HOST_GRADLE_LIBS_ARCHIVE_PATH = HOST_BIN_PATH + "/" + GRADLE_LIBS_TAR_GZ_ARCHIVE_NAME;
+    /** Name of the application JAR file. */
+    public static final String APP_JAR_FILENAME = "app.jar";
+    /** Path to the application JAR file on the host machine. */
+    public static final String HOST_APP_JAR_PATH = HOST_BIN_PATH + "/" + APP_JAR_FILENAME;
+    /** Path to projects directory on the main (runtime) Docker image. */
+    public static final String REMOTE_PROJECTS_PATH = "/home/projects";
 
     private final Config config;
     private final RunArgs args;
@@ -78,6 +86,13 @@ public class RunChainContext extends ContextBase {
         return config
                 .getDockerConfig()
                 .getBuildImageConfig()
+                .getName();
+    }
+
+    public String getMainImageName() {
+        return config
+                .getDockerConfig()
+                .getMainImageConfig()
                 .getName();
     }
 }

@@ -15,6 +15,8 @@ public class RunChain extends ChainBase {
         addCommand(new CopyJarFromBuildContainer());
         addCommand(new BuildMainImage());
         addCommand(new CreateMainContainer());
+        addCommand(new ExtractJarFromArchive());
+        addCommand(new CopyJarIntoMainContainer());
         addCommand(new StartMainContainer());
     }
 }

@@ -71,11 +71,13 @@ public class DockerClientHelper {
      * @return {@link List} of {@link Image}s matching the given name
      */
     public List<Image> findImagesByName(final String imageName) {
-        return dockerClient.listImagesCmd().exec()
+        final var images = dockerClient.listImagesCmd().exec()
                 .stream()
                 .filter(image -> image.getRepoTags() != null
                         && Arrays.stream(image.getRepoTags()).anyMatch(tag -> tag.startsWith(imageName)))
                 .collect(Collectors.toList());
+        log.trace("Images filtered by name (name={}):\n{}", imageName, images);
+        return images;
     }
 
     /**
@@ -85,7 +87,6 @@ public class DockerClientHelper {
      */
     public boolean imageExists(final String imageName) {
         final var imagesFiltered = findImagesByName(imageName);
-        log.trace("Images filtered by name (name={}):\n{}", imageName, imagesFiltered);
         return !imagesFiltered.isEmpty();
     }
 
@@ -95,10 +96,12 @@ public class DockerClientHelper {
      * @return {@link List} of {@link Container}s matching the given slug
      */
     public List<Container> findContainersByName(final String containerNameSlug) {
-        return dockerClient.listContainersCmd()
+        final var containers = dockerClient.listContainersCmd()
                 .withShowAll(true)
                 .withFilter("name", Set.of(containerNameSlug))
                 .exec();
+        log.trace("Containers filtered by name slug (nameSlug={})\n{}", containerNameSlug, containers);
+        return containers;
     }
 
     /**

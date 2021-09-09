@@ -20,7 +20,12 @@ public class FileUtil {
      */
     public void mkdir(final String path) throws IOException {
         final var directory = new File(path);
-        FileUtils.forceMkdir(directory);
+        try {
+            FileUtils.forceMkdir(directory);
+        } catch (final IOException exception) {
+            log.error("Error creating directory (path={})", path, exception);
+            throw exception;
+        }
     }
 
     /**
@@ -34,6 +39,11 @@ public class FileUtil {
      */
     public void toFile(final InputStream stream, final String destination) throws IOException {
         final var file = new File(destination);
-        FileUtils.copyInputStreamToFile(stream, file);
+        try {
+            FileUtils.copyInputStreamToFile(stream, file);
+        } catch (final IOException exception) {
+            log.error("Error saving file (path={})", destination, exception);
+            throw exception;
+        }
     }
 }
