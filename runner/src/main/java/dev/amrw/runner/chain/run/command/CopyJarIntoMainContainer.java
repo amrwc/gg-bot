@@ -24,11 +24,11 @@ public class CopyJarIntoMainContainer extends RunChainCommand {
                         " (hostResource={}, containerId={}, containerPath={})",
                 RunChainContext.HOST_APP_JAR_PATH,
                 mainContainerId,
-                RunChainContext.REMOTE_PROJECTS_PATH
+                RunChainContext.REMOTE_PROJECT_PATH
         );
         dockerClient.copyArchiveToContainerCmd(mainContainerId)
                 .withHostResource(RunChainContext.HOST_APP_JAR_PATH)
-                .withRemotePath(RunChainContext.REMOTE_PROJECTS_PATH)
+                .withRemotePath(RunChainContext.REMOTE_PROJECT_PATH)
                 .exec();
 
         return Command.CONTINUE_PROCESSING;

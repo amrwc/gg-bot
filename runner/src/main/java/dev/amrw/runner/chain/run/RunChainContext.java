@@ -33,7 +33,7 @@ public class RunChainContext extends ContextBase {
     /** Path to the application JAR file on the host machine. */
     public static final String HOST_APP_JAR_PATH = HOST_BIN_PATH + "/" + APP_JAR_FILENAME;
     /** Path to projects directory on the main (runtime) Docker image. */
-    public static final String REMOTE_PROJECTS_PATH = "/home/projects";
+    public static final String REMOTE_PROJECT_PATH = "/home/project";
 
     private final Config config;
     private final RunArgs args;
