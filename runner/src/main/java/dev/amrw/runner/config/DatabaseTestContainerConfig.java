@@ -1,13 +1,11 @@
 package dev.amrw.runner.config;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * Database test container configuration POJO.
  */
-@Getter
-@Setter
+@Data
 public class DatabaseTestContainerConfig {
 
     private String repoTag;

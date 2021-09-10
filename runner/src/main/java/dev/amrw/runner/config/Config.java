@@ -1,14 +1,12 @@
 package dev.amrw.runner.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * Configuration POJO.
  */
-@Getter
-@Setter
+@Data
 public class Config {
 
     @JsonProperty("docker")

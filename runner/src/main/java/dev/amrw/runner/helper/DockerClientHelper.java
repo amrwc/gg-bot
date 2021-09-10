@@ -94,7 +94,7 @@ public class DockerClientHelper {
      *     [dpage/pgadmin4:latest]
      * </pre>
      * @param imageName image name to filter by
-     * @return {@link List} of {@link Image}s matching the given name
+     * @return {@link List} of {@link Image}s matching the given name.
      */
     public List<Image> findImagesByName(final String imageName) {
         final var images = dockerClient.listImagesCmd().exec()

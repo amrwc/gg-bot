@@ -1,15 +1,13 @@
 package dev.amrw.runner.config;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.List;
 
 /**
  * Build image config POJO.
  */
-@Getter
-@Setter
+@Data
 public class BuildImageConfig {
 
     private String name;
