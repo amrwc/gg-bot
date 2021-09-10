@@ -16,16 +16,20 @@ abstract class RunChainCommand implements Command {
 
     RunChainContext runChainContext;
     RunArgs args;
+
     DockerClient dockerClient;
     DockerClientHelper dockerClientHelper;
+
     Config config;
     DockerConfig dockerConfig;
 
     void prepareContext(final Context context) {
         this.runChainContext = (RunChainContext) context;
         this.args = this.runChainContext.getArgs();
+
         this.dockerClient = this.runChainContext.getDockerClient();
         this.dockerClientHelper = this.runChainContext.getDockerClientHelper();
+
         this.config = this.runChainContext.getConfig();
         this.dockerConfig = config.getDockerConfig();
     }

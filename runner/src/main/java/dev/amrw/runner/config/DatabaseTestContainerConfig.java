@@ -12,5 +12,5 @@ public class DatabaseTestContainerConfig {
 
     private String repoTag;
     private String name;
-    private String port;
+    private int port;
 }

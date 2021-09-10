@@ -15,11 +15,14 @@ import java.io.IOException;
 @Log4j2
 public class CopyJarFromBuildContainer extends RunChainCommand {
 
-    // Mocks won't be injected correctly if this is marked as `final`.
-    private FileUtil fileUtil;
+    private final FileUtil fileUtil;
 
     public CopyJarFromBuildContainer() {
         this.fileUtil = new FileUtil();
+    }
+
+    public CopyJarFromBuildContainer(final FileUtil fileUtil) {
+        this.fileUtil = fileUtil;
     }
 
     // TODO: Add logic to skip this step if the main container already exists and `--rebuild` is false

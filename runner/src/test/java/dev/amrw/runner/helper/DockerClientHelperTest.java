@@ -10,8 +10,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -21,42 +21,79 @@ import java.util.Set;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DockerClientHelperTest {
 
+    private static final String NETWORK_NAME = "network-name";
+    private static final String CONTAINER_NAME = "container-name";
+
     @Mock
     private DockerClient dockerClient;
-    @InjectMocks
+
     private DockerClientHelper helper;
 
+    @Mock
+    private ListNetworksCmd listNetworksCmd;
     @Mock
     private ListContainersCmd listContainersCmd;
     @Mock
     private Container container1;
     @Mock
     private Container container2;
-    private String containerName;
 
     @BeforeEach
     void beforeEach() {
-        containerName = randomAlphanumeric(16);
+        helper = new DockerClientHelper(dockerClient);
     }
 
     @Test
     @DisplayName("Should have found Docker networks by name")
     void shouldHaveFoundNetworksByName() {
-        final var networkName = randomAlphanumeric(16);
-        final var listNetworksCmd = mock(ListNetworksCmd.class);
-        final var networks = List.of(mock(Network.class));
+        final var networks = List.of(new Network());
 
         when(dockerClient.listNetworksCmd()).thenReturn(listNetworksCmd);
-        when(listNetworksCmd.withNameFilter(networkName)).thenReturn(listNetworksCmd);
+        when(listNetworksCmd.withNameFilter(NETWORK_NAME)).thenReturn(listNetworksCmd);
         when(listNetworksCmd.exec()).thenReturn(networks);
 
-        assertThat(helper.findNetworksByName(networkName)).isEqualTo(networks);
+        assertThat(helper.findNetworksByName(NETWORK_NAME)).isEqualTo(networks);
+    }
+
+    @Test
+    @DisplayName("Should have found network by name")
+    void shouldHaveFoundNetworkByName() {
+        final var network = mock(Network.class);
+        final var networks = List.of(network);
+
+        when(dockerClient.listNetworksCmd()).thenReturn(listNetworksCmd);
+        when(listNetworksCmd.withNameFilter(NETWORK_NAME)).thenReturn(listNetworksCmd);
+        when(listNetworksCmd.exec()).thenReturn(networks);
+        when(network.getName()).thenReturn(NETWORK_NAME);
+
+        final var result = helper.findNetworkByName(NETWORK_NAME);
+        assertThat(result).isNotEmpty();
+        assertThat(result.get()).isEqualTo(network);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "network-name, 081692bae9cb21178880038cd1621bb1d49760fc85ae117d8cc54a02b299026b",
+            "other-network-name, ''",
+    })
+    @DisplayName("Should have found network ID by name")
+    void shouldHaveFoundNetworkIdByName(final String networkName, final String expectedResult) {
+        final var network = mock(Network.class);
+        final var networks = List.of(network);
+        final var networkId = "081692bae9cb21178880038cd1621bb1d49760fc85ae117d8cc54a02b299026b";
+
+        when(dockerClient.listNetworksCmd()).thenReturn(listNetworksCmd);
+        when(listNetworksCmd.withNameFilter(NETWORK_NAME)).thenReturn(listNetworksCmd);
+        when(listNetworksCmd.exec()).thenReturn(networks);
+        when(network.getName()).thenReturn(networkName);
+        lenient().when(network.getId()).thenReturn(networkId);
+
+        assertThat(helper.findNetworkIdByName(NETWORK_NAME)).isEqualTo(expectedResult);
     }
 
     @Test
@@ -115,26 +152,26 @@ class DockerClientHelperTest {
     @DisplayName("Should have found Docker containers by name")
     void shouldHaveFoundContainersByName() {
         findContainersByNameStubbings();
-        assertThat(helper.findContainersByName(containerName)).isEqualTo(List.of(container1, container2));
+        assertThat(helper.findContainersByName(CONTAINER_NAME)).isEqualTo(List.of(container1, container2));
     }
 
     @Test
     @DisplayName("Should have found a Docker container with the given name")
     void shouldHaveFoundContainerByName() {
         findContainersByNameStubbings();
-        multipleContainersFoundStubbings(containerName);
-        assertThat(helper.findContainerByName(containerName)).isEqualTo(Optional.of(container2));
+        multipleContainersFoundStubbings(CONTAINER_NAME);
+        assertThat(helper.findContainerByName(CONTAINER_NAME)).isEqualTo(Optional.of(container2));
     }
 
     @Test
     void shouldHaveFoundContainerIdByName() {
         findContainersByNameStubbings();
-        multipleContainersFoundStubbings(containerName);
+        multipleContainersFoundStubbings(CONTAINER_NAME);
 
         final var container2Id = randomAlphanumeric(32);
         when(container2.getId()).thenReturn(container2Id);
 
-        assertThat(helper.findContainerIdByName(containerName)).isEqualTo(container2Id);
+        assertThat(helper.findContainerIdByName(CONTAINER_NAME)).isEqualTo(container2Id);
     }
 
     @ParameterizedTest
@@ -142,14 +179,14 @@ class DockerClientHelperTest {
     @DisplayName("Should have determined whether a Docker container with the given name exists")
     void shouldHaveDeterminedWhetherContainerExists(final boolean containerExists) {
         findContainersByNameStubbings();
-        multipleContainersFoundStubbings(containerExists ? containerName : randomAlphanumeric(16));
-        assertThat(helper.containerExists(containerName)).isEqualTo(containerExists);
+        multipleContainersFoundStubbings(containerExists ? CONTAINER_NAME : randomAlphanumeric(16));
+        assertThat(helper.containerExists(CONTAINER_NAME)).isEqualTo(containerExists);
     }
 
     private void findContainersByNameStubbings() {
         when(dockerClient.listContainersCmd()).thenReturn(listContainersCmd);
         when(listContainersCmd.withShowAll(true)).thenReturn(listContainersCmd);
-        when(listContainersCmd.withFilter("name", Set.of(containerName))).thenReturn(listContainersCmd);
+        when(listContainersCmd.withFilter("name", Set.of(CONTAINER_NAME))).thenReturn(listContainersCmd);
         when(listContainersCmd.exec()).thenReturn(List.of(container1, container2));
     }
 

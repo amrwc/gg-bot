@@ -24,7 +24,7 @@ public class CreateBuildContainer extends RunChainCommand {
             if (args.rebuild()) {
                 log.debug("Finding container by name (name={})", buildContainerName);
                 dockerClientHelper.findContainerByName(buildContainerName).ifPresent(container -> {
-                    log.debug("Removing container (id={}, names={})", container.getId(), container.getNames());
+                    log.info("Removing container (id={}, names={})", container.getId(), container.getNames());
                     dockerClient.removeContainerCmd(container.getId()).exec();
                 });
                 // TODO: Remove the Docker image!

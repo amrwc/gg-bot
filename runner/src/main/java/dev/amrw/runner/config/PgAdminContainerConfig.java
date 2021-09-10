@@ -12,5 +12,5 @@ public class PgAdminContainerConfig {
 
     private String repoTag;
     private String name;
-    private String port;
+    private int port;
 }

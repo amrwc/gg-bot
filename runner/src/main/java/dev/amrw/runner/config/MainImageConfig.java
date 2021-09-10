@@ -1,16 +1,14 @@
 package dev.amrw.runner.config;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * Main image configuration POJO.
  */
-@Getter
-@Setter
+@Data
 public class MainImageConfig {
 
     private String name;
-    private String port;
-    private String debugPort;
+    private int port;
+    private int debugPort;
 }

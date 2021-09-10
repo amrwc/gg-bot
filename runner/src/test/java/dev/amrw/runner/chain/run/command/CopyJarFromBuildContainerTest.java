@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -26,21 +25,22 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
 
     @Mock
     private FileUtil fileUtil;
-    @InjectMocks
+
     private CopyJarFromBuildContainer command;
 
     @Mock
     private CopyArchiveFromContainerCmd copyArchiveFromContainerCmd;
-
+    @Mock
     private InputStream archiveStream;
 
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
 
+        command = new CopyJarFromBuildContainer(fileUtil);
+
         final var buildImageName = randomAlphanumeric(16);
         final var buildContainerId = randomAlphanumeric(16);
-        archiveStream = mock(InputStream.class);
 
         when(runChainContext.getBuildImageName()).thenReturn(buildImageName);
         when(dockerClientHelper.findContainerIdByName(buildImageName)).thenReturn(buildContainerId);
@@ -52,7 +52,6 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
     @Test
     @DisplayName("Should have thrown correct exception when saving `libs` archive to file")
     void shouldHaveHandledExceptionWhenSavingArchiveToFile() throws IOException {
-
         doThrow(new IOException())
                 .when(fileUtil)
                 .toFile(archiveStream, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);

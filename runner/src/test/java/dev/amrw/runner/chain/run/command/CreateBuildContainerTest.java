@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -29,8 +28,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CreateBuildContainerTest extends RunChainCommandTestBase {
 
-    @InjectMocks
-    private CreateBuildContainer createBuildContainer;
+    private CreateBuildContainer command;
 
     @Mock
     private BuildImageConfig buildImageConfig;
@@ -51,6 +49,9 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
+
+        command = new CreateBuildContainer();
+
         buildImageName = randomAlphabetic(16);
         gradleCachePath = randomAlphabetic(16);
 
@@ -64,9 +65,9 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
         when(runChainContext.buildContainerExists()).thenReturn(true);
         when(args.rebuild()).thenReturn(false);
 
-        assertThat(createBuildContainer.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
+        assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
-        verifyNoMoreInteractions(dockerClient);
+        verifyNoInteractions(dockerClient);
     }
 
     @Test
@@ -74,7 +75,7 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     void shouldHaveCreatedContainer() {
         addCommonStubs(true);
 
-        assertThat(createBuildContainer.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
+        assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         verify(removeContainerCmd).exec();
         addCommonVerifications();
@@ -85,7 +86,7 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     void shouldHaveCreatedContainerWithoutRemoving() {
         addCommonStubs(false);
 
-        assertThat(createBuildContainer.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
+        assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         addCommonVerifications();
         verifyNoInteractions(removeContainerCmd);

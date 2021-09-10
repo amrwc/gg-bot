@@ -23,8 +23,7 @@ ext {
     junitVersion = '5.7.1'
     log4jVersion = '2.14.1'
     lombokVersion = '1.18.18'
-    // mockitoVersion = '3.8.0' // Doesn't get pulled, for some reason
-    mockitoVersion = '3.6.28'
+    mockitoVersion = '3.12.4'
     picocliVersion = '4.6.1'
 }
 

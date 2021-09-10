@@ -22,20 +22,20 @@ docker:
 
   mainImage:
     name: ggbot
-    port: '8080'
-    debugPort: '8000'
+    port: 8080
+    debugPort: 8000
 
   databaseContainer:
     repoTag: postgres:latest
     name: ggbot-database
-    port: '5432'
+    port: 5432
 
   databaseTestContainer:
     repoTag: postgres:latest
     name: ggbot-test-database
-    port: '5444'
+    port: 5444
 
   pgAdminContainer:
     repoTag: dpage/pgadmin4
     name: pgadmin
-    port: '5050'
+    port: 5050

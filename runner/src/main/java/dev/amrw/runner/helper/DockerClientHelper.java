@@ -14,6 +14,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// TODO: All these methods probably suffer from the same issue the `findContainersByName()` did -- finding by partial
+//  name. Will need to filter them in Java streams too, checking String equality, just to be sure.
+
 /**
  * Helper class for abstracting away common tasks.
  */
@@ -27,22 +30,45 @@ public class DockerClientHelper {
     }
 
     /**
-     * Finds networks by the given name.
-     * @param networkName network name to filter by
-     * @return {@link List} of {@link Network} matching the given name
+     * Finds networks matching the given name part.
+     * @param networkNameSlug part of the network name to search by
+     * @return {@link List} of {@link Network} matching the given slug.
      */
-    public List<Network> findNetworksByName(final String networkName) {
+    public List<Network> findNetworksByName(final String networkNameSlug) {
         final var networks = dockerClient.listNetworksCmd()
-                .withNameFilter(networkName)
+                .withNameFilter(networkNameSlug)
                 .exec();
-        log.trace("Networks filtered by name (name={}):\n{}", networkName, networks);
+        log.trace("Networks filtered by name [name={}]:\n{}", networkNameSlug, networks);
         return networks;
+    }
+
+    /**
+     * Finds a network with the given name.
+     * @param networkName network name
+     * @return {@link Optional} {@link Network} if one has been found, empty {@link Optional} otherwise.
+     */
+    public Optional<Network> findNetworkByName(final String networkName) {
+        return findNetworksByName(networkName)
+                .stream()
+                .filter(network -> network.getName().equals(networkName))
+                .findFirst();
+    }
+
+    /**
+     * Finds network ID by the given name.
+     * @param networkName name of the network to find the ID of
+     * @return ID of the {@link Network}, or empty string if not found.
+     */
+    public String findNetworkIdByName(final String networkName) {
+        return findNetworkByName(networkName)
+                .map(Network::getId)
+                .orElse("");
     }
 
     /**
      * Finds volumes by the given name.
      * @param volumeName volume name to filter by
-     * @return {@link List} of {@link InspectVolumeResponse} matching the given name
+     * @return {@link List} of {@link InspectVolumeResponse} matching the given name.
      */
     public List<InspectVolumeResponse> findVolumesByName(final String volumeName) {
         final var volumes = dockerClient
@@ -50,7 +76,7 @@ public class DockerClientHelper {
                 .withFilter("name", List.of(volumeName))
                 .exec()
                 .getVolumes();
-        log.trace("Volumes filtered by name (name={}):\n{}", volumeName, volumes);
+        log.trace("Volumes filtered by name [name={}]:\n{}", volumeName, volumes);
         return volumes;
     }
 
@@ -76,14 +102,14 @@ public class DockerClientHelper {
                 .filter(image -> image.getRepoTags() != null
                         && Arrays.stream(image.getRepoTags()).anyMatch(tag -> tag.startsWith(imageName)))
                 .collect(Collectors.toList());
-        log.trace("Images filtered by name (name={}):\n{}", imageName, images);
+        log.trace("Images filtered by name [name={}]:\n{}", imageName, images);
         return images;
     }
 
     /**
      * Checks whether an image with the given name exists.
-     * @param imageName Docker image's name.
-     * @return whether the image exists
+     * @param imageName image name
+     * @return whether the image exists.
      */
     public boolean imageExists(final String imageName) {
         final var imagesFiltered = findImagesByName(imageName);
@@ -92,15 +118,15 @@ public class DockerClientHelper {
 
     /**
      * Finds containers matching the given name part.
-     * @param containerNameSlug part of the name to search by
-     * @return {@link List} of {@link Container}s matching the given slug
+     * @param containerNameSlug part of the container name to search by
+     * @return {@link List} of {@link Container}s matching the given slug.
      */
     public List<Container> findContainersByName(final String containerNameSlug) {
         final var containers = dockerClient.listContainersCmd()
                 .withShowAll(true)
                 .withFilter("name", Set.of(containerNameSlug))
                 .exec();
-        log.trace("Containers filtered by name slug (nameSlug={})\n{}", containerNameSlug, containers);
+        log.trace("Containers filtered by name slug [nameSlug={}]\n{}", containerNameSlug, containers);
         return containers;
     }
 
@@ -132,8 +158,8 @@ public class DockerClientHelper {
 
     /**
      * Checks whether a container with the given name exists.
-     * @param containerName Docker container's name
-     * @return whether the container exists
+     * @param containerName name of the container
+     * @return whether the container exists.
      */
     public boolean containerExists(final String containerName) {
         final var optionalContainer = findContainerByName(containerName);

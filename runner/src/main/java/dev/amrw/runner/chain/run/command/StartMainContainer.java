@@ -1,7 +1,6 @@
 package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
-import com.github.dockerjava.api.model.Container;
 import dev.amrw.runner.callback.FrameResultCallback;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
@@ -30,22 +29,25 @@ public class StartMainContainer extends RunChainCommand {
         log.info("Starting main container (id={})", containerId);
         dockerClient.startContainerCmd(containerId).exec();
 
-        if (!args.detach()) {
-            final var outputStream = new PipedOutputStream();
-            final var inputStream = new PipedInputStream(outputStream);
-            dockerClient.attachContainerCmd(containerId)
-                    .withStdIn(inputStream)
-                    .withStdOut(true)
-                    .withStdErr(true)
-                    .withFollowStream(true)
-                    .exec(new FrameResultCallback());
-        }
+        try (
+                final var outputStream = new PipedOutputStream();
+                final var inputStream = new PipedInputStream(outputStream);
+        ) {
+            if (!args.detach()) {
+                dockerClient.attachContainerCmd(containerId)
+                        .withStdIn(inputStream)
+                        .withStdOut(true)
+                        .withStdErr(true)
+                        .withFollowStream(true)
+                        .exec(new FrameResultCallback());
+            }
 
-        log.debug("Awaiting main container to finish running (id={})", containerId);
-        final var statusCode = dockerClient.waitContainerCmd(containerId)
-                .exec(new WaitContainerResultCallback())
-                .awaitStatusCode(2, TimeUnit.MINUTES);
-        log.info("Main container finished (statusCode={}, id={})", statusCode, containerId);
+            log.debug("Awaiting main container to finish running (id={})", containerId);
+            final var statusCode = dockerClient.waitContainerCmd(containerId)
+                    .exec(new WaitContainerResultCallback())
+                    .awaitStatusCode(2, TimeUnit.MINUTES);
+            log.info("Main container finished (statusCode={}, id={})", statusCode, containerId);
+        }
 
         return Command.PROCESSING_COMPLETE;
     }
