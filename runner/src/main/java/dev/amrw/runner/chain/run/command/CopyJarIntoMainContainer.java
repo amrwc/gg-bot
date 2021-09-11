@@ -16,12 +16,12 @@ public class CopyJarIntoMainContainer extends RunChainCommand {
         super.prepareContext(context);
 
         final var mainImageName = runChainContext.getMainImageName();
-        log.debug("Finding container ID by name (name={})", mainImageName);
+        log.debug("Finding container ID by name [name={}]", mainImageName);
         final var mainContainerId = dockerClientHelper.findContainerIdByName(mainImageName);
 
         log.info(
                 "Copying application JAR file from host into container" +
-                        " (hostResource={}, containerId={}, containerPath={})",
+                        " [hostResource={}, containerId={}, containerPath={}]",
                 RunChainContext.HOST_APP_JAR_PATH,
                 mainContainerId,
                 RunChainContext.REMOTE_PROJECT_PATH

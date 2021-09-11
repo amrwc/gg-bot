@@ -3,6 +3,7 @@ package dev.amrw.runner.chain.run.command;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Volume;
+import dev.amrw.runner.chain.run.RunChainContext;
 import dev.amrw.runner.config.BuildImageConfig;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
@@ -61,7 +62,7 @@ public class CreateBuildContainer extends RunChainCommand {
     }
 
     private HostConfig buildHostConfig(final BuildImageConfig buildImageConfig) {
-        final var cacheVolume = new Volume(buildImageConfig.getGradleCachePath());
+        final var cacheVolume = new Volume(RunChainContext.GRADLE_CACHE_PATH);
         final var volumeBind = new Bind(buildImageConfig.getVolume(), cacheVolume);
         return HostConfig.newHostConfig().withBinds(volumeBind);
     }

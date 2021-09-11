@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
+import dev.amrw.runner.chain.run.RunChainContext;
 import dev.amrw.runner.config.BuildImageConfig;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextBoolean;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,20 +43,14 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     @Captor
     private ArgumentCaptor<HostConfig> hostConfigCaptor;
 
-    private String buildImageName;
-    private String gradleCachePath;
-
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
 
         command = new CreateBuildContainer();
 
-        buildImageName = randomAlphabetic(16);
-        gradleCachePath = randomAlphabetic(16);
-
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
-        when(buildImageConfig.getName()).thenReturn(buildImageName);
+        when(buildImageConfig.getName()).thenReturn(BUILD_IMAGE_NAME);
     }
 
     @Test
@@ -102,7 +96,7 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
 
         when(runChainContext.buildContainerExists()).thenReturn(buildContainerExists);
         if (buildContainerExists) {
-            when(dockerClientHelper.findContainerByName(buildImageName)).thenReturn(Optional.of(container));
+            when(dockerClientHelper.findContainerByName(BUILD_IMAGE_NAME)).thenReturn(Optional.of(container));
             when(args.rebuild()).thenReturn(true);
             when(container.getId()).thenReturn(containerId);
             when(dockerClient.removeContainerCmd(containerId)).thenReturn(removeContainerCmd);
@@ -113,10 +107,9 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
         when(buildImageConfig.getCommand()).thenReturn(containerCommand);
 
         when(buildImageConfig.getVolume()).thenReturn(cacheVolumeName);
-        when(buildImageConfig.getGradleCachePath()).thenReturn(gradleCachePath);
 
-        when(dockerClient.createContainerCmd(buildImageName)).thenReturn(createContainerCmd);
-        when(createContainerCmd.withName(buildImageName)).thenReturn(createContainerCmd);
+        when(dockerClient.createContainerCmd(BUILD_IMAGE_NAME)).thenReturn(createContainerCmd);
+        when(createContainerCmd.withName(BUILD_IMAGE_NAME)).thenReturn(createContainerCmd);
         when(createContainerCmd.withHostConfig(any(HostConfig.class))).thenReturn(createContainerCmd);
         when(createContainerCmd.withUser(user)).thenReturn(createContainerCmd);
         when(createContainerCmd.withAttachStdin(detach)).thenReturn(createContainerCmd);
@@ -129,7 +122,8 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     private void addCommonVerifications() {
         verify(createContainerCmd).withHostConfig(hostConfigCaptor.capture());
         assertThat(hostConfigCaptor.getValue().getBinds()).hasSize(1);
-        assertThat(hostConfigCaptor.getValue().getBinds()[0].getVolume().getPath()).isEqualTo(gradleCachePath);
+        assertThat(hostConfigCaptor.getValue().getBinds()[0].getVolume().getPath())
+                .isEqualTo(RunChainContext.GRADLE_CACHE_PATH);
         verifyNoMoreInteractions(dockerClient);
     }
 }

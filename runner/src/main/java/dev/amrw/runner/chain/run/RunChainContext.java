@@ -18,6 +18,8 @@ import org.apache.commons.chain.impl.ContextBase;
 @Getter
 public class RunChainContext extends ContextBase {
 
+    /** Path to Gradle cache inside the Docker container. */
+    public static final String GRADLE_CACHE_PATH = "/home/gradle/.gradle";
     /** Path where Gradle puts the application's JAR file onto. */
     public static final String GRADLE_LIBS_PATH = "/home/gradle/project/build/libs";
     /** Name of the tar.gz archive with {@link #GRADLE_LIBS_PATH} contents to be copied onto the host machine. */

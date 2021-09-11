@@ -12,10 +12,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.when;
 
-// TODO: Reduce mocking here
 @ExtendWith(MockitoExtension.class)
 public class RunChainCommandTestBase {
 
+    static final String BUILD_IMAGE_NAME = "build-image-name";
+    static final String BUILD_CONTAINER_ID = "98kjn98b645n";
+    static final String MAIN_IMAGE_NAME = "main-image-name";
+    static final String MAIN_CONTAINER_ID = "65acd60b586f";
+    static final String NETWORK_NAME = "network-name";
+    static final String NETWORK_ID = "081692bae9cb";
+    static final String VOLUME_NAME = "volume-name";
+
+    // TODO: Reduce mocking here
     @Mock
     RunChainContext runChainContext;
     @Mock

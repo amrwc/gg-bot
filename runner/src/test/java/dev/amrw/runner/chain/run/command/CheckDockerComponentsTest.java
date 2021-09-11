@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -23,8 +22,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CheckDockerComponentsTest extends RunChainCommandTestBase {
 
-    @InjectMocks
-    private CheckDockerComponents checkDockerComponents;
+    private CheckDockerComponents command;
 
     @Mock
     private BuildImageConfig buildImageConfig;
@@ -34,6 +32,9 @@ class CheckDockerComponentsTest extends RunChainCommandTestBase {
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
+
+        command = new CheckDockerComponents();
+
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(dockerConfig.getMainImageConfig()).thenReturn(mainImageConfig);
     }
@@ -63,7 +64,7 @@ class CheckDockerComponentsTest extends RunChainCommandTestBase {
         when(dockerClientHelper.imageExists(mainImageName)).thenReturn(mainImageExists);
         when(dockerClientHelper.containerExists(mainImageName)).thenReturn(mainImageExists);
 
-        assertThat(checkDockerComponents.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
+        assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         verify(runChainContext).networkExists(true);
         verify(runChainContext).buildCacheVolumeExists(true);

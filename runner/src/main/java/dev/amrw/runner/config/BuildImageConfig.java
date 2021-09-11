@@ -13,6 +13,5 @@ public class BuildImageConfig {
     private String name;
     private String user;
     private String volume;
-    private String gradleCachePath;
     private List<String> command;
 }

@@ -35,11 +35,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CreateMainContainerTest extends RunChainCommandTestBase {
 
-    private static final String MAIN_IMAGE_NAME = "main-image-name";
-    private static final String MAIN_CONTAINER_ID = "65acd60b586f";
-    private static final String NETWORK_NAME = "network-name";
-    private static final String NETWORK_ID = "081692bae9cb";
-
     private MainImageConfig mainImageConfig;
 
     @Mock

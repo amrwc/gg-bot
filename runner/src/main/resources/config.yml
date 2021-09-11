@@ -11,8 +11,6 @@ docker:
     name: ggbot-gradle-build
     user: gradle
     volume: gradle-build-cache
-    # Location of Gradle cache inside the Docker container.
-    gradleCachePath: '/home/gradle/.gradle'
     command:
       - gradle
       - build

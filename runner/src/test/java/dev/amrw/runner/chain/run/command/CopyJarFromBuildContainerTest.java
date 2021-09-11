@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.apache.commons.lang.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -39,12 +38,9 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
 
         command = new CopyJarFromBuildContainer(fileUtil);
 
-        final var buildImageName = randomAlphanumeric(16);
-        final var buildContainerId = randomAlphanumeric(16);
-
-        when(runChainContext.getBuildImageName()).thenReturn(buildImageName);
-        when(dockerClientHelper.findContainerIdByName(buildImageName)).thenReturn(buildContainerId);
-        when(dockerClient.copyArchiveFromContainerCmd(buildContainerId, RunChainContext.GRADLE_LIBS_PATH))
+        when(runChainContext.getBuildImageName()).thenReturn(BUILD_IMAGE_NAME);
+        when(dockerClientHelper.findContainerIdByName(BUILD_IMAGE_NAME)).thenReturn(BUILD_CONTAINER_ID);
+        when(dockerClient.copyArchiveFromContainerCmd(BUILD_CONTAINER_ID, RunChainContext.GRADLE_LIBS_PATH))
                 .thenReturn(copyArchiveFromContainerCmd);
         when(copyArchiveFromContainerCmd.exec()).thenReturn(archiveStream);
     }

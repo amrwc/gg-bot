@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -32,8 +31,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class BuildBuildImageTest extends RunChainCommandTestBase {
 
-    @InjectMocks
-    private BuildBuildImage buildBuildImage;
+    private static final String BUILD_IMAGE_NAME = "build-image-name";
+
+    private BuildBuildImage command;
 
     @Mock
     private BuildImageConfig buildImageConfig;
@@ -43,18 +43,21 @@ class BuildBuildImageTest extends RunChainCommandTestBase {
 
     @Mock
     private BuildImageCmd buildImageCmd;
+    @Mock
+    private RemoveImageCmd removeImageCmd;
+    @Mock
+    private BuildImageResultCallback buildImageResultCallback;
     @Captor
     private ArgumentCaptor<Set<String>> cacheFromCaptor;
-
-    private String buildImageName;
 
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
-        buildImageName = randomAlphabetic(16);
+
+        command = new BuildBuildImage();
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
-        when(buildImageConfig.getName()).thenReturn(buildImageName);
+        when(buildImageConfig.getName()).thenReturn(BUILD_IMAGE_NAME);
     }
 
     @Test
@@ -62,15 +65,13 @@ class BuildBuildImageTest extends RunChainCommandTestBase {
     void shouldHaveSkippedWhenImageExists() {
         when(args.rebuild()).thenReturn(false);
         when(runChainContext.buildImageExists()).thenReturn(true);
-        assertThat(buildBuildImage.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
+        assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
     }
 
     @ParameterizedTest
     @MethodSource
     @DisplayName("Should have built the build image")
     void shouldHaveBuiltBuildImage(final boolean noCache, final List<String> cacheFrom) {
-        final var removeImageCmd = mock(RemoveImageCmd.class);
-        final var callback = mock(BuildImageResultCallback.class);
         final var existingImageId = randomAlphanumeric(32);
         final var newImageId = "sha256:" + randomAlphanumeric(32);
 
@@ -78,7 +79,7 @@ class BuildBuildImageTest extends RunChainCommandTestBase {
 
         when(args.noCache()).thenReturn(noCache);
         if (noCache) {
-            when(dockerClientHelper.findImagesByName(buildImageName)).thenReturn(List.of(image));
+            when(dockerClientHelper.findImagesByName(BUILD_IMAGE_NAME)).thenReturn(List.of(image));
             when(image.getId()).thenReturn(existingImageId);
             when(dockerClient.removeImageCmd(existingImageId)).thenReturn(removeImageCmd);
         }
@@ -86,7 +87,7 @@ class BuildBuildImageTest extends RunChainCommandTestBase {
         when(dockerConfig.getBaseDirPath()).thenReturn(randomAlphabetic(16));
         when(dockerConfig.getDockerfileGradlePath()).thenReturn(randomAlphabetic(16));
         when(dockerClient.buildImageCmd()).thenReturn(buildImageCmd);
-        when(buildImageCmd.withTags(Set.of(buildImageName))).thenReturn(buildImageCmd);
+        when(buildImageCmd.withTags(Set.of(BUILD_IMAGE_NAME))).thenReturn(buildImageCmd);
         when(buildImageCmd.withBaseDirectory(any(File.class))).thenReturn(buildImageCmd);
         when(buildImageCmd.withDockerfile(any(File.class))).thenReturn(buildImageCmd);
 
@@ -94,10 +95,10 @@ class BuildBuildImageTest extends RunChainCommandTestBase {
             when(args.cacheFrom()).thenReturn(cacheFrom);
         }
 
-        when(buildImageCmd.exec(any(BuildImageResultCallback.class))).thenReturn(callback);
-        when(callback.awaitImageId()).thenReturn(newImageId);
+        when(buildImageCmd.exec(any(BuildImageResultCallback.class))).thenReturn(buildImageResultCallback);
+        when(buildImageResultCallback.awaitImageId()).thenReturn(newImageId);
 
-        assertThat(buildBuildImage.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
+        assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         if (noCache) {
             verify(buildImageCmd).withNoCache(true);
