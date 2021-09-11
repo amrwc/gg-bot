@@ -5,11 +5,12 @@ import dev.amrw.runner.chain.run.RunChainContext;
 import dev.amrw.runner.config.Config;
 import dev.amrw.runner.config.DockerConfig;
 import dev.amrw.runner.dto.RunArgs;
-import dev.amrw.runner.helper.DockerClientHelper;
+import dev.amrw.runner.service.DockerClientService;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,15 +34,15 @@ public class RunChainCommandTestBase {
     @Mock
     DockerConfig dockerConfig;
     @Mock
-    DockerClient dockerClient;
+    DockerClientService dockerClientService;
     @Mock
-    DockerClientHelper dockerClientHelper;
+    DockerClient dockerClient;
 
     void beforeEach() {
         when(runChainContext.getArgs()).thenReturn(args);
         when(runChainContext.getConfig()).thenReturn(config);
         when(config.getDockerConfig()).thenReturn(dockerConfig);
-        when(runChainContext.getDockerClient()).thenReturn(dockerClient);
-        when(runChainContext.getDockerClientHelper()).thenReturn(dockerClientHelper);
+
+        lenient().when(dockerClientService.getDockerClient()).thenReturn(dockerClient);
     }
 }

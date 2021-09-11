@@ -55,7 +55,7 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
-        command = new CreateMainContainer(envarsService);
+        command = new CreateMainContainer(dockerClientService, envarsService);
 
         mainImageConfig = new MainImageConfig();
         mainImageConfig.setName(MAIN_IMAGE_NAME);
@@ -121,7 +121,7 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
         final var container = mock(Container.class);
         final var oldContainerId = "c5ece54ab3af";
         final var oldContainerName = "old-container-name";
-        when(dockerClientHelper.findContainerByName(MAIN_IMAGE_NAME)).thenReturn(Optional.of(container));
+        when(dockerClientService.findContainerByName(MAIN_IMAGE_NAME)).thenReturn(Optional.of(container));
         when(container.getId()).thenReturn(oldContainerId);
         when(container.getNames()).thenReturn(new String[] {oldContainerName, oldContainerName});
         when(dockerClient.removeContainerCmd(oldContainerId)).thenReturn(removeContainerCmd);
@@ -146,10 +146,10 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
     }
 
     private void addConnectToNetworkCmdStubbings() {
-        when(dockerClientHelper.findContainerIdByName(MAIN_IMAGE_NAME)).thenReturn(MAIN_CONTAINER_ID);
+        when(dockerClientService.findContainerIdByName(MAIN_IMAGE_NAME)).thenReturn(MAIN_CONTAINER_ID);
 
         when(dockerConfig.getNetwork()).thenReturn(NETWORK_NAME);
-        when(dockerClientHelper.findNetworkIdByName(NETWORK_NAME)).thenReturn(NETWORK_ID);
+        when(dockerClientService.findNetworkIdByName(NETWORK_NAME)).thenReturn(NETWORK_ID);
 
         when(dockerClient.connectToNetworkCmd()).thenReturn(connectToNetworkCmd);
         when(connectToNetworkCmd.withNetworkId(NETWORK_ID)).thenReturn(connectToNetworkCmd);

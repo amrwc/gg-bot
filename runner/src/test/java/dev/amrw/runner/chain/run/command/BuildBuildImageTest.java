@@ -54,7 +54,7 @@ class BuildBuildImageTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
-        command = new BuildBuildImage();
+        command = new BuildBuildImage(dockerClientService);
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getName()).thenReturn(BUILD_IMAGE_NAME);
@@ -79,7 +79,7 @@ class BuildBuildImageTest extends RunChainCommandTestBase {
 
         when(args.noCache()).thenReturn(noCache);
         if (noCache) {
-            when(dockerClientHelper.findImagesByName(BUILD_IMAGE_NAME)).thenReturn(List.of(image));
+            when(dockerClientService.findImagesByName(BUILD_IMAGE_NAME)).thenReturn(List.of(image));
             when(image.getId()).thenReturn(existingImageId);
             when(dockerClient.removeImageCmd(existingImageId)).thenReturn(removeImageCmd);
         }

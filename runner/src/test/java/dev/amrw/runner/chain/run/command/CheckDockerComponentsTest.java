@@ -33,7 +33,7 @@ class CheckDockerComponentsTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
-        command = new CheckDockerComponents();
+        command = new CheckDockerComponents(dockerClientService);
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(dockerConfig.getMainImageConfig()).thenReturn(mainImageConfig);
@@ -57,12 +57,12 @@ class CheckDockerComponentsTest extends RunChainCommandTestBase {
         final var networks = List.of(mock(Network.class));
         final var volumes = List.of(mock(InspectVolumeResponse.class));
 
-        when(dockerClientHelper.findNetworksByName(networkName)).thenReturn(networks);
-        when(dockerClientHelper.findVolumesByName(buildCacheVolumeName)).thenReturn(volumes);
-        when(dockerClientHelper.imageExists(buildImageName)).thenReturn(buildImageExists);
-        when(dockerClientHelper.containerExists(buildImageName)).thenReturn(buildImageExists);
-        when(dockerClientHelper.imageExists(mainImageName)).thenReturn(mainImageExists);
-        when(dockerClientHelper.containerExists(mainImageName)).thenReturn(mainImageExists);
+        when(dockerClientService.findNetworksByName(networkName)).thenReturn(networks);
+        when(dockerClientService.findVolumesByName(buildCacheVolumeName)).thenReturn(volumes);
+        when(dockerClientService.imageExists(buildImageName)).thenReturn(buildImageExists);
+        when(dockerClientService.containerExists(buildImageName)).thenReturn(buildImageExists);
+        when(dockerClientService.imageExists(mainImageName)).thenReturn(mainImageExists);
+        when(dockerClientService.containerExists(mainImageName)).thenReturn(mainImageExists);
 
         assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 

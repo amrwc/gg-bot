@@ -1,6 +1,8 @@
 package dev.amrw.runner.chain.run.command;
 
 import dev.amrw.runner.callback.BuildImageResultCallback;
+import dev.amrw.runner.chain.run.RunChainCommandBase;
+import dev.amrw.runner.service.DockerClientService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -13,7 +15,15 @@ import java.util.stream.Collectors;
  * Builds the build image.
  */
 @Log4j2
-public class BuildMainImage extends RunChainCommand {
+public class BuildMainImage extends RunChainCommandBase {
+
+    public BuildMainImage() {
+        super();
+    }
+
+    public BuildMainImage(final DockerClientService dockerClientService) {
+        super(dockerClientService);
+    }
 
     @Override
     public boolean execute(final Context context) {
@@ -31,10 +41,10 @@ public class BuildMainImage extends RunChainCommand {
             // why it's best to remove the existing images before building from scratch as to not leave an untagged
             // image behind.
             log.debug("Finding images by name (name={})", mainImageName);
-            final var images = dockerClientHelper.findImagesByName(mainImageName);
+            final var images = dockerClientService.findImagesByName(mainImageName);
             images.forEach(image -> {
                 log.debug("Removing image (repoTags={}, id={})", image.getRepoTags(), image.getId());
-                dockerClient.removeImageCmd(image.getId()).exec();
+                getDockerClient().removeImageCmd(image.getId()).exec();
             });
         }
 
@@ -49,7 +59,7 @@ public class BuildMainImage extends RunChainCommand {
         log.trace("Docker base directory: {}", baseDirectory);
         final var dockerfileMain = new File(dockerConfig.getDockerfileMainPath());
         log.trace("Dockerfile: {}", dockerfileMain);
-        final var mainImageCmd = dockerClient.buildImageCmd()
+        final var mainImageCmd = getDockerClient().buildImageCmd()
                 // NOTE: There's a dependency on `baseDirectory` inside `withDockerfile()`, therefore
                 // `withBaseDirectory()` _must_ come before `withDockerfile()`, if applicable. Otherwise, this error
                 // may be thrown:

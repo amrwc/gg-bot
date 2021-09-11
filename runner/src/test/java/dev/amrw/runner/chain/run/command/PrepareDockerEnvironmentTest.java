@@ -31,7 +31,7 @@ class PrepareDockerEnvironmentTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
-        command = new PrepareDockerEnvironment();
+        command = new PrepareDockerEnvironment(dockerClientService);
     }
 
     @ParameterizedTest

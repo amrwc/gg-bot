@@ -1,4 +1,4 @@
-package dev.amrw.runner.helper;
+package dev.amrw.runner.service;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DockerClientHelperTest {
+class DockerClientServiceTest {
 
     private static final String NETWORK_NAME = "network-name";
     private static final String CONTAINER_NAME = "container-name";
@@ -32,7 +32,7 @@ class DockerClientHelperTest {
     @Mock
     private DockerClient dockerClient;
 
-    private DockerClientHelper helper;
+    private DockerClientService service;
 
     @Mock
     private ListNetworksCmd listNetworksCmd;
@@ -45,7 +45,7 @@ class DockerClientHelperTest {
 
     @BeforeEach
     void beforeEach() {
-        helper = new DockerClientHelper(dockerClient);
+        service = new DockerClientService(dockerClient);
     }
 
     @Test
@@ -57,7 +57,7 @@ class DockerClientHelperTest {
         when(listNetworksCmd.withNameFilter(NETWORK_NAME)).thenReturn(listNetworksCmd);
         when(listNetworksCmd.exec()).thenReturn(networks);
 
-        assertThat(helper.findNetworksByName(NETWORK_NAME)).isEqualTo(networks);
+        assertThat(service.findNetworksByName(NETWORK_NAME)).isEqualTo(networks);
     }
 
     @Test
@@ -71,7 +71,7 @@ class DockerClientHelperTest {
         when(listNetworksCmd.exec()).thenReturn(networks);
         when(network.getName()).thenReturn(NETWORK_NAME);
 
-        final var result = helper.findNetworkByName(NETWORK_NAME);
+        final var result = service.findNetworkByName(NETWORK_NAME);
         assertThat(result).isNotEmpty();
         assertThat(result.get()).isEqualTo(network);
     }
@@ -93,7 +93,7 @@ class DockerClientHelperTest {
         when(network.getName()).thenReturn(networkName);
         lenient().when(network.getId()).thenReturn(networkId);
 
-        assertThat(helper.findNetworkIdByName(NETWORK_NAME)).isEqualTo(expectedResult);
+        assertThat(service.findNetworkIdByName(NETWORK_NAME)).isEqualTo(expectedResult);
     }
 
     @Test
@@ -109,7 +109,7 @@ class DockerClientHelperTest {
         when(listVolumesCmd.exec()).thenReturn(listVolumesResponse);
         when(listVolumesResponse.getVolumes()).thenReturn(inspectVolumeResponses);
 
-        assertThat(helper.findVolumesByName(volumeName)).isEqualTo(inspectVolumeResponses);
+        assertThat(service.findVolumesByName(volumeName)).isEqualTo(inspectVolumeResponses);
     }
 
     @Test
@@ -127,7 +127,7 @@ class DockerClientHelperTest {
         when(worseImage.getRepoTags()).thenReturn(null);
         when(goodImage.getRepoTags()).thenReturn(new String[] {imageName + randomAlphanumeric(8)});
 
-        assertThat(helper.findImagesByName(imageName)).isEqualTo(List.of(goodImage));
+        assertThat(service.findImagesByName(imageName)).isEqualTo(List.of(goodImage));
     }
 
     @ParameterizedTest
@@ -145,14 +145,14 @@ class DockerClientHelperTest {
         when(goodImage.getRepoTags())
                 .thenReturn(new String[] {(imageExists ? imageName : "") + randomAlphanumeric(8)});
 
-        assertThat(helper.imageExists(imageName)).isEqualTo(imageExists);
+        assertThat(service.imageExists(imageName)).isEqualTo(imageExists);
     }
 
     @Test
     @DisplayName("Should have found Docker containers by name")
     void shouldHaveFoundContainersByName() {
         findContainersByNameStubbings();
-        assertThat(helper.findContainersByName(CONTAINER_NAME)).isEqualTo(List.of(container1, container2));
+        assertThat(service.findContainersByName(CONTAINER_NAME)).isEqualTo(List.of(container1, container2));
     }
 
     @Test
@@ -160,7 +160,7 @@ class DockerClientHelperTest {
     void shouldHaveFoundContainerByName() {
         findContainersByNameStubbings();
         multipleContainersFoundStubbings(CONTAINER_NAME);
-        assertThat(helper.findContainerByName(CONTAINER_NAME)).isEqualTo(Optional.of(container2));
+        assertThat(service.findContainerByName(CONTAINER_NAME)).isEqualTo(Optional.of(container2));
     }
 
     @Test
@@ -171,7 +171,7 @@ class DockerClientHelperTest {
         final var container2Id = randomAlphanumeric(32);
         when(container2.getId()).thenReturn(container2Id);
 
-        assertThat(helper.findContainerIdByName(CONTAINER_NAME)).isEqualTo(container2Id);
+        assertThat(service.findContainerIdByName(CONTAINER_NAME)).isEqualTo(container2Id);
     }
 
     @ParameterizedTest
@@ -180,7 +180,7 @@ class DockerClientHelperTest {
     void shouldHaveDeterminedWhetherContainerExists(final boolean containerExists) {
         findContainersByNameStubbings();
         multipleContainersFoundStubbings(containerExists ? CONTAINER_NAME : randomAlphanumeric(16));
-        assertThat(helper.containerExists(CONTAINER_NAME)).isEqualTo(containerExists);
+        assertThat(service.containerExists(CONTAINER_NAME)).isEqualTo(containerExists);
     }
 
     private void findContainersByNameStubbings() {

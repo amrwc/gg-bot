@@ -3,8 +3,10 @@ package dev.amrw.runner.chain.run.command;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Volume;
+import dev.amrw.runner.chain.run.RunChainCommandBase;
 import dev.amrw.runner.chain.run.RunChainContext;
 import dev.amrw.runner.config.BuildImageConfig;
+import dev.amrw.runner.service.DockerClientService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -13,7 +15,15 @@ import org.apache.commons.chain.Context;
  * Creates the build container.
  */
 @Log4j2
-public class CreateBuildContainer extends RunChainCommand {
+public class CreateBuildContainer extends RunChainCommandBase {
+
+    public CreateBuildContainer() {
+        super();
+    }
+
+    public CreateBuildContainer(final DockerClientService dockerClientService) {
+        super(dockerClientService);
+    }
 
     @Override
     public boolean execute(final Context context) {
@@ -24,9 +34,9 @@ public class CreateBuildContainer extends RunChainCommand {
             final var buildContainerName = buildImageConfig.getName();
             if (args.rebuild()) {
                 log.debug("Finding container by name (name={})", buildContainerName);
-                dockerClientHelper.findContainerByName(buildContainerName).ifPresent(container -> {
+                dockerClientService.findContainerByName(buildContainerName).ifPresent(container -> {
                     log.info("Removing container (id={}, names={})", container.getId(), container.getNames());
-                    dockerClient.removeContainerCmd(container.getId()).exec();
+                    getDockerClient().removeContainerCmd(container.getId()).exec();
                 });
                 // TODO: Remove the Docker image!
             } else {
@@ -49,7 +59,7 @@ public class CreateBuildContainer extends RunChainCommand {
                 buildImageName, detach, buildImageConfig.getVolume(), user, command);
 
         final var hostConfig = buildHostConfig(buildImageConfig);
-        final var response = dockerClient.createContainerCmd(buildImageName)
+        final var response = getDockerClient().createContainerCmd(buildImageName)
                 .withName(buildImageName)
                 .withHostConfig(hostConfig)
                 .withUser(user)

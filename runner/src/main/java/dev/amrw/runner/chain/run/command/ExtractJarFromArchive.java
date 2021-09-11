@@ -1,5 +1,6 @@
 package dev.amrw.runner.chain.run.command;
 
+import dev.amrw.runner.chain.run.RunChainCommandBase;
 import dev.amrw.runner.chain.run.RunChainContext;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
@@ -16,7 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Log4j2
-public class ExtractJarFromArchive extends RunChainCommand {
+public class ExtractJarFromArchive extends RunChainCommandBase {
 
     // TODO: Skip if the main container already existed before the chain proceeded, and `--rebuild` == false.
     @Override

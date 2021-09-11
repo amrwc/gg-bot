@@ -1,7 +1,9 @@
 package dev.amrw.runner.chain.run.command;
 
+import dev.amrw.runner.chain.run.RunChainCommandBase;
 import dev.amrw.runner.chain.run.RunChainContext;
 import dev.amrw.runner.exception.ContainerArchiveCopyingException;
+import dev.amrw.runner.service.DockerClientService;
 import dev.amrw.runner.util.FileUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
@@ -13,15 +15,17 @@ import java.io.IOException;
  * Copies the compiled JAR file out of the build container.
  */
 @Log4j2
-public class CopyJarFromBuildContainer extends RunChainCommand {
+public class CopyJarFromBuildContainer extends RunChainCommandBase {
 
     private final FileUtil fileUtil;
 
     public CopyJarFromBuildContainer() {
-        this.fileUtil = new FileUtil();
+        super();
+        fileUtil = new FileUtil();
     }
 
-    public CopyJarFromBuildContainer(final FileUtil fileUtil) {
+    public CopyJarFromBuildContainer(final DockerClientService dockerClientService, final FileUtil fileUtil) {
+        super(dockerClientService);
         this.fileUtil = fileUtil;
     }
 
@@ -32,7 +36,7 @@ public class CopyJarFromBuildContainer extends RunChainCommand {
 
         final var buildImageName = runChainContext.getBuildImageName();
         log.debug("Finding container ID by name (name={})", buildImageName);
-        final var buildContainerId = dockerClientHelper.findContainerIdByName(buildImageName);
+        final var buildContainerId = dockerClientService.findContainerIdByName(buildImageName);
 
         // Copy the entire `libs` directory instead of just the JAR file, because the filename changes depending on the
         // application's version.
@@ -40,7 +44,7 @@ public class CopyJarFromBuildContainer extends RunChainCommand {
                 buildContainerId, RunChainContext.GRADLE_LIBS_PATH);
         try (
                 // This archive is not actually GZipped, just Tarred.
-                final var archiveStream = dockerClient
+                final var archiveStream = getDockerClient()
                         .copyArchiveFromContainerCmd(buildContainerId, RunChainContext.GRADLE_LIBS_PATH)
                         .exec();
         ) {

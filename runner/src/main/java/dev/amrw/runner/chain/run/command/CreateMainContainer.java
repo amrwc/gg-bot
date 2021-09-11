@@ -1,8 +1,10 @@
 package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.model.ExposedPort;
+import dev.amrw.runner.chain.run.RunChainCommandBase;
 import dev.amrw.runner.config.Envar;
 import dev.amrw.runner.exception.InvalidEnvarException;
+import dev.amrw.runner.service.DockerClientService;
 import dev.amrw.runner.service.EnvarsService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.chain.Command;
@@ -17,7 +19,7 @@ import java.util.stream.Collectors;
  * Creates the main container.
  */
 @Log4j2
-public class CreateMainContainer extends RunChainCommand {
+public class CreateMainContainer extends RunChainCommandBase {
 
     static final List<String> REQUIRED_ENVARS = List.of(
             Envar.SPRING_DATASOURCE_URL,
@@ -28,10 +30,12 @@ public class CreateMainContainer extends RunChainCommand {
     private final EnvarsService envarsService;
 
     public CreateMainContainer() {
+        super();
         this.envarsService = new EnvarsService();
     }
 
-    public CreateMainContainer(final EnvarsService envarsService) {
+    public CreateMainContainer(final DockerClientService dockerClientService, final EnvarsService envarsService) {
+        super(dockerClientService);
         this.envarsService = envarsService;
     }
 
@@ -52,9 +56,9 @@ public class CreateMainContainer extends RunChainCommand {
 
         if (runChainContext.mainContainerExists() && args.rebuild()) {
             log.debug("Finding container by name [name={}]", mainImageName);
-            dockerClientHelper.findContainerByName(mainImageName).ifPresent(container -> {
+            dockerClientService.findContainerByName(mainImageName).ifPresent(container -> {
                 log.info("Removing container [id={}, names={}]", container.getId(), container.getNames());
-                dockerClient.removeContainerCmd(container.getId()).exec();
+                getDockerClient().removeContainerCmd(container.getId()).exec();
             });
             // TODO: Remove the Docker image!
         }
@@ -72,7 +76,7 @@ public class CreateMainContainer extends RunChainCommand {
         final var env = buildEnv(envars);
 
         log.info("Creating container [name={}, detach={}]", mainImageName, detach);
-        final var response = dockerClient.createContainerCmd(mainImageName)
+        final var response = getDockerClient().createContainerCmd(mainImageName)
                 .withName(mainImageName)
                 .withAttachStdin(!detach)
                 .withAttachStdout(!detach)
@@ -85,14 +89,14 @@ public class CreateMainContainer extends RunChainCommand {
 
     private void connectToNetwork(final String mainImageName) {
         log.debug("Finding container ID by name [name={}]", mainImageName);
-        final var mainContainerId = dockerClientHelper.findContainerIdByName(mainImageName);
+        final var mainContainerId = dockerClientService.findContainerIdByName(mainImageName);
 
         final var networkName = dockerConfig.getNetwork();
         log.debug("Finding network ID by name [name={}]", networkName);
-        final var networkId = dockerClientHelper.findNetworkIdByName(networkName);
+        final var networkId = dockerClientService.findNetworkIdByName(networkName);
 
         log.info("Connecting container to network [containerId={}, networkId={}]", mainContainerId, networkId);
-        dockerClient.connectToNetworkCmd()
+        getDockerClient().connectToNetworkCmd()
                 .withNetworkId(networkId)
                 .withContainerId(mainContainerId)
                 .exec();

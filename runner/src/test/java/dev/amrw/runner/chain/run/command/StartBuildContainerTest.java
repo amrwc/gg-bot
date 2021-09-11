@@ -44,7 +44,7 @@ class StartBuildContainerTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
-        command = new StartBuildContainer();
+        command = new StartBuildContainer(dockerClientService);
     }
 
     @Test
@@ -56,7 +56,7 @@ class StartBuildContainerTest extends RunChainCommandTestBase {
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getName()).thenReturn(buildContainerName);
-        when(dockerClientHelper.findContainerIdByName(buildContainerName)).thenReturn(containerId);
+        when(dockerClientService.findContainerIdByName(buildContainerName)).thenReturn(containerId);
 
         when(dockerClient.startContainerCmd(containerId)).thenReturn(startContainerCmd);
 

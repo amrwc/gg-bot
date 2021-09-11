@@ -36,10 +36,10 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
-        command = new CopyJarFromBuildContainer(fileUtil);
+        command = new CopyJarFromBuildContainer(dockerClientService, fileUtil);
 
         when(runChainContext.getBuildImageName()).thenReturn(BUILD_IMAGE_NAME);
-        when(dockerClientHelper.findContainerIdByName(BUILD_IMAGE_NAME)).thenReturn(BUILD_CONTAINER_ID);
+        when(dockerClientService.findContainerIdByName(BUILD_IMAGE_NAME)).thenReturn(BUILD_CONTAINER_ID);
         when(dockerClient.copyArchiveFromContainerCmd(BUILD_CONTAINER_ID, RunChainContext.GRADLE_LIBS_PATH))
                 .thenReturn(copyArchiveFromContainerCmd);
         when(copyArchiveFromContainerCmd.exec()).thenReturn(archiveStream);

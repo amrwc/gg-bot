@@ -47,7 +47,7 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
-        command = new CreateBuildContainer();
+        command = new CreateBuildContainer(dockerClientService);
 
         when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
         when(buildImageConfig.getName()).thenReturn(BUILD_IMAGE_NAME);
@@ -96,7 +96,7 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
 
         when(runChainContext.buildContainerExists()).thenReturn(buildContainerExists);
         if (buildContainerExists) {
-            when(dockerClientHelper.findContainerByName(BUILD_IMAGE_NAME)).thenReturn(Optional.of(container));
+            when(dockerClientService.findContainerByName(BUILD_IMAGE_NAME)).thenReturn(Optional.of(container));
             when(args.rebuild()).thenReturn(true);
             when(container.getId()).thenReturn(containerId);
             when(dockerClient.removeContainerCmd(containerId)).thenReturn(removeContainerCmd);
