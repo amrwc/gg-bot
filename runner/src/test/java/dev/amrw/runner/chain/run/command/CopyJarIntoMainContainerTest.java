@@ -27,14 +27,12 @@ class CopyJarIntoMainContainerTest extends RunChainCommandTestBase {
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
-
         command = new CopyJarIntoMainContainer(dockerClientService);
     }
 
     @Test
     @DisplayName("Should have copied JAR file into the main container")
     void shouldHaveCopiedJarIntoMainContainer() throws IOException {
-        when(runChainContext.getMainImageName()).thenReturn(MAIN_IMAGE_NAME);
         when(dockerClientService.findContainerIdByName(MAIN_IMAGE_NAME)).thenReturn(MAIN_CONTAINER_ID);
         when(dockerClient.copyArchiveToContainerCmd(MAIN_CONTAINER_ID)).thenReturn(copyArchiveToContainerCmd);
         when(copyArchiveToContainerCmd.withHostResource(RunChainContext.HOST_APP_JAR_PATH))
@@ -42,6 +40,7 @@ class CopyJarIntoMainContainerTest extends RunChainCommandTestBase {
         when(copyArchiveToContainerCmd.withRemotePath(RunChainContext.REMOTE_PROJECT_PATH))
                 .thenReturn(copyArchiveToContainerCmd);
 
+        final var runChainContext = new RunChainContext(config);
         assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
         verify(copyArchiveToContainerCmd).exec();

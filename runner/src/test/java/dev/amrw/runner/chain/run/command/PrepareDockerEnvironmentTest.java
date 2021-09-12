@@ -2,7 +2,7 @@ package dev.amrw.runner.chain.run.command;
 
 import com.github.dockerjava.api.command.CreateNetworkCmd;
 import com.github.dockerjava.api.command.CreateVolumeCmd;
-import dev.amrw.runner.config.BuildImageConfig;
+import dev.amrw.runner.chain.run.RunChainContext;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,8 +20,7 @@ class PrepareDockerEnvironmentTest extends RunChainCommandTestBase {
 
     private PrepareDockerEnvironment command;
 
-    @Mock
-    private BuildImageConfig buildImageConfig;
+    private RunChainContext runChainContext;
     @Mock
     private CreateNetworkCmd createNetworkCmd;
     @Mock
@@ -30,8 +29,8 @@ class PrepareDockerEnvironmentTest extends RunChainCommandTestBase {
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
-
         command = new PrepareDockerEnvironment(dockerClientService);
+        runChainContext = new RunChainContext(config);
     }
 
     @ParameterizedTest
@@ -53,8 +52,8 @@ class PrepareDockerEnvironmentTest extends RunChainCommandTestBase {
     }
 
     private void addCreateNetworkStubs(final boolean networkExists) {
-        when(dockerConfig.getNetwork()).thenReturn(NETWORK_NAME);
-        when(runChainContext.networkExists()).thenReturn(networkExists);
+        dockerConfig.setNetwork(NETWORK_NAME);
+        runChainContext.networkExists(networkExists);
 
         if (!networkExists) {
             when(dockerClient.createNetworkCmd()).thenReturn(createNetworkCmd);
@@ -63,9 +62,8 @@ class PrepareDockerEnvironmentTest extends RunChainCommandTestBase {
     }
 
     private void addCreateVolumeStubs(final boolean volumeExists) {
-        when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
-        when(buildImageConfig.getVolume()).thenReturn(VOLUME_NAME);
-        when(runChainContext.buildCacheVolumeExists()).thenReturn(volumeExists);
+        buildImageConfig.setVolume(VOLUME_NAME);
+        runChainContext.buildCacheVolumeExists(volumeExists);
 
         if (!volumeExists) {
             when(dockerClient.createVolumeCmd()).thenReturn(createVolumeCmd);

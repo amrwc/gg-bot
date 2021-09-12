@@ -27,6 +27,7 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
 
     private CopyJarFromBuildContainer command;
 
+    private RunChainContext runChainContext;
     @Mock
     private CopyArchiveFromContainerCmd copyArchiveFromContainerCmd;
     @Mock
@@ -37,8 +38,8 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
         super.beforeEach();
 
         command = new CopyJarFromBuildContainer(dockerClientService, fileUtil);
+        runChainContext = new RunChainContext(config);
 
-        when(runChainContext.getBuildImageName()).thenReturn(BUILD_IMAGE_NAME);
         when(dockerClientService.findContainerIdByName(BUILD_IMAGE_NAME)).thenReturn(BUILD_CONTAINER_ID);
         when(dockerClient.copyArchiveFromContainerCmd(BUILD_CONTAINER_ID, RunChainContext.GRADLE_LIBS_PATH))
                 .thenReturn(copyArchiveFromContainerCmd);

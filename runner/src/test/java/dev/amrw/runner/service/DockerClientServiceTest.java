@@ -151,22 +151,22 @@ class DockerClientServiceTest {
     @Test
     @DisplayName("Should have found Docker containers by name")
     void shouldHaveFoundContainersByName() {
-        findContainersByNameStubbings();
+        findContainersByNameStubs();
         assertThat(service.findContainersByName(CONTAINER_NAME)).isEqualTo(List.of(container1, container2));
     }
 
     @Test
     @DisplayName("Should have found a Docker container with the given name")
     void shouldHaveFoundContainerByName() {
-        findContainersByNameStubbings();
-        multipleContainersFoundStubbings(CONTAINER_NAME);
+        findContainersByNameStubs();
+        multipleContainersFoundStubs(CONTAINER_NAME);
         assertThat(service.findContainerByName(CONTAINER_NAME)).isEqualTo(Optional.of(container2));
     }
 
     @Test
     void shouldHaveFoundContainerIdByName() {
-        findContainersByNameStubbings();
-        multipleContainersFoundStubbings(CONTAINER_NAME);
+        findContainersByNameStubs();
+        multipleContainersFoundStubs(CONTAINER_NAME);
 
         final var container2Id = randomAlphanumeric(32);
         when(container2.getId()).thenReturn(container2Id);
@@ -178,19 +178,19 @@ class DockerClientServiceTest {
     @ValueSource(booleans = {false, true})
     @DisplayName("Should have determined whether a Docker container with the given name exists")
     void shouldHaveDeterminedWhetherContainerExists(final boolean containerExists) {
-        findContainersByNameStubbings();
-        multipleContainersFoundStubbings(containerExists ? CONTAINER_NAME : randomAlphanumeric(16));
+        findContainersByNameStubs();
+        multipleContainersFoundStubs(containerExists ? CONTAINER_NAME : randomAlphanumeric(16));
         assertThat(service.containerExists(CONTAINER_NAME)).isEqualTo(containerExists);
     }
 
-    private void findContainersByNameStubbings() {
+    private void findContainersByNameStubs() {
         when(dockerClient.listContainersCmd()).thenReturn(listContainersCmd);
         when(listContainersCmd.withShowAll(true)).thenReturn(listContainersCmd);
         when(listContainersCmd.withFilter("name", Set.of(CONTAINER_NAME))).thenReturn(listContainersCmd);
         when(listContainersCmd.exec()).thenReturn(List.of(container1, container2));
     }
 
-    private void multipleContainersFoundStubbings(final String containerName) {
+    private void multipleContainersFoundStubs(final String containerName) {
         when(container1.getNames()).thenReturn(new String[] {
                 "/" + randomAlphanumeric(16),
                 "/" + randomAlphanumeric(16)

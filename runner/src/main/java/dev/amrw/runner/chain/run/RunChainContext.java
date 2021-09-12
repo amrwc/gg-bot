@@ -62,6 +62,12 @@ public class RunChainContext extends ContextBase {
     @Accessors(fluent = true)
     private boolean mainContainerExists;
 
+    public RunChainContext(final Config config) {
+        super();
+        this.config = config;
+        this.args = RunArgs.builder().build();
+    }
+
     public RunChainContext(final Config config, final RunArgs args) {
         super();
         this.config = config;

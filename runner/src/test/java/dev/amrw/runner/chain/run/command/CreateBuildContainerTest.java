@@ -6,7 +6,7 @@ import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
 import dev.amrw.runner.chain.run.RunChainContext;
-import dev.amrw.runner.config.BuildImageConfig;
+import dev.amrw.runner.dto.RunArgs;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextBoolean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -30,9 +29,7 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
 
     private CreateBuildContainer command;
 
-    @Mock
-    private BuildImageConfig buildImageConfig;
-
+    private RunChainContext runChainContext;
     @Mock
     private Container container;
     @Mock
@@ -46,18 +43,15 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
-
         command = new CreateBuildContainer(dockerClientService);
-
-        when(dockerConfig.getBuildImageConfig()).thenReturn(buildImageConfig);
-        when(buildImageConfig.getName()).thenReturn(BUILD_IMAGE_NAME);
     }
 
     @Test
     @DisplayName("Should have skipped creating the build container if it already exists")
     void shouldHaveSkippedWhenContainerExists() {
-        when(runChainContext.buildContainerExists()).thenReturn(true);
-        when(args.rebuild()).thenReturn(false);
+        final var args = RunArgs.builder().rebuild(false).build();
+        runChainContext = new RunChainContext(config, args);
+        runChainContext.buildContainerExists(true);
 
         assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
@@ -87,26 +81,28 @@ class CreateBuildContainerTest extends RunChainCommandTestBase {
     }
 
     private void addCommonStubs(final boolean buildContainerExists) {
-        final var containerId = randomAlphanumeric(16);
+        final var containerId = "container-id";
 
         final var detach = nextBoolean();
-        final var cacheVolumeName = randomAlphanumeric(16);
-        final var user = randomAlphanumeric(16);
-        final var containerCommand = List.of(randomAlphanumeric(16));
+        final var user = "user";
+        final var containerCommand = List.of("container-cmd");
+        final var argsBuilder = RunArgs.builder();
 
-        when(runChainContext.buildContainerExists()).thenReturn(buildContainerExists);
         if (buildContainerExists) {
             when(dockerClientService.findContainerByName(BUILD_IMAGE_NAME)).thenReturn(Optional.of(container));
-            when(args.rebuild()).thenReturn(true);
+            argsBuilder.rebuild(true);
             when(container.getId()).thenReturn(containerId);
             when(dockerClient.removeContainerCmd(containerId)).thenReturn(removeContainerCmd);
         }
 
-        when(args.detach()).thenReturn(detach);
-        when(buildImageConfig.getUser()).thenReturn(user);
-        when(buildImageConfig.getCommand()).thenReturn(containerCommand);
+        argsBuilder.detach(detach);
+        buildImageConfig.setUser(user);
+        buildImageConfig.setCommand(containerCommand);
 
-        when(buildImageConfig.getVolume()).thenReturn(cacheVolumeName);
+        runChainContext = new RunChainContext(config, argsBuilder.build());
+        runChainContext.buildContainerExists(buildContainerExists);
+
+        buildImageConfig.setVolume(BUILD_CACHE_VOLUME_NAME);
 
         when(dockerClient.createContainerCmd(BUILD_IMAGE_NAME)).thenReturn(createContainerCmd);
         when(createContainerCmd.withName(BUILD_IMAGE_NAME)).thenReturn(createContainerCmd);

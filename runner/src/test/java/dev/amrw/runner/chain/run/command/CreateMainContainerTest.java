@@ -6,7 +6,8 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
-import dev.amrw.runner.config.MainImageConfig;
+import dev.amrw.runner.chain.run.RunChainContext;
+import dev.amrw.runner.dto.RunArgs;
 import dev.amrw.runner.exception.InvalidEnvarException;
 import dev.amrw.runner.service.EnvarsService;
 import org.apache.commons.chain.Command;
@@ -35,13 +36,12 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CreateMainContainerTest extends RunChainCommandTestBase {
 
-    private MainImageConfig mainImageConfig;
-
     @Mock
     private EnvarsService envarsService;
 
     private CreateMainContainer command;
 
+    private RunChainContext runChainContext;
     @Mock
     private RemoveContainerCmd removeContainerCmd;
     @Mock
@@ -57,8 +57,6 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
 
         command = new CreateMainContainer(dockerClientService, envarsService);
 
-        mainImageConfig = new MainImageConfig();
-        mainImageConfig.setName(MAIN_IMAGE_NAME);
         mainImageConfig.setPort(8080);
         mainImageConfig.setDebugPort(8000);
     }
@@ -66,8 +64,9 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
     @Test
     @DisplayName("Should have skipped creating the main container if it already exists")
     void shouldHaveSkippedWhenContainerExists() {
-        when(runChainContext.mainContainerExists()).thenReturn(true);
-        when(args.rebuild()).thenReturn(false);
+        final var args = RunArgs.builder().rebuild(false).build();
+        runChainContext = new RunChainContext(config, args);
+        runChainContext.mainContainerExists(true);
 
         assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
@@ -77,7 +76,8 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
     @Test
     @DisplayName("Should have thrown an exception when the envars were invalid")
     void shouldHaveThrownWhenEnvarsWereInvalid() {
-        when(runChainContext.mainContainerExists()).thenReturn(false);
+        runChainContext = new RunChainContext(config);
+        runChainContext.mainContainerExists(false);
         when(envarsService.verifyEnvars(CreateMainContainer.REQUIRED_ENVARS)).thenReturn(false);
 
         assertThatThrownBy(() -> command.execute(runChainContext))
@@ -94,20 +94,19 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
         final Map<String, String> env = CreateMainContainer.REQUIRED_ENVARS.stream()
                 .collect(Collectors.toMap(Function.identity(), envarName -> randomAlphanumeric(8)));
 
-        when(runChainContext.getMainImageName()).thenReturn(MAIN_IMAGE_NAME);
-
-        when(runChainContext.mainContainerExists()).thenReturn(true);
-        when(args.rebuild()).thenReturn(true);
-
         when(envarsService.verifyEnvars(CreateMainContainer.REQUIRED_ENVARS)).thenReturn(true);
         if (mainContainerExists) {
-            addRemoveContainerCmdStubbings();
+            addRemoveContainerCmdStubs();
         }
 
         when(envarsService.getEnv()).thenReturn(env);
 
-        addCreateContainerCmdStubbings();
-        addConnectToNetworkCmdStubbings();
+        final var argsBuilder = RunArgs.builder().rebuild(true);
+        addCreateContainerCmdStubs(argsBuilder);
+        addConnectToNetworkCmdStubs();
+
+        runChainContext = new RunChainContext(config, argsBuilder.build());
+        runChainContext.mainContainerExists(true);
 
         assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
@@ -117,9 +116,9 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
         verify(connectToNetworkCmd).exec();
     }
 
-    private void addRemoveContainerCmdStubbings() {
+    private void addRemoveContainerCmdStubs() {
         final var container = mock(Container.class);
-        final var oldContainerId = "c5ece54ab3af";
+        final var oldContainerId = "old-container-id";
         final var oldContainerName = "old-container-name";
         when(dockerClientService.findContainerByName(MAIN_IMAGE_NAME)).thenReturn(Optional.of(container));
         when(container.getId()).thenReturn(oldContainerId);
@@ -127,12 +126,10 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
         when(dockerClient.removeContainerCmd(oldContainerId)).thenReturn(removeContainerCmd);
     }
 
-    private void addCreateContainerCmdStubbings() {
+    private void addCreateContainerCmdStubs(final RunArgs.RunArgsBuilder argsBuilder) {
         final var detach = nextBoolean();
-
-        when(args.detach()).thenReturn(detach);
-        when(dockerConfig.getMainImageConfig()).thenReturn(mainImageConfig);
-        when(args.debug()).thenReturn(true);
+        argsBuilder.detach(detach);
+        argsBuilder.debug(true);
 
         when(dockerClient.createContainerCmd(MAIN_IMAGE_NAME)).thenReturn(createContainerCmd);
         when(createContainerCmd.withName(MAIN_IMAGE_NAME)).thenReturn(createContainerCmd);
@@ -145,10 +142,10 @@ class CreateMainContainerTest extends RunChainCommandTestBase {
         when(createContainerCmd.exec()).thenReturn(createContainerResponse);
     }
 
-    private void addConnectToNetworkCmdStubbings() {
+    private void addConnectToNetworkCmdStubs() {
         when(dockerClientService.findContainerIdByName(MAIN_IMAGE_NAME)).thenReturn(MAIN_CONTAINER_ID);
 
-        when(dockerConfig.getNetwork()).thenReturn(NETWORK_NAME);
+        dockerConfig.setNetwork(NETWORK_NAME);
         when(dockerClientService.findNetworkIdByName(NETWORK_NAME)).thenReturn(NETWORK_ID);
 
         when(dockerClient.connectToNetworkCmd()).thenReturn(connectToNetworkCmd);
