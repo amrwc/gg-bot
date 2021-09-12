@@ -21,7 +21,7 @@ public class CopyJarFromBuildContainer extends RunChainCommandBase {
 
     public CopyJarFromBuildContainer() {
         super();
-        fileUtil = new FileUtil();
+        fileUtil = FileUtil.getInstance();
     }
 
     public CopyJarFromBuildContainer(final DockerClientService dockerClientService, final FileUtil fileUtil) {

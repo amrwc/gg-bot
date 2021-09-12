@@ -13,6 +13,17 @@ import java.io.InputStream;
 @Log4j2
 public class FileUtil {
 
+    private static FileUtil INSTANCE;
+
+    private FileUtil() {
+    }
+
+    public static FileUtil getInstance() {
+        return INSTANCE == null
+                ? (INSTANCE = new FileUtil())
+                : INSTANCE;
+    }
+
     /**
      * Creates the given folder structure using {@link FileUtils#forceMkdir(File)}. Equivalent to {@code mkdir -p}.
      * @param path directory path
