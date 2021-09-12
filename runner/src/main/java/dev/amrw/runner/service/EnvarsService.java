@@ -7,6 +7,17 @@ import java.util.Map;
 
 public class EnvarsService {
 
+    private static EnvarsService INSTANCE;
+
+    private EnvarsService() {
+    }
+
+    public static EnvarsService getInstance() {
+        return INSTANCE == null
+                ? (INSTANCE = new EnvarsService())
+                : INSTANCE;
+    }
+
     public Map<String, String> getEnv() {
         return System.getenv();
     }

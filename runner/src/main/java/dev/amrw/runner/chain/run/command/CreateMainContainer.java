@@ -31,7 +31,7 @@ public class CreateMainContainer extends RunChainCommandBase {
 
     public CreateMainContainer() {
         super();
-        this.envarsService = new EnvarsService();
+        this.envarsService = EnvarsService.getInstance();
     }
 
     public CreateMainContainer(final DockerClientService dockerClientService, final EnvarsService envarsService) {
