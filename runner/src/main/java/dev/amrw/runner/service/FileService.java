@@ -1,4 +1,4 @@
-package dev.amrw.runner.util;
+package dev.amrw.runner.service;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
@@ -11,16 +11,16 @@ import java.io.InputStream;
  * Collection of file/directory-related utilities.
  */
 @Log4j2
-public class FileUtil {
+public class FileService {
 
-    private static FileUtil INSTANCE;
+    private static FileService INSTANCE;
 
-    private FileUtil() {
+    private FileService() {
     }
 
-    public static FileUtil getInstance() {
+    public static FileService getInstance() {
         return INSTANCE == null
-                ? (INSTANCE = new FileUtil())
+                ? (INSTANCE = new FileService())
                 : INSTANCE;
     }
 

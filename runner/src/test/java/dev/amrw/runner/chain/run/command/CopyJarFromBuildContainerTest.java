@@ -3,7 +3,7 @@ package dev.amrw.runner.chain.run.command;
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
 import dev.amrw.runner.chain.run.RunChainContext;
 import dev.amrw.runner.exception.ContainerArchiveCopyingException;
-import dev.amrw.runner.util.FileUtil;
+import dev.amrw.runner.service.FileService;
 import org.apache.commons.chain.Command;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
 
     @Mock
-    private FileUtil fileUtil;
+    private FileService fileService;
 
     private CopyJarFromBuildContainer command;
 
@@ -37,7 +37,7 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
     void beforeEach() {
         super.beforeEach();
 
-        command = new CopyJarFromBuildContainer(dockerClientService, fileUtil);
+        command = new CopyJarFromBuildContainer(dockerClientService, fileService);
         runChainContext = new RunChainContext(config);
 
         when(dockerClientService.findContainerIdByName(BUILD_IMAGE_NAME)).thenReturn(BUILD_CONTAINER_ID);
@@ -50,7 +50,7 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
     @DisplayName("Should have thrown correct exception when saving `libs` archive to file")
     void shouldHaveHandledExceptionWhenSavingArchiveToFile() throws IOException {
         doThrow(new IOException())
-                .when(fileUtil)
+                .when(fileService)
                 .toFile(archiveStream, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
 
         assertThatThrownBy(() -> command.execute(runChainContext))
@@ -58,7 +58,7 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
                 .hasMessageContainingAll(
                         RunChainContext.GRADLE_LIBS_PATH, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
 
-        verify(fileUtil).mkdir(RunChainContext.HOST_BIN_PATH);
+        verify(fileService).mkdir(RunChainContext.HOST_BIN_PATH);
     }
 
     @Test
@@ -66,7 +66,7 @@ class CopyJarFromBuildContainerTest extends RunChainCommandTestBase {
     void shouldHaveCopiedLibsArchiveFromBuildContainer() throws IOException {
         assertThat(command.execute(runChainContext)).isEqualTo(Command.CONTINUE_PROCESSING);
 
-        verify(fileUtil).mkdir(RunChainContext.HOST_BIN_PATH);
-        verify(fileUtil).toFile(archiveStream, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
+        verify(fileService).mkdir(RunChainContext.HOST_BIN_PATH);
+        verify(fileService).toFile(archiveStream, RunChainContext.HOST_GRADLE_LIBS_ARCHIVE_PATH);
     }
 }
